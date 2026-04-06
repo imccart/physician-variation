@@ -4,7 +4,7 @@
 /*                Emory University                               */
 /* DATE CREATED:  4/3/2026                                       */
 /* CODE FILE ORDER: 3 of 6                                       */
-/* INPUT:         Beneficiary Summary Files (2008-2018),         */
+/* INPUT:         MBSF ABCD (2008-2018),                         */
 /*                PL027710.NSTEMI_Episodes,                      */
 /*                PL027710.NSTEMI_Cath,                          */
 /*                PL027710.NSTEMI_Comorbidities                  */
@@ -36,7 +36,7 @@
             BENE_HI_CVRAGE_TOT_MONS,
             BENE_SMI_CVRAGE_TOT_MONS,
             BENE_HMO_CVRAGE_TOT_MONS
-        FROM RIF&year..BENEFICIARY_SUMMARY
+        FROM MBSF.MBSF_ABCD_&year
         WHERE BENE_SMI_CVRAGE_TOT_MONS = 12  /* Full year Part B */
           AND BENE_HMO_CVRAGE_TOT_MONS = 0;  /* No HMO (FFS only) */
     QUIT;
@@ -50,6 +50,7 @@
 %read_all_bene;
 
 /* Stack all years */
+%MACRO stack_bene;
 DATA WORK.Bene_All;
     SET
     %DO yr = &year_start %TO &year_end;
@@ -57,6 +58,8 @@ DATA WORK.Bene_All;
     %END;
     ;
 RUN;
+%MEND stack_bene;
+%stack_bene;
 
 
 /* ============================================================ */

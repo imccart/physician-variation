@@ -82,6 +82,7 @@
 /* ============================================================ */
 
 /* Stack across years */
+%MACRO stack_nstemi;
 DATA WORK.NSTEMI_All;
     SET
     %DO yr = &year_start %TO &year_end;
@@ -90,6 +91,8 @@ DATA WORK.NSTEMI_All;
     ;
     AMI_Year = YEAR(CLM_ADMSN_DT);
 RUN;
+%MEND stack_nstemi;
+%stack_nstemi;
 
 /* New episode = first NSTEMI admission per beneficiary in data  */
 /* Sort by bene and admit date, keep first */
@@ -155,21 +158,6 @@ PROC SQL;
 QUIT;
 
 /* Pivot to wide: one row per bene, one 0/1 column per category  */
-/* DxFlagged already has distinct bene x comorbidity pairs.      */
-/* All 31 Elixhauser categories from the lookup file             */
-DATA PL027710.NSTEMI_Comorbidities;
-    SET WORK.ComorbidPivot;
-    ARRAY chars{*} D_:;
-    DO i = 1 TO DIM(chars);
-        IF chars{i} NE '' THEN chars{i} = '1';
-    END;
-    /* Rename D_ prefixed vars and convert to numeric */
-    DROP i;
-RUN;
-
-/* Cleaner approach: just keep bene + comorbidity pairs and pivot */
-/* The TRANSPOSE output already has 0/1 structure from the ID stmt */
-/* But we need numeric flags, not character. Rebuild from ComorbidWide. */
 PROC SQL;
     CREATE TABLE PL027710.NSTEMI_Comorbidities AS
     SELECT

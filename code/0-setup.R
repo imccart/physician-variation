@@ -9,3 +9,7 @@ source("renv/activate.R")
 
 # Packages ----------------------------------------------------------------
 library(tidyverse)
+library(fixest)
+library(splines)
+library(modelsummary)
+library(kableExtra)

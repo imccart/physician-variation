@@ -86,18 +86,17 @@ TITLE;
             SELECT
                 a.BENE_ID,
                 a.PRF_PHYSN_NPI,
-                a.CLM_FROM_DT,
                 a.CLM_THRU_DT,
                 a.HCPCS_CD,
                 b.AMI_Admsn_Dt,
-                a.CLM_FROM_DT - b.AMI_Admsn_Dt AS Days_From_AMI
+                a.CLM_THRU_DT - b.AMI_Admsn_Dt AS Days_From_AMI
             FROM RIF&year..BCARRIER_LINE_%SYSFUNC(PUTN(&m, Z2.)) AS a
             INNER JOIN PL027710.NSTEMI_Benes AS b
                 ON a.BENE_ID = b.BENE_ID
             INNER JOIN WORK.Cardiologist_NPIs AS c
                 ON a.PRF_PHYSN_NPI = c.NPI
-            WHERE a.CLM_FROM_DT >= b.AMI_Admsn_Dt
-              AND a.CLM_FROM_DT - b.AMI_Admsn_Dt <= 90
+            WHERE a.CLM_THRU_DT >= b.AMI_Admsn_Dt
+              AND a.CLM_THRU_DT - b.AMI_Admsn_Dt <= 90
               AND a.PRF_PHYSN_NPI NE ''
               AND a.PRF_PHYSN_NPI NE '0000000000';
         QUIT;
@@ -127,6 +126,7 @@ TITLE;
 %extract_all_cardio_carrier;
 
 /* Stack all years */
+%MACRO stack_cardcarrier;
 DATA WORK.CardCarrier_All;
     SET
     %DO yr = &year_start %TO &year_end;
@@ -134,6 +134,8 @@ DATA WORK.CardCarrier_All;
     %END;
     ;
 RUN;
+%MEND stack_cardcarrier;
+%stack_cardcarrier;
 
 
 /* ============================================================ */
@@ -155,7 +157,7 @@ RUN;
 
 /* First, keep earliest claim per cardiologist per episode */
 PROC SORT DATA=WORK.CardCarrier_Flagged;
-    BY BENE_ID PRF_PHYSN_NPI CLM_FROM_DT;
+    BY BENE_ID PRF_PHYSN_NPI CLM_THRU_DT;
 RUN;
 
 DATA WORK.CardCarrier_First;
@@ -164,70 +166,58 @@ DATA WORK.CardCarrier_First;
     IF FIRST.PRF_PHYSN_NPI;
 RUN;
 
-/* Now pick the "gatekeeper" cardiologist per episode:            */
-/* Priority: consult (earliest) > care (earliest) > any (earliest) */
+/* Build each tier separately, then combine with COALESCE.       */
+/* Tier 1: earliest consulting cardiologist per episode          */
+PROC SORT DATA=WORK.CardCarrier_First OUT=WORK.Consult_Sort;
+    WHERE D_Consult = 1;
+    BY BENE_ID CLM_THRU_DT;
+RUN;
+DATA WORK.First_Consult (KEEP = BENE_ID NPI_First_Consult);
+    SET WORK.Consult_Sort;
+    BY BENE_ID;
+    IF FIRST.BENE_ID;
+    RENAME PRF_PHYSN_NPI = NPI_First_Consult;
+RUN;
+
+/* Tier 2: earliest care cardiologist per episode                */
+PROC SORT DATA=WORK.CardCarrier_First OUT=WORK.Care_Sort;
+    WHERE D_Care = 1;
+    BY BENE_ID CLM_THRU_DT;
+RUN;
+DATA WORK.First_Care (KEEP = BENE_ID NPI_First_Care);
+    SET WORK.Care_Sort;
+    BY BENE_ID;
+    IF FIRST.BENE_ID;
+    RENAME PRF_PHYSN_NPI = NPI_First_Care;
+RUN;
+
+/* Tier 3: earliest seen cardiologist (any claim)                */
+PROC SORT DATA=WORK.CardCarrier_First OUT=WORK.Seen_Sort;
+    BY BENE_ID CLM_THRU_DT;
+RUN;
+DATA WORK.First_Seen (KEEP = BENE_ID NPI_First_Seen);
+    SET WORK.Seen_Sort;
+    BY BENE_ID;
+    IF FIRST.BENE_ID;
+    RENAME PRF_PHYSN_NPI = NPI_First_Seen;
+RUN;
+
+/* Combine: consult > care > first seen                          */
 PROC SQL;
     CREATE TABLE PL027710.NSTEMI_Cardiologist AS
     SELECT
-        BENE_ID,
-        /* First consulting cardiologist */
-        (SELECT PRF_PHYSN_NPI FROM WORK.CardCarrier_First AS x
-         WHERE x.BENE_ID = a.BENE_ID AND x.D_Consult = 1
-         ORDER BY CLM_FROM_DT
-         FETCH FIRST 1 ROW ONLY) AS NPI_First_Consult,
-        /* First care cardiologist */
-        (SELECT PRF_PHYSN_NPI FROM WORK.CardCarrier_First AS x
-         WHERE x.BENE_ID = a.BENE_ID AND x.D_Care = 1
-         ORDER BY CLM_FROM_DT
-         FETCH FIRST 1 ROW ONLY) AS NPI_First_Care,
-        /* Gatekeeper: consult > care > first seen */
-        COALESCE(CALCULATED NPI_First_Consult,
-                 CALCULATED NPI_First_Care,
-                 MIN(PRF_PHYSN_NPI)) AS NPI_Gatekeeper
-    FROM WORK.CardCarrier_First AS a
-    GROUP BY BENE_ID;
+        s.BENE_ID,
+        c.NPI_First_Consult,
+        k.NPI_First_Care,
+        COALESCE(c.NPI_First_Consult,
+                 k.NPI_First_Care,
+                 s.NPI_First_Seen) AS NPI_Gatekeeper
+    FROM WORK.First_Seen AS s
+    LEFT JOIN WORK.First_Consult AS c
+        ON s.BENE_ID = c.BENE_ID
+    LEFT JOIN WORK.First_Care AS k
+        ON s.BENE_ID = k.BENE_ID;
 QUIT;
-
-/* NOTE: The COALESCE fallback for gatekeeper when neither        */
-/* consult nor care is flagged uses MIN(NPI) — this is arbitrary. */
-/* A better fallback is the earliest-seen cardiologist:           */
-
-/* Overwrite with proper fallback */
-PROC SQL;
-    CREATE TABLE WORK.FirstSeen AS
-    SELECT BENE_ID,
-           PRF_PHYSN_NPI AS NPI_First_Seen
-    FROM WORK.CardCarrier_First
-    GROUP BY BENE_ID
-    HAVING CLM_FROM_DT = MIN(CLM_FROM_DT);
-QUIT;
-
-/* Deduplicate ties (keep one) */
-PROC SORT DATA=WORK.FirstSeen NODUPKEY;
-    BY BENE_ID;
-RUN;
-
-PROC SQL;
-    CREATE TABLE WORK.Gatekeeper_Final AS
-    SELECT
-        a.BENE_ID,
-        a.NPI_First_Consult,
-        a.NPI_First_Care,
-        COALESCE(a.NPI_First_Consult,
-                 a.NPI_First_Care,
-                 b.NPI_First_Seen) AS NPI_Gatekeeper
-    FROM PL027710.NSTEMI_Cardiologist AS a
-    LEFT JOIN WORK.FirstSeen AS b
-        ON a.BENE_ID = b.BENE_ID;
-QUIT;
-
-/* Replace the permanent table */
-PROC SQL;
-    DROP TABLE PL027710.NSTEMI_Cardiologist;
-QUIT;
-DATA PL027710.NSTEMI_Cardiologist;
-    SET WORK.Gatekeeper_Final;
-RUN;
 
 
 /* ============================================================ */
@@ -257,8 +247,12 @@ TITLE;
     PROC DELETE DATA=WORK.CardCarrier_All; RUN;
     PROC DELETE DATA=WORK.CardCarrier_Flagged; RUN;
     PROC DELETE DATA=WORK.CardCarrier_First; RUN;
-    PROC DELETE DATA=WORK.FirstSeen; RUN;
-    PROC DELETE DATA=WORK.Gatekeeper_Final; RUN;
+    PROC DELETE DATA=WORK.Consult_Sort; RUN;
+    PROC DELETE DATA=WORK.Care_Sort; RUN;
+    PROC DELETE DATA=WORK.Seen_Sort; RUN;
+    PROC DELETE DATA=WORK.First_Consult; RUN;
+    PROC DELETE DATA=WORK.First_Care; RUN;
+    PROC DELETE DATA=WORK.First_Seen; RUN;
     PROC DELETE DATA=WORK.Cardiologist_NPIs; RUN;
 %MEND cleanup_carrier;
 %cleanup_carrier;

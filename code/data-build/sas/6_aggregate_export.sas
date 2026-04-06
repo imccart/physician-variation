@@ -120,18 +120,35 @@ QUIT;
 
 
 /* ============================================================ */
-/* Step 6c: Apply minimum volume filter                          */
+/* Step 6c: Save full panel (internal use)                       */
 /* ============================================================ */
 
 DATA PL027710.Cardiologist_Year;
     SET WORK.CardioYear_Raw;
-    WHERE N_NSTEMI >= &min_patients;
-    /* Compute cath rates */
     Rate_Cath_D2 = N_Cath_D2 / N_NSTEMI;
 RUN;
 
-/* Diagnostic: how many cardiologist-years survive the filter? */
-TITLE "Cardiologist-year panel after volume filter (>= &min_patients patients)";
+/* ============================================================ */
+/* Step 6d: Export version with minimum volume filter             */
+/* ============================================================ */
+
+DATA PL027710.Cardiologist_Year_Export (KEEP = NPI Year N_NSTEMI Mean_Resid_Cath);
+    SET PL027710.Cardiologist_Year;
+    WHERE N_NSTEMI >= &min_patients;
+RUN;
+
+/* Diagnostic: volume filter impact */
+TITLE "Volume filter impact";
+PROC SQL;
+    SELECT a.N_Before, b.N_After, a.Cardio_Before, b.Cardio_After
+    FROM (SELECT COUNT(*) AS N_Before, COUNT(DISTINCT NPI) AS Cardio_Before
+          FROM PL027710.Cardiologist_Year) AS a,
+         (SELECT COUNT(*) AS N_After, COUNT(DISTINCT NPI) AS Cardio_After
+          FROM PL027710.Cardiologist_Year_Export) AS b;
+QUIT;
+TITLE;
+
+TITLE "Export panel summary";
 PROC SQL;
     SELECT
         COUNT(*) AS N_CardioYears,
@@ -139,39 +156,28 @@ PROC SQL;
         MIN(Year) AS Min_Year,
         MAX(Year) AS Max_Year,
         MEAN(N_NSTEMI) AS Mean_Volume FORMAT=5.1,
-        MEAN(Rate_Cath_D2) AS Mean_Cath_Rate FORMAT=PERCENT8.1,
         MEAN(Mean_Resid_Cath) AS Mean_Resid FORMAT=6.4
-    FROM PL027710.Cardiologist_Year;
+    FROM PL027710.Cardiologist_Year_Export;
 QUIT;
 TITLE;
 
-TITLE "Volume filter impact";
-PROC SQL;
-    SELECT
-        (SELECT COUNT(*) FROM WORK.CardioYear_Raw) AS N_Before,
-        (SELECT COUNT(*) FROM PL027710.Cardiologist_Year) AS N_After,
-        (SELECT COUNT(DISTINCT NPI) FROM WORK.CardioYear_Raw) AS Cardio_Before,
-        (SELECT COUNT(DISTINCT NPI) FROM PL027710.Cardiologist_Year) AS Cardio_After;
-QUIT;
-TITLE;
-
-TITLE "Panel by year";
+TITLE "Export panel by year";
 PROC SQL;
     SELECT Year,
            COUNT(*) AS N_CardioYears,
            COUNT(DISTINCT NPI) AS N_Cardiologists,
            MEAN(N_NSTEMI) AS Mean_Volume FORMAT=5.1,
-           MEAN(Rate_Cath_D2) AS Mean_Cath_Rate FORMAT=PERCENT8.1
-    FROM PL027710.Cardiologist_Year
+           MEAN(Mean_Resid_Cath) AS Mean_Resid FORMAT=6.4
+    FROM PL027710.Cardiologist_Year_Export
     GROUP BY Year
     ORDER BY Year;
 QUIT;
 TITLE;
 
 
-/* NOTE: Export is done manually via SAS EG within the VRDC.     */
-/* Review diagnostics above before exporting. The volume filter  */
-/* (>= min_patients) should satisfy CMS cell size requirements.  */
+/* NOTE: Export Cardiologist_Year_Export manually via SAS EG.     */
+/* Cardiologist_Year (unfiltered) stays in the VRDC for internal  */
+/* analysis that doesn't require export.                          */
 
 
 /* ============================================================ */

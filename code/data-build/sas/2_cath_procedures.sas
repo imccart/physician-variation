@@ -75,6 +75,7 @@
 
 
 /* Stack all years */
+%MACRO stack_procs;
 DATA WORK.Procs_All;
     SET
     %DO yr = &year_start %TO &year_end;
@@ -82,6 +83,8 @@ DATA WORK.Procs_All;
     %END;
     ;
 RUN;
+%MEND stack_procs;
+%stack_procs;
 
 
 /* ============================================================ */
