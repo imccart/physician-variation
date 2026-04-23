@@ -10,18 +10,21 @@ source("code/0-setup.R")
 
 # 1. Load data ------------------------------------------------------------
 
-analysis <- read_csv("data/analysis-panel.csv", show_col_types = FALSE)
+analysis <- read_csv("data/output/analysis_panel.csv",
+                     col_types = cols(npi = col_character(),
+                                      year = col_integer(),
+                                      .default = col_guess()))
 
 
 # 2. Flag movers ----------------------------------------------------------
 
 analysis <- analysis %>%
-  mutate(mover = as.integer(!is.na(hrr_med_school) & !is.na(hrr) &
-                            hrr_med_school != hrr))
+  mutate(mover = as.integer(!is.na(hrr_med_school) & !is.na(hrr_practice) &
+                            hrr_med_school != hrr_practice))
 
 cat("Mover status:\n")
 analysis %>%
-  filter(!is.na(hrr_med_school), !is.na(hrr)) %>%
+  filter(!is.na(hrr_med_school), !is.na(hrr_practice)) %>%
   count(mover) %>%
   mutate(pct = n / sum(n)) %>%
   print()
@@ -46,4 +49,4 @@ analysis %>%
 
 # 4. Save ----------------------------------------------------------------
 
-write_csv(analysis, "data/analysis-panel.csv")
+write_csv(analysis, "data/output/analysis_panel.csv")

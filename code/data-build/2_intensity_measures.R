@@ -12,13 +12,27 @@ source("code/0-setup.R")
 
 # 1. Load data ------------------------------------------------------------
 
-cardio_year <- read_csv("data/cardiologist-year.csv", show_col_types = FALSE)
-physician_panel <- read_csv("data/physician-panel.csv", show_col_types = FALSE)
+# Cardiologist-year VRDC export: NPI, Year, N_NSTEMI, Mean_Resid_Cath
+# Rename at the boundary to clean snake_case for downstream code.
+cardio_year <- read_csv("data/output/CARDIOLOGIST_YEAR_EXPORT.csv",
+                        col_types = cols(NPI = col_character(),
+                                         Year = col_integer(),
+                                         N_NSTEMI = col_integer(),
+                                         Mean_Resid_Cath = col_double())) %>%
+  rename(npi = NPI, year = Year,
+         n_nstemi = N_NSTEMI, mean_resid_cath = Mean_Resid_Cath)
+
+physician_panel <- read_csv("data/output/physician_panel.csv",
+                            col_types = cols(npi = col_character(),
+                                             year = col_integer(),
+                                             .default = col_guess()))
 
 # Merge practice HRR and med school HRR onto cardiologist-year panel
 analysis <- cardio_year %>%
   inner_join(
-    physician_panel %>% select(npi, year, hrr, hrr_med_school, med_school, grad_year, gender),
+    physician_panel %>%
+      select(npi, year, hrr_practice, hrr_med_school, med_school,
+             grad_year, gender),
     by = c("npi", "year")
   )
 
@@ -49,8 +63,8 @@ cat("Intensity range:",
 # For each cardiologist-year, compute the volume-weighted mean residual
 # in their practice HRR excluding themselves
 destination_loo <- analysis %>%
-  filter(!is.na(hrr)) %>%
-  group_by(hrr, year) %>%
+  filter(!is.na(hrr_practice)) %>%
+  group_by(hrr_practice, year) %>%
   mutate(
     hrr_total_resid = sum(mean_resid_cath * n_nstemi),
     hrr_total_n = sum(n_nstemi),
@@ -77,7 +91,7 @@ analysis <- analysis %>%
 
 # 5. Save ----------------------------------------------------------------
 
-write_csv(analysis, "data/analysis-panel.csv")
+write_csv(analysis, "data/output/analysis_panel.csv")
 
 cat("\nFinal panel:", nrow(analysis), "cardiologist-years\n")
 cat("Non-missing med school intensity:", sum(!is.na(analysis$intensity_med_school)), "\n")

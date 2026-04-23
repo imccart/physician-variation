@@ -11,55 +11,81 @@ source("code/0-setup.R")
 
 # 1. MDPPAS: practice location -------------------------------------------
 
-# Read MDPPAS for 2009-2017 (covers 2008-2018 with fallbacks)
-mdppas_files <- list.files("data/mdppas", pattern = "\\.csv$", full.names = TRUE)
-mdppas <- map_dfr(mdppas_files, read_csv, show_col_types = FALSE)
+# MDPPAS columns of interest:
+#   npi, Year               identifiers
+#   spec_prim_1_name        fine-grained specialty string
+#   phy_zip_perf1           primary practice ZIP (ranked by allowed $)
+#
+# Restrict to the analysis sample: cardiologists in CARDIOLOGIST_YEAR_EXPORT
+# (NSTEMI volume >= 11). These are the physicians who enter the mover design.
+sample_npis <- read_csv("data/output/CARDIOLOGIST_YEAR_EXPORT.csv",
+                        col_types = cols(NPI = col_character(),
+                                         .default = col_guess())) %>%
+  pull(NPI) %>%
+  unique()
 
-# Keep cardiologists, select relevant columns
 cardio_specialties <- c("Cardiology", "Interventional Cardiology",
                         "Clinical Cardiac Electrophysiology",
                         "Advanced Heart Failure and Transplant Cardiology")
 
-mdppas <- mdppas %>%
-  filter(spec_broad %in% cardio_specialties | spec_prim_1_name %in% cardio_specialties) %>%
-  select(npi, year, zip5 = phy_zip5, state = phy_st)
+mdppas_files <- list.files("data/input/mdppas", pattern = "\\.csv$",
+                           full.names = TRUE)
+
+read_mdppas <- function(f) {
+  read_csv(f,
+           col_select = c("npi", "Year", "spec_prim_1_name", "phy_zip_perf1"),
+           col_types  = cols(npi = col_character(),
+                             Year = col_integer(),
+                             spec_prim_1_name = col_character(),
+                             phy_zip_perf1 = col_character()),
+           show_col_types = FALSE) %>%
+    rename(year = Year, zip5 = phy_zip_perf1)
+}
+
+mdppas <- map_dfr(mdppas_files, read_mdppas) %>%
+  filter(npi %in% sample_npis,
+         spec_prim_1_name %in% cardio_specialties) %>%
+  mutate(zip5 = str_pad(zip5, width = 5, pad = "0")) %>%
+  select(npi, year, zip5)
 
 
 # 2. Zip to HRR crosswalk ------------------------------------------------
 
-zip_hrr <- read_csv("data/crosswalks/zip-hrr-crosswalk.csv", show_col_types = FALSE)
+zip_hrr <- read_csv("data/crosswalks/zip-hrr-crosswalk.csv",
+                    col_types = cols(zip5 = col_character(),
+                                     hrrnum = col_integer(),
+                                     .default = col_character())) %>%
+  select(zip5, hrr_practice = hrrnum)
 
 mdppas <- mdppas %>%
-  left_join(zip_hrr, by = "zip5") %>%
-  select(npi, year, zip5, state, hrr = hrrnum)
+  left_join(zip_hrr, by = "zip5")
 
 cat("MDPPAS cardiologist-years:", nrow(mdppas), "\n")
 cat("Unique NPIs:", n_distinct(mdppas$npi), "\n")
-cat("Missing HRR:", sum(is.na(mdppas$hrr)), "\n")
+cat("Missing practice HRR:", sum(is.na(mdppas$hrr_practice)), "\n")
 
 
-# 3. Physician Compare: med school + graduation year ----------------------
+# 3. Physician Compare: med school + graduation year + gender ------------
 
-phys_compare <- read_csv("data/physician-compare/physician-compare.csv",
-                         show_col_types = FALSE)
-
-phys_compare <- phys_compare %>%
-  select(npi, med_school = med_school_name, grad_year = graduation_year,
-         gender) %>%
-  distinct(npi, .keep_all = TRUE)
+# Built by code/data-build/crosswalks/1_medschool_list.R: one row per
+# cardiologist NPI with modal (med_school, grad_year, gender) across all
+# PC quarterly files 2013 + 2014 Q3-Q4 + 2015-2018.
+phys_compare <- read_csv("data/output/cardiologist_pc.csv",
+                         col_types = cols(npi = col_character(),
+                                          grad_year = col_integer(),
+                                          .default = col_character()))
 
 cat("Physician Compare records:", nrow(phys_compare), "\n")
 
 
 # 4. Med school to HRR crosswalk -----------------------------------------
 
-# Map medical school names to HRR via school location
 med_school_hrr <- read_csv("data/crosswalks/med-school-hrr-crosswalk.csv",
-                           show_col_types = FALSE)
+                           show_col_types = FALSE) %>%
+  select(med_school, hrr_med_school = hrrnum)
 
 phys_compare <- phys_compare %>%
-  left_join(med_school_hrr, by = "med_school") %>%
-  rename(hrr_med_school = hrrnum)
+  left_join(med_school_hrr, by = "med_school")
 
 cat("Med school HRR match rate:",
     mean(!is.na(phys_compare$hrr_med_school)), "\n")
@@ -77,4 +103,4 @@ cat("Missing med school HRR:", mean(is.na(physician_panel$hrr_med_school)), "\n"
 
 # 6. Save ----------------------------------------------------------------
 
-write_csv(physician_panel, "data/physician-panel.csv")
+write_csv(physician_panel, "data/output/physician_panel.csv")

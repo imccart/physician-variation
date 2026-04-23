@@ -9,7 +9,10 @@ source("code/0-setup.R")
 
 # 1. Load data ------------------------------------------------------------
 
-analysis <- read_csv("data/analysis-panel.csv", show_col_types = FALSE)
+analysis <- read_csv("data/output/analysis_panel.csv",
+                     col_types = cols(npi = col_character(),
+                                      year = col_integer(),
+                                      .default = col_guess()))
 
 
 # 2. Summary statistics table ---------------------------------------------
