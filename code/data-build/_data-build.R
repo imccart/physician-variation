@@ -20,6 +20,6 @@ source("code/data-build/crosswalks/2_medschool_hrr.R")
 
 # Main pipeline -----------------------------------------------------------
 
-source("code/data-build/1_physician_chars.R")
+source("code/data-build/1_physicians.R")
 source("code/data-build/2_intensity_measures.R")
 source("code/data-build/3_movers.R")
