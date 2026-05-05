@@ -34,8 +34,11 @@ hrr_pool <- analysis %>%
 
 # 2. HRR shapefile --------------------------------------------------------
 
+# Dartmouth Atlas shapefile ships without a .prj sidecar; geometries are
+# in NAD83 (EPSG:4269). Set the CRS explicitly so coord_sf can reproject.
 hrr_sf <- st_read("data/input/hrr-shapefile/HRR_Bdry.SHP", quiet = TRUE) %>%
-  rename_with(tolower)
+  rename_with(tolower) %>%
+  st_set_crs(4269)
 
 # Drop AK + HI for a contiguous-US map
 hrr_sf <- hrr_sf %>%
