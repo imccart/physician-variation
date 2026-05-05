@@ -1,0 +1,195 @@
+\documentclass[10pt,aspectratio=169]{beamer}
+
+\usetheme[progressbar=frametitle]{metropolis}
+\usefonttheme{professionalfonts} 
+
+\usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage[style=apa]{biblatex}
+\addbibresource{bib/20240513.bib}
+
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+
+\usepackage{hyperref}
+\usepackage{fdsymbol}
+
+\usepackage{xspace}
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+
+\title{Physician Training and Treatment Decisions}
+\subtitle{Draft under revision}
+\author{Shirley Cai}
+\date{October 11, 2024}
+\institute{Emory University}
+% \titlegraphic{\hfill\includegraphics[height=1.5cm]{logo.pdf}}
+
+\usepackage{textpos}
+\addtobeamertemplate{frametitle}{}{%
+\begin{textblock*}{10mm}(.88\textwidth,-.8cm)
+% \includegraphics[height=0.55cm]{EU_hz_rev.png}
+\end{textblock*}}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Physician agency problem}
+    \metroset{block = fill}
+
+    \textbf{Physician treatment decisions encapsulate a principal-agent problem.}
+
+    \vspace{5mm}
+    \begin{itemize}
+            \item Physician considers factors other than the patient's interests, e.g., financial incentives, institutional norms, formal training. 
+            \item[$\to$] The actual treatment chosen may be very different from the patient's optimal treatment. 
+        \end{itemize}
+\end{frame}
+
+\begin{frame}{Physician agency problem}
+    % TODO: Steal a figure or two from Finkelstein et al patient mover literature 
+    % Goal of this is to show that physician agency is happening because there is variation in treatment for literally the same patient 
+\end{frame}
+
+\begin{frame}{Physician agency problem}
+    \metroset{block = fill}
+
+    % TODO: Graphics that show the gap between "optimal" treatment and actual treatment 
+    % Demand-side factors of patient preference, and supply-side factors like payment, institutional environment, and formal training 
+\end{frame}
+
+% TODO: hate this wording. fix it. basically what I want my research to do is because to explain how much of this gap between 
+\begin{frame}{Research question} \label{rq}
+
+    What is the effect of average treatment intensity around a medical school's location on a cardiologist's treatment intensity post-training? 
+        \begin{itemize}
+            \item \textbf{Treatment intensity} is a ratio between number of invasive procedures performed and number of office visits. 
+            % TODO: Redefine treatment intensity. lmfao 
+        \end{itemize}  
+\end{frame}
+
+% TODO: How do I best show this information? this sucks ngl 
+\begin{frame}{Cardiologist training}
+    \begin{enumerate}
+        \item \textbf{Medical school:} Includes 2 years of classroom modules and 2 years of clinical rotations
+
+        \vspace{0.25cm}
+        \item \textbf{Residency:} 3 years of internal medicine training 
+
+        \vspace{0.25cm}
+        \item \textbf{Fellowship:} 2 years of cardiology training, with 1 more year for interventional cardiology 
+    \end{enumerate}
+\end{frame}
+
+% TODO: Change this slide i hate this slide 
+\begin{frame}{Previous literature}
+    \metroset{block = fill}
+    Differences in physician practice styles drive variation in healthcare utilization and expenditures (\cite{cutler_physician_2019}; \cite{badinski_geographic_2023}).
+
+    \vspace{5mm}
+    \begin{block}{But how do these practice styles develop?}
+        \begin{itemize}
+            \item \textbf{Formal training} seems to have some effect on treatment decisions. 
+                \begin{itemize}
+                    \item Physicians who attended lower-ranked medical schools tend to prescribe more opioids compared to those from higher-ranked medical schools (\cite{schnell_addressing_2018}). 
+                    \item Patients randomly assigned to care teams from a higher-ranked residency program incur lower costs (\cite{doyle_returns_2010}). 
+                \end{itemize}
+            \item But \textbf{practice environment} seems to explain more in certain cases. 
+                \begin{itemize}
+                    \item Only 3\% of variation in c-section rates can be attributed to residency program (\cite{epstein_formation_2009}). 
+                    \item Cardiologist practice patterns change immediately after a move (\cite{molitor_evolution_2018}). 
+                \end{itemize}
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+% TODO: Update with new format of what I want, what I have, where I'm going 
+\begin{frame}{Data} 
+    \begin{itemize}
+        \item CMS Medicare Provider Utilization and Payment Data (2013-2022)
+        \item CMS Physician Compare (2015-2023)
+        \item MDPPAS (2013-2018)
+    \end{itemize}
+\end{frame}
+
+% TODO: Add a slide that explains how I'm using the data more + be very, very clear about this 
+
+% TODO: Add case study slides following a certain physicians 
+
+% TODO: Edit empirical strategy slides / this is not causal? 
+\begin{frame}{Empirical strategy}
+    \metroset{block=fill}
+
+    Within physicians practicing in the same HRR, compare utilization rates among...
+        \begin{itemize}
+            \item Those who went to medical school outside of that HRR ("movers") to
+            \item Those who went to medical school inside that HRR ("non-movers").
+        \end{itemize}
+
+    \vspace{5mm}
+    For aggregated patients treated by physician $j$ in year $t$,  
+        \begin{align*}
+            (\text{intensity})_{jt} 
+            &= \beta (1\{\text{mover}\} \times \{\text{intensity in medical school HRR}\})_{j(t-7)} + \{\text{current HRR FEs}\}_j \\
+            &\qquad + \{\text{year FEs}\}_t + \{\text{aggregate patient demographics}\}_{jt} + \epsilon_{jt}.
+        \end{align*}
+    
+\end{frame}
+
+% TODO: Add results. if you have any. add them if you have any 
+
+\begin{frame}{Next steps}
+    
+\end{frame}
+
+\appendix
+
+
+\begin{frame}{Treatment intensity measure} \label{intensity}
+    % TODO!!!! arrrgghh aaAAAAAA AAARHHGHHGHHGHGH     
+
+    \hyperlink{rq}{\beamerbutton{Back}}
+\end{frame}
+
+\begin{frame}{Economic model} \label{model}
+    \metroset{block = fill}
+    \vspace{2.5mm}
+    Consider the physician agency model in \textcite{badinski_geographic_2023}.
+        \begin{itemize}
+            \item Patient $i$ is treated by physician $d$ at location $j$ at time $t$. 
+            \item Patient $i$'s utility from treatment level $y$ is  
+                \begin{equation*}
+                    u_{idt}(y) = a_i y - \frac{1}{2}(y-h_{idt})^2,
+                \end{equation*}
+            where $a_i$ is patient-specific and $h_{idt}$ is patient $i$'s optimal level of care. 
+        \end{itemize}
+\end{frame}
+
+\begin{frame}{Economic model}
+        \begin{itemize}
+            \item The physician's cost of treatment is 
+                \begin{equation*}
+                    c_{idt} = (c_{j(it)} + g_{idt})y, 
+                \end{equation*}
+            where $c_{j}$ includes institutional factors and $g_{idt}$ is marginal cost.
+            \item Physician $d$ chooses treatment $y$ that maximizes their utility.  
+                \begin{equation*}
+                    y_{idt} = \arg\max_y \left\{u_{idt}(y) - c_{idt}(y) - b_d \{\text{cost to patient}\}_{it}\right\}, 
+                \end{equation*}
+            where $b_d$ is physician-specific. 
+        \end{itemize}
+
+    \hyperlink{rq}{\beamerbutton{Back}}
+\end{frame}
+
+\nocite{*}
+
+\begin{frame}[allowframebreaks]{References}
+    \printbibliography[heading=none]
+\end{frame}
+
+\end{document}

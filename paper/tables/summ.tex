@@ -1,0 +1,54 @@
+\newcommand*{\tabindent}{ \hspace{3mm}}
+
+\setlength{\LTpost}{0mm}
+\LTcapwidth=\textwidth
+\begin{ThreePartTable}
+\begin{TableNotes}[para, flushleft]
+    \textit{Notes.} Missing patient characteristics imputed with unconditional mean among sample to retain sample size.
+\end{TableNotes}
+\begin{longtable}{lccccc}
+    \label{tab:summ} \\
+    \caption{Summary statistics} \\
+    \toprule
+    \multicolumn{1}{l}{Variable} & Mean & Std. Dev & Min & Max & N \\ 
+    \midrule\addlinespace[2.5pt]
+    \multicolumn{6}{l}{\textbf{Treatment Intensity}} \\ 
+    \midrule\addlinespace[2.5pt]
+    \tabindent Physician intensity & $0.21$ & $0.45$ & $0$ & $17.977$ & $6,760$ \\ 
+    \tabindent Med school HRR intensity & $0.22$ & $0.031$ & $0.122$ & $0.423$ & $6,760$ \\ 
+    %\tabindent Med school teaching hospital intensity & - & - & - & - & - \\ 
+    \multicolumn{6}{l}{Physician Characteristics} \\ 
+    \midrule\addlinespace[2.5pt]
+    \tabindent Mover & $0.854$ & $0.354$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Female & $0.305$ & $0.46$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Graduation year & $2013.928$ & $1.05$ & $2013$ & $2018$ & $6,760$ \\ 
+    \tabindent Cardiac surgeon & $0.003$ & $0.05$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Colorectal surgeon & $0.002$ & $0.044$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent General surgeon & $0.107$ & $0.309$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Gynecologic oncologist & $0.001$ & $0.027$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Hand surgeon & $0.008$ & $0.089$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Neurosurgeon & $0.011$ & $0.105$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent OBGYN & $0.051$ & $0.22$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Ophthalmologist & $0.37$ & $0.483$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Orthopedic surgeon & $0.201$ & $0.401$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Otolaryngologist (ENT) & $0.114$ & $0.318$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Plastic surgeon & $0.003$ & $0.058$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Surgical oncologist & $0.002$ & $0.042$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Thoracic surgeon & $0.004$ & $0.064$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Urologist & $0.108$ & $0.31$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Vascular surgeon & $0.014$ & $0.117$ & $0$ & $1$ & $6,760$ \\ 
+    \midrule\addlinespace[2.5pt]
+    \multicolumn{6}{l}{Patient Characteristics} \\ 
+    \midrule\addlinespace[2.5pt]
+    \tabindent Average age & $72.921$ & $3.009$ & $43$ & $84$ & $6,760$ \\ 
+    \tabindent Proportion female & $0.568$ & $0.148$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Proportion Black & $0.142$ & $0.087$ & $0$ & $0.887$ & $6,760$ \\ 
+    \tabindent Proportion dual-enrolled & $0.196$ & $0.128$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Average HCC risk score & $1.445$ & $0.728$ & $0.53$ & $11.413$ & $6,760$ \\ 
+    \tabindent Proportion female missing & $0.023$ & $0.15$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Proportion Black missing & $0.625$ & $0.484$ & $0$ & $1$ & $6,760$ \\ 
+    \tabindent Proportion dual-enrolled missing & $0.155$ & $0.362$ & $0$ & $1$ & $6,760$ \\ 
+    \bottomrule
+    \insertTableNotes
+\end{longtable}
+\end{ThreePartTable}

@@ -1,0 +1,68 @@
+\setlength{\LTpost}{0mm}
+\LTcapwidth=\textwidth
+\begin{ThreePartTable}
+\begin{TableNotes}[para, flushleft]
+    \textit{Notes.} Clustered standard errors are based on the physician's current HRR. All models include indicators for missing patient characteristics as well as current HRR fixed effects and year fixed effects. $* p < 0.10, ** p < 0.05, *** p < 0.01$.
+\end{TableNotes}
+\begin{longtable}{lccc}
+    %\centering
+    \label{tab:res-main} \\
+    \caption{Effect of medical school intensity on physician own intensity} \\
+    %\begin{tabular}{lccc}
+        \toprule
+         & (1) & (2) & (3) \\
+         & All surgeons & General surgeons & Specialist surgeons \\
+        \midrule
+        Mover $\times$ med school HRR intensity & -0.017 & 0.134 & -0.018 \\ 
+         & (0.106) & (0.093) & (0.117) \\ 
+        Med school HRR intensity & -0.223 & -0.203 & -0.237 \\ 
+         & (0.278) & (0.222) & (0.313) \\ 
+        Female & -0.071*** & 0.015 & -0.080** \\ 
+         & (0.027) & (0.015) & (0.032) \\ 
+        Graduation year & -0.007 & 0.010 & -0.008 \\ 
+         & (0.009) & (0.009) & (0.010) \\ 
+        Cardiac surgeon & 0.377*** &  & 0.482*** \\ 
+         & (0.099) &  & (0.104) \\ 
+        Colorectal surgeon & 0.002 &  & 0.130 \\ 
+         & (0.060) &  & (0.080) \\ 
+        Gynecologic oncologist & 0.125 &  & 0.277*** \\ 
+         & (0.077) &  & (0.081) \\ 
+        Hand surgeon & -0.099*** &  & 0.027 \\ 
+         & (0.028) &  & (0.039) \\ 
+        Neurosurgeon & 0.047 &  & 0.166*** \\ 
+         & (0.056) &  & (0.063) \\ 
+        OBGYN & -0.012 &  & 0.158** \\ 
+         & (0.037) &  & (0.062) \\ 
+        Ophthalmologist & 0.137*** &  & 0.252*** \\ 
+         & (0.027) &  & (0.073) \\ 
+        Orthopedic surgeon & 0.017 &  & 0.138*** \\ 
+         & (0.037) &  & (0.034) \\ 
+        Otolaryngologist (ENT) & 0.045 &  & 0.163*** \\ 
+         & (0.029) &  & (0.036) \\ 
+        Plastic surgeon & 0.276 &  & 0.394 \\ 
+         & (0.233) &  & (0.240) \\ 
+        Surgical oncologist & 0.094 &  & 0.209** \\ 
+         & (0.085) &  & (0.101) \\ 
+        Thoracic surgeon & 0.214** &  & 0.312*** \\ 
+         & (0.084) &  & (0.077) \\ 
+        Urologist & -0.017 &  & 0.084 \\ 
+         & (0.020) &  & (0.051) \\ 
+        Vascular surgeon & -0.109** &  &  \\ 
+         & (0.052) &  &  \\ 
+        Average beneficiary age & -0.011*** & -0.024*** & -0.003 \\ 
+         & (0.003) & (0.003) & (0.003) \\ 
+        Proportion female & -0.135* & 0.249** & -0.183** \\ 
+         & (0.073) & (0.097) & (0.088) \\ 
+        Proportion Black & -0.137** & 0.046 & -0.140** \\ 
+         & (0.053) & (0.138) & (0.055) \\ 
+        Proportion dual-enrolled & -0.343*** & -0.344*** & -0.286*** \\ 
+         & (0.068) & (0.073) & (0.082) \\ 
+        \midrule
+        Observations & 6760 & 723 & 6037 \\ 
+        $R^2$ & 0.233 & 0.725 & 0.231 \\ 
+        Mean physician intensity & 0.210 & 0.139 & 0.219 \\ 
+        \bottomrule
+        \insertTableNotes
+    %\end{tabular}
+\end{longtable}
+\end{ThreePartTable}

@@ -1,0 +1,78 @@
+% !TeX program = xelatex
+\documentclass[12pt]{article}
+\usepackage[right=1.0in,left=1.0in,top=1.0in,bottom=1.0in]{geometry}
+\usepackage{hyperref}
+\hypersetup{colorlinks, citecolor=blue, filecolor=blue, linkcolor=blue, urlcolor=blue}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[round]{natbib}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{pdflscape}
+\usepackage[labelsep=period]{caption}
+\usepackage{subcaption}
+\usepackage{longtable}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage{environ}
+
+\usepackage{setspace}
+\onehalfspacing
+
+% biblatex -> natbib alias so Shirley's existing \textcite{} calls keep working
+\let\textcite\citet
+
+\graphicspath{{figures/images/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{To Operate or Not to Operate: The Effects of Medical School on Current Treatment Intensity}
+
+\author{Shirley Cai\thanks{Emory University.} \and Ian McCarthy\thanks{Emory University.
+\href{mailto:ian.mccarthy@emory.edu}{ian.mccarthy@emory.edu}}}
+
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\setstretch{1}
+\noindent Despite the potential staggering costs of surgery for the patient, surgeons have considerable discretion in the decision to operate. A more aggressive surgeon may choose to operate in most of their patients, while a less aggressive one may choose non-surgical interventions more frequently, even upon seeing similar clinical presentations. This variation in practice patterns could be the result of habits formed in the foundational stages of a surgeon's medical training. This study examines the influence of medical school on a surgeon's current practice intensity, measured as propensity to operate, by exploiting surgeon migration after medical school. The main estimates show that practice intensity around a surgeon's medical school does not have a statistically significant effect on their practice intensity after graduation. This provides suggestive evidence that in practice, medical school is substantially less influential than what common knowledge assumes.
+\end{abstract}
+
+\clearpage
+
+\section{Introduction}
+\input{sections/intro.tex}
+
+\section{Background}
+\input{sections/background.tex}
+
+\section{Data}
+\input{sections/data.tex}
+
+\section{Empirical Estimation}
+\input{sections/methods.tex}
+
+\section{Results}
+\input{sections/results.tex}
+
+\section{Conclusions}
+\input{sections/conclusions.tex}
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{singlespace}
+\bibliographystyle{aer}
+\bibliography{BibTeX_Library}
+\end{singlespace}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

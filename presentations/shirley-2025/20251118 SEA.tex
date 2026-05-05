@@ -1,0 +1,385 @@
+\documentclass[10pt,aspectratio=169]{beamer}
+
+\usetheme[progressbar=frametitle]{metropolis}
+\usefonttheme{professionalfonts} 
+
+\usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage[style=apa]{biblatex}
+\addbibresource{bib/20251117.bib}
+
+\usepackage{booktabs}
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+\usepackage[scale=2]{ccicons}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,calc,tikzmark}
+\usepackage{graphicx}
+
+\usepackage{animate}
+\usepackage{hyperref}
+\usepackage{fdsymbol}
+\usepackage{multirow}
+\usepackage{longtable}
+
+\usepackage[export]{adjustbox}
+\tikzset{ffgcaption/.style={%
+    anchor=south east,font=\tiny,
+    text=white,fill=black,
+    fill opacity=.5,text opacity=1,inner sep=2pt,
+    text height=1ex,text depth=.25ex}}
+
+% \fullframegraphic 
+% renders a single image fullscreen, with an optional credit/caption in the 
+% lower right corner.
+% Usage: \fullframegraphic[some optional caption]{path/to/image}
+% It does not crop the image, but leads to white borders if image does not match
+% the aspect ratio of the slide. See commands \fullframegraphicw and
+% \fullframegraphich below for cropping alternatives.
+\newcommand{\fullframegraphic}[2][]{%
+\begin{frame}[plain]%
+\begin{tikzpicture}[remember picture,overlay]%
+\node[at=(current page.center)] {%
+\includegraphics[height=\paperheight,width=\paperwidth,keepaspectratio]{#2}%
+};%
+\ifx\relax#1\relax\else%
+\node[at=(current page.south east),ffgcaption] {#1};%
+\fi%
+\end{tikzpicture}%
+\end{frame}%
+}
+
+% \fullframegraphicw: scles image to frame width, cropping excess height.
+% use for images that are "taller" than the frame aspect ratio
+\newcommand{\fullframegraphicw}[2][]{%
+\begin{frame}[plain]%
+\begin{tikzpicture}[remember picture,overlay]%
+\node[at=(current page.center)] {%
+\includegraphics[min height=\paperheight,max width=\paperwidth,keepaspectratio]{#2}%
+};%
+\ifx\relax#1\relax\else%
+\node[at=(current page.south east),ffgcaption] {#1};%
+\fi%
+\end{tikzpicture}%
+\end{frame}%
+}
+
+% \fullframegraphich: scales image to frame height, cropping excess width.
+% use for images that are wider than the frame aspect ratio
+\newcommand{\fullframegraphich}[2][]{%
+\begin{frame}[plain]%
+\begin{tikzpicture}[remember picture,overlay]%
+\node[at=(current page.center)] {%
+\includegraphics[max height=\paperheight,min width=\paperwidth,keepaspectratio]{#2}%
+};%
+\ifx\relax#1\relax\else%
+\node[at=(current page.south east),ffgcaption] {#1};%
+\fi%
+\end{tikzpicture}%
+\end{frame}%
+}
+
+% \fullframegraphics: more customisable version of fullframegraphic, allowing
+% a third argument to insert additional tikz commands for custom overlays.
+% use when tooltips or highlights are required on a large image
+\newcommand{\fullframegraphics}[3][]{%
+\begin{frame}[plain]%
+\begin{tikzpicture}[remember picture,overlay]%
+\node[at=(current page.center)] {%
+\includegraphics[height=\paperheight,width=\paperwidth,keepaspectratio]{#2}%
+};%
+\ifx\relax#1\relax\else%
+\node[at=(current page.south east),ffgcaption] {#1};%
+\fi%
+#3%
+\end{tikzpicture}%
+\end{frame}%
+}
+
+% Custom command that adds journal abbreviation to cite
+\DeclareCiteCommand{\journalcite}
+  {\usebibmacro{prenote}} 
+  {\printnames{labelname} 
+   \setunit{\addcomma\space}
+   \printfield{shortjournal} 
+   \setunit{\addspace} 
+   \printfield{year}}
+  {\multicitedelim} 
+  {\usebibmacro{postnote}} 
+
+% Custom command that adds journal abbreviation to textcite
+\DeclareCiteCommand{\journaltextcite}
+  {\usebibmacro{prenote}}
+  {\printnames{labelname} 
+   (\printfield{shortjournal} 
+   \setunit{\addspace} 
+   \printfield{year})} 
+  {\multicitedelim} 
+  {\usebibmacro{postnote}} 
+
+
+\usepackage{xspace}
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+
+\title{To Operate or Not to Operate}
+\subtitle{The Effects of Medical School on Current Treatment Intensity}
+\author{Shirley Cai}
+\date{November 24, 2025}
+\institute{Emory University\\Department of Economics}
+% \titlegraphic{\hfill\includegraphics[height=1.5cm]{logo.pdf}}
+
+\usepackage{textpos}
+\addtobeamertemplate{frametitle}{}{%
+\begin{textblock*}{10mm}(.88\textwidth,-.8cm)
+%\includegraphics[height=0.55cm]{EU_hz_rev.png}
+\end{textblock*}}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Physician agency problem}
+    \metroset{block = fill}
+    \textbf{Physician treatment decisions encapsulate a principal-agent problem.}
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width=1\linewidth]{image/gap-factors.png}
+    \end{figure}
+
+    $\to$ The actual treatment chosen may be very different from the patient's optimal treatment.
+\end{frame}
+
+\begin{frame}{Surgeon training pipeline}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{image/train-pipe-surg.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Research question} \label{rq}
+    \metroset{block = fill}
+    How does the average treatment intensity around a physician's medical school impact their current practice intensity post-training?
+
+    \vspace{5mm}
+    \begin{block}{Treatment intensity}
+        For a given year, 
+            \begin{equation*}
+                (\text{intensity}) = \frac{\text{number of surgeries}}{\text{number of unique patients}}.
+            \end{equation*}
+        \hyperlink{intensity}{\beamerbutton{Intensity specifics}}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Policy implications}
+    Determining the importance of formal training among supply-side factors informs policy design. 
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{image/gap-supply-side.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Previous literature}
+    \begin{itemize}
+        \item Variation in physician practice style exists despite medical standards
+            \begin{itemize}
+                \item Evidenced by geographic variation \textcolor{gray}{\scriptsize\textcite{finkelstein_sources_2016}}
+                \item Drives differences in healthcare utilization \textcolor{gray}{\scriptsize\textcite{badinski_geographic_2023}, \textcite{cutler_physician_2019}}
+            \end{itemize}
+        
+        \vspace{2.5mm}
+        \item Many factors influence practice style once a physician begins practicing 
+            \begin{itemize}
+                \item Financial incentives \textcolor{gray}{\scriptsize\textcite{clemens_physicians_2014}}
+                \item New research \textcolor{gray}{\scriptsize\textcite{decicca_how_2024}}
+                \item Peers and practice environment \textcolor{gray}{\scriptsize\textcite{epstein_formation_2009}, \textcite{molitor_evolution_2018}}
+            \end{itemize}
+
+        \vspace{2.5mm}
+        \item But there's limited evidence on the impact of formal training
+            \begin{itemize}
+                \item Variance decomposition \textcolor{gray}{\scriptsize\textcite{epstein_formation_2009}}
+                \item Ranking \textcolor{gray}{\scriptsize\textcite{doyle_returns_2010}, \textcite{schnell_addressing_2018}}
+                \item Interaction with racial disparities \textcolor{gray}{\scriptsize\textcite{kissel_role_2025}}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Contribution}
+    Current literature is unable to comment how the knowledge gained in medical school shapes a physician's current practice.
+    \begin{itemize} 
+        \item[$\to$] Create a measure of treatment intensity in medical school market that quantifies the ``standard of care" taught in medical school
+        \item[$\to$] Assess how similarly a surgeon practices compared to their alma mater market
+    \end{itemize}
+
+    
+\end{frame}
+
+\begin{frame}{Data}
+    \begin{enumerate}
+        \item Physician's current treatment intensity 
+            \onslide<2>{
+            \begin{itemize}
+                \item Medicare Part B Public Use Files (2013-2022)
+            \end{itemize}}
+            \vspace{1mm}
+        \item Treatment intensity at physician's medical school 
+            \onslide<2>{
+            \begin{itemize}
+                \item Medicare Part B Public Use Files (2013-2022)
+            \end{itemize}}
+            \vspace{1mm}
+        \item Physician's current practice location 
+            \onslide<2>{
+            \begin{itemize}
+                \item MDPPAS (2013-2018) and Physician Compare (2019-2022)
+            \end{itemize}}
+            \vspace{1mm}
+        \item Physician's medical school and graduation year
+            \onslide<2>{
+            \begin{itemize}
+                \item Physician Compare (2015-2023)
+            \end{itemize}}
+    \end{enumerate} 
+
+\end{frame}
+
+\begin{frame}{HRR treatment intensity in 2013}
+    \vspace{-20mm}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{presentation/image/intensity/surg2013.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{HRR treatment intensity in 2019}
+    \vspace{-20mm}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{presentation/image/intensity/surg2018.png}
+    \end{figure}
+\end{frame}
+
+\fullframegraphic[]{image/case-study-1.png}
+\fullframegraphic[]{image/case-study-3.png}
+
+\begin{frame}{Empirical strategy: Level of intensity}
+    \metroset{block=fill}
+
+    In year $t$, for surgeon $i$ who graduated medical school in year $t_g$,   
+        \begin{align*}
+            intensity_{it} = 
+            &\beta(mover_i \times \textit{med school HRR intensity}_{it_g}) \\
+            &+ \psi\textit{med school HRR intensity}_{it_g} + \theta X_i + \eta M_{it} \\
+            &+ \{\textit{current HRR FEs}\}_i + \{year FEs\}_t + \epsilon_{it},
+        \end{align*}
+    where
+        \begin{itemize}
+            \item $X_i$ includes physician characteristics: gender, graduation year, subspecialty
+            \item $M_{it}$ includes physician's Medicare patient population characteristics: age, race, gender, dual-enrollment, risk score
+        \end{itemize}
+\end{frame}
+
+\begin{frame}{Empirical strategy: Change in intensity}
+    \metroset{block=fill}
+
+    In year $t$, for surgeon $i$ who graduated medical school in year $t_g$,   
+        \begin{align*}
+            intensity_{it} = 
+            &\beta(mover_i \times \textit{change in intensity}_{it,t_g}) \\
+            &+ \psi\textit{med school HRR intensity}_{it_g} + \theta X_i + \eta M_{it} \\
+            &+ \{\textit{current HRR FEs}\}_i + \{year FEs\}_t + \epsilon_{it},
+        \end{align*}
+    where
+        \begin{itemize}
+            \item $\textit{change in intensity}_{it, t_g} = \textit{current HRR intensity}_{it}
+            - \textit{med school HRR intensity}_{it_g}$
+            \item $X_i$ includes physician characteristics: gender, graduation year, subspecialty
+            \item $M_{it}$ includes physician's Medicare patient population characteristics: age, race, gender, dual-enrollment, risk score
+        \end{itemize}
+\end{frame}
+
+\begin{frame}{Threats to validity}
+    \begin{enumerate}
+        \item Differential selection into moving 
+            \begin{itemize}
+                \item[$\to$] Control for observable physician characteristics
+            \end{itemize}
+
+        \vspace{2.5mm}
+        \item Movers only go to markets with intensity similar to their medical school market
+            \begin{itemize}
+                \item[$\to$] Distribution of mover differences between med school and destination markets is more spread out than stayers 
+                \item[$\to$] Within movers, med school intensity and destination intensity is not correlated
+            \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Distribution of move ``distance"}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{presentation/image/diff_dest_med.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Movers do not stay in similarly intense markets}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{presentation/image/dest_med.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Level of medical school intensity has no effect}
+    \vspace{5mm}
+    \input{presentation/tables/res-main-short.tex}
+\end{frame}
+
+\begin{frame}{Difference in intensity shows some effect}
+    \vspace{5mm}
+    \input{presentation/tables/res-delta-short.tex}
+\end{frame}
+
+\begin{frame}{Conclusion}
+    Differential exposure to treatment intensity in a surgeon's medical market does not have an effect on a their current practice. 
+        \begin{itemize}
+            \item Information conveyed about surgery is relatively standard across all medical schools. 
+            \item Medical school establishes a foundational knowledge base, but practical knowledge is developed in postgraduate training. 
+        \end{itemize}
+
+    \vspace{2.5mm}
+    \textbf{Where this is headed}
+        \begin{itemize}
+            \item Less noisy measures of treatment intensity using Medicare claims data 
+            \item Less noisy measure of exposure during medical school using rotation hospital sites 
+            \item Inclusion of residency
+        \end{itemize}
+\end{frame}
+
+\begin{frame}[standout]
+    \Large Thank you! 
+    
+    \vspace{5mm}
+    \small shirley.cai@emory.edu
+\end{frame}
+
+\appendix
+
+\begin{frame}{Treatment intensity measure} \label{intensity}
+    \begin{itemize}
+        \item Based on code description, I categorize all CPT codes billed to a surgeon as surgery, diagnostic procedure, office visit, or ``dependent" service. 
+        \item All pathology and lab codes are assigned as diagnosis. 
+        \item All patient-facing or patient-interaction codes are assigned office visit. 
+        \item Dependent services include procedures that are not stand-alone and often billed together with surgery, e.g. anesthesia. 
+    \end{itemize}
+
+    \hyperlink{rq}{\beamerbutton{Back}}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+    \printbibliography[heading=none]
+\end{frame}
+
+\end{document}
