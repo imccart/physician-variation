@@ -39,14 +39,14 @@ read_mdppas <- function(f) {
                              spec_prim_1_name = col_character(),
                              phy_zip_perf1 = col_character()),
            show_col_types = FALSE) %>%
-    rename(year = Year, zip5 = phy_zip_perf1)
+    rename(year = Year, zip5 = phy_zip_perf1, specialty = spec_prim_1_name)
 }
 
 mdppas <- map_dfr(mdppas_files, read_mdppas) %>%
   filter(npi %in% sample_npis,
-         spec_prim_1_name %in% cardio_specialties) %>%
+         specialty %in% cardio_specialties) %>%
   mutate(zip5 = str_pad(zip5, width = 5, pad = "0")) %>%
-  select(npi, year, zip5)
+  select(npi, year, specialty, zip5)
 
 
 # 2. Zip to HRR crosswalk ------------------------------------------------
@@ -101,6 +101,33 @@ cat("Missing med school:", mean(is.na(physician_panel$med_school)), "\n")
 cat("Missing med school HRR:", mean(is.na(physician_panel$hrr_med_school)), "\n")
 
 
-# 6. Save ----------------------------------------------------------------
+# 6. GME-duration filter -------------------------------------------------
+
+# Drop physician-years where the listed graduation year is implausibly
+# recent given the GME training required for the observed specialty.
+# Cardiology = 3yr internal medicine + 3yr cardiology fellowship = 6yr.
+# Subspecialties tack on additional fellowship time.
+gme_duration <- c(
+  "Cardiology" = 6L,
+  "Interventional Cardiology" = 7L,
+  "Clinical Cardiac Electrophysiology" = 8L,
+  "Advanced Heart Failure and Transplant Cardiology" = 7L
+)
+
+physician_panel <- physician_panel %>%
+  mutate(gme_yrs            = unname(gme_duration[specialty]),
+         min_practice_year  = grad_year + gme_yrs,
+         keep_gme           = is.na(grad_year) | year >= min_practice_year)
+
+cat("GME-filter dropped:",
+    sum(!physician_panel$keep_gme, na.rm = TRUE),
+    "of", nrow(physician_panel), "rows\n")
+
+physician_panel <- physician_panel %>%
+  filter(keep_gme) %>%
+  select(-gme_yrs, -min_practice_year, -keep_gme)
+
+
+# 7. Save ----------------------------------------------------------------
 
 write_csv(physician_panel, "data/output/physician_panel.csv")

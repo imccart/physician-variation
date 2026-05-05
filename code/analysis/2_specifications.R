@@ -161,6 +161,8 @@ body_main <- tribble(
     fmt_se(change_rows[[4]]$se)
 )
 
+mean_y <- weighted.mean(movers$mean_resid_cath, movers$n_nstemi, na.rm = TRUE)
+
 footer_main <- tribble(
   ~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`,
   "Practice HRR FE", "Yes", "Yes", "Yes", "Yes",
@@ -175,7 +177,12 @@ footer_main <- tribble(
     sprintf("%.3f", r2(m1, "r2")),
     sprintf("%.3f", r2(m3, "r2")),
     sprintf("%.3f", r2(m4, "r2")),
-    sprintf("%.3f", r2(m5, "r2"))
+    sprintf("%.3f", r2(m5, "r2")),
+  "Mean cath intensity",
+    sprintf("%.3f", mean_y),
+    sprintf("%.3f", mean_y),
+    sprintf("%.3f", mean_y),
+    sprintf("%.3f", mean_y)
 )
 
 table_main <- bind_rows(body_main, footer_main)
@@ -206,6 +213,8 @@ body_full <- tribble(
     fmt_se(full_rows[[2]]$se)
 )
 
+mean_y_full <- weighted.mean(full$mean_resid_cath, full$n_nstemi, na.rm = TRUE)
+
 footer_full <- tribble(
   ~term, ~`(1)`, ~`(2)`,
   "Practice HRR FE", "Yes", "Yes",
@@ -215,7 +224,10 @@ footer_full <- tribble(
     format(nobs(m6), big.mark = ","),
   "$R^2$",
     sprintf("%.3f", r2(m1, "r2")),
-    sprintf("%.3f", r2(m6, "r2"))
+    sprintf("%.3f", r2(m6, "r2")),
+  "Mean cath intensity",
+    sprintf("%.3f", mean_y),
+    sprintf("%.3f", mean_y_full)
 )
 
 table_full <- bind_rows(body_full, footer_full)
@@ -230,3 +242,67 @@ kable(table_full,
   row_spec(2, extra_latex_after = "\\addlinespace") %>%
   row_spec(4, extra_latex_after = "\\midrule") %>%
   save_kable("results/tables/movers-vs-full.tex")
+
+
+# 8. Spline plot: predicted intensity by med school HRR intensity --------
+
+# Refit the spline on the full sample with mover x spline interaction so
+# we can show separate predicted curves for movers vs stayers, anchored on
+# the analysis-panel covariate distribution.
+spline_df <- 4
+basis_train <- ns(full$intensity_med_school, df = spline_df)
+sc_full <- as_tibble(basis_train, .name_repair = ~ paste0("sc", seq_along(.x)))
+
+full_sp <- bind_cols(full, sc_full)
+
+sp_terms <- c(paste0("sc", 1:spline_df),
+              paste0("sc", 1:spline_df, ":mover"))
+sp_fml <- as.formula(
+  paste("mean_resid_cath ~",
+        paste(sp_terms, collapse = " + "),
+        "| hrr_practice + year")
+)
+m_sp <- feols(sp_fml,
+              data = full_sp, weights = ~n_nstemi,
+              cluster = ~hrr_med_school)
+
+# Predicted intensity for movers (a=1) and stayers (a=0) over the
+# observed support of med school HRR intensity.
+x_grid <- seq(min(full$intensity_med_school, na.rm = TRUE),
+              max(full$intensity_med_school, na.rm = TRUE),
+              length.out = 200)
+basis_grid <- predict(basis_train, newx = x_grid)
+colnames(basis_grid) <- paste0("sc", 1:spline_df)
+
+predict_curve <- function(a) {
+  X <- cbind(basis_grid, basis_grid * a)
+  colnames(X) <- c(paste0("sc", 1:spline_df),
+                   paste0("sc", 1:spline_df, ":mover"))
+  beta <- coef(m_sp)[colnames(X)]
+  V    <- vcov(m_sp)[colnames(X), colnames(X)]
+  fit  <- as.vector(X %*% beta)
+  se   <- sqrt(rowSums((X %*% V) * X))
+  tibble(intensity_med_school = x_grid,
+         fit = fit,
+         lower = fit - 1.96 * se,
+         upper = fit + 1.96 * se,
+         group = if (a == 1) "Mover" else "Stayer")
+}
+
+curves <- bind_rows(predict_curve(0), predict_curve(1))
+
+p_spline <- ggplot(curves,
+                   aes(x = intensity_med_school, y = fit,
+                       color = group, fill = group, linetype = group)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = c("Mover" = "#82A6B1", "Stayer" = "#DC851F")) +
+  scale_fill_manual( values = c("Mover" = "#82A6B1", "Stayer" = "#DC851F")) +
+  scale_linetype_manual(values = c("Mover" = "solid", "Stayer" = "dotted")) +
+  labs(x = "Med school HRR intensity",
+       y = "Predicted residualized cath rate",
+       color = NULL, fill = NULL, linetype = NULL) +
+  theme_minimal()
+
+ggsave("results/figures/spline-pred.png", p_spline,
+       width = 6, height = 4, dpi = 200)
