@@ -4,9 +4,6 @@
 ## Date Created:  2026-04-06
 ## Description:   Descriptive statistics and figures for mover design.
 
-source("code/0-setup.R")
-
-
 # 1. Load data ------------------------------------------------------------
 
 analysis <- read_csv("data/output/analysis_panel.csv",

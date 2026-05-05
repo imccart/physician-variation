@@ -10,12 +10,6 @@
 ##                  (4) Delta-intensity quartiles (heterogeneity)
 ##                  (5) Pos vs neg delta (asymmetry)
 
-source("code/0-setup.R")
-library(fixest)
-library(broom)
-library(kableExtra)
-
-
 # 1. Load data ------------------------------------------------------------
 
 analysis <- read_csv("data/output/analysis_panel.csv",

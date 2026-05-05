@@ -11,9 +11,6 @@
 ##                Input:  data/input/zip-hrr/ZipHsaHrr15.xls
 ##                Output: data/crosswalks/zip-hrr-crosswalk.csv
 
-source("code/0-setup.R")
-
-
 # 1. Read and clean -------------------------------------------------------
 
 zip_hrr <- read_excel("data/input/zip-hrr/ZipHsaHrr15.xls") %>%

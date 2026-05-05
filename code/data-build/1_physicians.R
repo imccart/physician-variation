@@ -6,9 +6,6 @@
 ##                Outputs physician-level file with practice HRR, med school,
 ##                graduation year, and mover status.
 
-source("code/0-setup.R")
-
-
 # 1. MDPPAS: practice location -------------------------------------------
 
 # MDPPAS columns of interest:

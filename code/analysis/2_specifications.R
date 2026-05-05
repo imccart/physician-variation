@@ -7,13 +7,6 @@
 ##                (2) Semi-parametric with cubic spline
 ##                (3) Change in intensity (destination LOO - med school)
 
-source("code/0-setup.R")
-library(fixest)
-library(splines)
-library(broom)
-library(kableExtra)
-
-
 # 1. Load data ------------------------------------------------------------
 
 analysis <- read_csv("data/output/analysis_panel.csv",

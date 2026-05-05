@@ -5,9 +5,6 @@
 ## Description:   Identify movers (med school HRR != practice HRR) and
 ##                flag mover status on the analysis panel.
 
-source("code/0-setup.R")
-
-
 # 1. Load data ------------------------------------------------------------
 
 analysis <- read_csv("data/output/analysis_panel.csv",

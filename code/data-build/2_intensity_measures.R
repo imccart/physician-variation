@@ -7,9 +7,6 @@
 ##                (2) destination HRR leave-one-out mean, (3) change
 ##                (destination LOO minus med school).
 
-source("code/0-setup.R")
-
-
 # 1. Load data ------------------------------------------------------------
 
 # Cardiologist-year VRDC export: NPI, Year, N_NSTEMI, Mean_Resid_Cath

@@ -2,13 +2,15 @@
 
 ## Author:        Ian McCarthy
 ## Date Created:  2026-04-23
-## Description:   Driver for the full data-build pipeline. Sources setup and
-##                runs crosswalks + main scripts in dependency order.
+## Description:   Driver for the full data-build pipeline. Loads packages
+##                and runs crosswalks + main scripts in dependency order.
+##                Sub-scripts inherit the prepared session.
 ##
 ##                Run from project root:
 ##                  Rscript code/data-build/_data-build.R
 
-source("code/0-setup.R")
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, readxl)
 
 
 # Crosswalks --------------------------------------------------------------

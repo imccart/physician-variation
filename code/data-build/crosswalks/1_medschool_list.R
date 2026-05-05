@@ -13,9 +13,6 @@
 ##                  data/output/cardiologist_pc.csv     (NPI -> med_school, grad_year, gender)
 ##                  data/output/medschool_list.csv      (med_school -> count)
 
-source("code/0-setup.R")
-
-
 # 1. Load cardiologist NPI sample ----------------------------------------
 
 cardio_npis <- read_csv("data/output/CARDIOLOGIST_YEAR_EXPORT.csv",

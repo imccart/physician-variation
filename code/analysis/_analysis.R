@@ -2,22 +2,17 @@
 
 ## Author:        Ian McCarthy
 ## Date Created:  2026-04-23
-## Description:   Driver for the analysis pipeline. Sources setup + analysis
-##                packages, then runs descriptive and specification scripts
-##                in order.
+## Description:   Driver for the analysis pipeline. Loads packages and runs
+##                descriptive, specifications, robustness, and map scripts.
+##                Sub-scripts inherit the prepared session.
 ##
-##                Assumes data-build has been run (analysis_panel.csv exists)
-##                and renv has fixest / kableExtra / broom installed.
+##                Assumes data-build has been run (analysis_panel.csv exists).
 ##
 ##                Run from project root:
 ##                  Rscript code/analysis/_analysis.R
 
-source("code/0-setup.R")
-library(fixest)
-library(splines)
-library(broom)
-library(kableExtra)
-library(sf)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, readxl, fixest, splines, broom, kableExtra, sf)
 
 
 # Analysis scripts --------------------------------------------------------

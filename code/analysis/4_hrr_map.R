@@ -6,10 +6,6 @@
 ##                Adapted from Shirley's (interactive leaflet) hrr_map.R.
 ##                Output: results/figures/hrr-cath-intensity.png
 
-source("code/0-setup.R")
-library(sf)
-
-
 # 1. Load data ------------------------------------------------------------
 
 analysis <- read_csv("data/output/analysis_panel.csv",

@@ -18,9 +18,6 @@
 ##                Output:
 ##                  data/crosswalks/med-school-hrr-crosswalk.csv
 
-source("code/0-setup.R")
-
-
 # 1. Load inputs ----------------------------------------------------------
 
 xw <- read_csv("data/input/med-school-xw.csv",
