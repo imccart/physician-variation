@@ -1,0 +1,12 @@
+Variable,Movers,Stayers,Diff,p-value
+Graduation year,1989.4,1990.0,-0.6,0.003
+Female (\%),7.5,7.9,-0.3,0.530
+General Cardiology (\%),74.1,76.8,-2.7,0.002
+Interventional Cardiology (\%),21.1,19.3,1.8,0.035
+Electrophysiology (\%),4.2,3.1,1.1,0.006
+Adv.\ Heart Failure (\%),0.6,0.8,-0.1,0.474
+Med school HRR intensity,0.022,0.036,-0.013,0.000
+Years in panel,3.2,3.3,-0.1,0.087
+Mean NSTEMI volume per year,14.2,14.6,-0.4,0.000
+First observation year,2011.5,2011.8,-0.3,0.000
+Cardiologists,"4,121","5,447",,

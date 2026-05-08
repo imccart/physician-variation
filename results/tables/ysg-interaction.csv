@@ -1,0 +1,3 @@
+term,estimate,std_error
+Med school HRR intensity (at mean YSG),0.072,(0.061)
+x (years since grad - mean),-0.001,(0.006)

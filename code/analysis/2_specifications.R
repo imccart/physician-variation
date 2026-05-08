@@ -76,6 +76,45 @@ m5 <- feols(mean_resid_cath ~ intensity_change | hrr_practice + year + grad_year
             cluster = ~hrr_med_school)
 
 
+# 5b. Years-since-graduation interaction ----------------------------------
+
+# Does the imprint of training fade with career stage? If beta on
+# intensity_med_school decays with (year - grad_year), training imprint
+# is gradually washed out by post-residency exposure. If beta is flat,
+# imprint is durable.
+
+movers <- movers %>%
+  mutate(years_since_grad = year - grad_year,
+         years_since_grad_c = years_since_grad - mean(years_since_grad, na.rm = TRUE))
+
+# Continuous interaction (centered so main effect is at mean career stage)
+m_ysg <- feols(mean_resid_cath ~ intensity_med_school * years_since_grad_c |
+                 hrr_practice + year,
+               data = movers, weights = ~n_nstemi,
+               cluster = ~hrr_med_school)
+
+# Discrete career-stage bins (early / mid / late) for a more readable table
+movers <- movers %>%
+  mutate(career_bin = case_when(
+    years_since_grad <= 10 ~ "Early (<=10yr)",
+    years_since_grad <= 20 ~ "Mid (11-20yr)",
+    years_since_grad >  20 ~ "Late (>20yr)",
+    TRUE ~ NA_character_
+  ),
+  career_bin = factor(career_bin,
+                      levels = c("Early (<=10yr)", "Mid (11-20yr)", "Late (>20yr)")))
+
+m_career_lvl <- feols(mean_resid_cath ~ intensity_med_school:career_bin |
+                        hrr_practice + year + career_bin,
+                      data = movers, weights = ~n_nstemi,
+                      cluster = ~hrr_med_school)
+
+m_career_chg <- feols(mean_resid_cath ~ intensity_change:career_bin |
+                        hrr_practice + year + career_bin,
+                      data = movers, weights = ~n_nstemi,
+                      cluster = ~hrr_med_school)
+
+
 # 6. Full sample: stayers + movers ----------------------------------------
 
 full <- analysis %>%
@@ -235,6 +274,86 @@ kable(table_full,
   row_spec(2, extra_latex_after = "\\addlinespace") %>%
   row_spec(4, extra_latex_after = "\\midrule") %>%
   save_kable("results/tables/movers-vs-full.tex")
+
+
+## 7c. Career-stage interaction table ------------------------------
+
+# Pull coefficient on intensity_med_school within each career bin
+career_bins <- c("Early (<=10yr)", "Mid (11-20yr)", "Late (>20yr)")
+
+career_lvl_rows <- map(career_bins, function(b) {
+  term <- paste0("intensity_med_school:career_bin", b)
+  coef_row(m_career_lvl, term)
+})
+career_chg_rows <- map(career_bins, function(b) {
+  term <- paste0("career_bin", b, ":intensity_change")
+  hit <- coef_row(m_career_chg, term)
+  if (is.na(hit$est)) {
+    # try the other interaction order
+    coef_row(m_career_chg, paste0("intensity_change:career_bin", b))
+  } else hit
+})
+
+# Continuous YSG interaction main + interaction
+ysg_main <- coef_row(m_ysg, "intensity_med_school")
+ysg_int  <- coef_row(m_ysg, "intensity_med_school:years_since_grad_c")
+
+body_career <- tribble(
+  ~term, ~`Early`, ~`Mid`, ~`Late`,
+  "Med school HRR intensity",
+    fmt_est(career_lvl_rows[[1]]$est, career_lvl_rows[[1]]$p),
+    fmt_est(career_lvl_rows[[2]]$est, career_lvl_rows[[2]]$p),
+    fmt_est(career_lvl_rows[[3]]$est, career_lvl_rows[[3]]$p),
+  "",
+    fmt_se(career_lvl_rows[[1]]$se),
+    fmt_se(career_lvl_rows[[2]]$se),
+    fmt_se(career_lvl_rows[[3]]$se),
+  "$\\Delta$ intensity",
+    fmt_est(career_chg_rows[[1]]$est, career_chg_rows[[1]]$p),
+    fmt_est(career_chg_rows[[2]]$est, career_chg_rows[[2]]$p),
+    fmt_est(career_chg_rows[[3]]$est, career_chg_rows[[3]]$p),
+  "",
+    fmt_se(career_chg_rows[[1]]$se),
+    fmt_se(career_chg_rows[[2]]$se),
+    fmt_se(career_chg_rows[[3]]$se)
+)
+
+footer_career <- tribble(
+  ~term, ~`Early`, ~`Mid`, ~`Late`,
+  "Practice HRR FE", "Yes", "Yes", "Yes",
+  "Year FE",         "Yes", "Yes", "Yes",
+  "Career stage FE", "Yes", "Yes", "Yes",
+  "Observations",
+    format(sum(movers$career_bin == "Early (<=10yr)", na.rm = TRUE), big.mark = ","),
+    format(sum(movers$career_bin == "Mid (11-20yr)",  na.rm = TRUE), big.mark = ","),
+    format(sum(movers$career_bin == "Late (>20yr)",   na.rm = TRUE), big.mark = ",")
+)
+
+table_career <- bind_rows(body_career, footer_career)
+
+kable(table_career,
+      format    = "latex",
+      booktabs  = TRUE,
+      linesep   = "",
+      escape    = FALSE,
+      align     = c("l", rep("c", 3)),
+      col.names = c("",
+                    "Early ($\\leq$10 yr)",
+                    "Mid (11--20 yr)",
+                    "Late ($>$20 yr)")) %>%
+  row_spec(4, extra_latex_after = "\\addlinespace") %>%
+  row_spec(7, extra_latex_after = "\\midrule") %>%
+  save_kable("results/tables/career-stage.tex")
+
+# Continuous YSG interaction summary (one-line for footnote/text)
+ysg_summary <- tibble(
+  term = c("Med school HRR intensity (at mean YSG)",
+           "x (years since grad - mean)"),
+  estimate = c(fmt_est(ysg_main$est, ysg_main$p),
+               fmt_est(ysg_int$est, ysg_int$p)),
+  std_error = c(fmt_se(ysg_main$se), fmt_se(ysg_int$se))
+)
+write_csv(ysg_summary, "results/tables/ysg-interaction.csv")
 
 
 # 8. Spline plot: predicted intensity by med school HRR intensity --------

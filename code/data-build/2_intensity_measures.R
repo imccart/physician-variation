@@ -29,7 +29,7 @@ analysis <- cardio_year %>%
   inner_join(
     physician_panel %>%
       select(npi, year, hrr_practice, hrr_med_school, med_school,
-             grad_year, gender),
+             grad_year, gender, specialty),
     by = c("npi", "year")
   )
 
@@ -37,22 +37,48 @@ cat("Cardiologist-year rows after merge:", nrow(analysis), "\n")
 cat("Lost in merge:", nrow(cardio_year) - nrow(analysis), "\n")
 
 
-# 2. Med school HRR intensity --------------------------------------------
+# 2. Med school HRR intensity (leave-one-out) ----------------------------
 
-# Mean residualized cath rate among all cardiologists trained at the same
-# medical school HRR (pooled across years)
-med_school_intensity <- analysis %>%
+# Mean residualized cath rate among cardiologists trained at the same
+# medical school HRR, EXCLUDING the focal cardiologist (all years).
+# Built from HRR-level totals minus NPI-level totals so the focal
+# cardiologist's own cath rate doesn't enter their training intensity.
+
+hrr_totals <- analysis %>%
   filter(!is.na(hrr_med_school)) %>%
   group_by(hrr_med_school) %>%
   summarize(
-    intensity_med_school = weighted.mean(mean_resid_cath, n_nstemi),
-    n_cardio_med_school = n_distinct(npi),
+    hrr_total_resid = sum(mean_resid_cath * n_nstemi, na.rm = TRUE),
+    hrr_total_n     = sum(n_nstemi, na.rm = TRUE),
+    hrr_n_cardio    = n_distinct(npi),
     .groups = "drop"
   )
 
-cat("Med school HRRs:", nrow(med_school_intensity), "\n")
-cat("Intensity range:",
-    round(range(med_school_intensity$intensity_med_school), 4), "\n")
+npi_totals <- analysis %>%
+  filter(!is.na(hrr_med_school)) %>%
+  group_by(npi, hrr_med_school) %>%
+  summarize(
+    npi_total_resid = sum(mean_resid_cath * n_nstemi, na.rm = TRUE),
+    npi_total_n     = sum(n_nstemi, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+med_school_intensity_loo <- npi_totals %>%
+  left_join(hrr_totals, by = "hrr_med_school") %>%
+  mutate(
+    intensity_med_school = (hrr_total_resid - npi_total_resid) /
+                           (hrr_total_n     - npi_total_n),
+    n_cardio_med_school  = hrr_n_cardio - 1
+  ) %>%
+  select(npi, hrr_med_school, intensity_med_school, n_cardio_med_school)
+
+cat("Med school HRRs:", nrow(hrr_totals), "\n")
+cat("Per-NPI LOO rows:", nrow(med_school_intensity_loo), "\n")
+cat("LOO range:",
+    round(range(med_school_intensity_loo$intensity_med_school,
+                na.rm = TRUE, finite = TRUE), 4), "\n")
+cat("LOO NaN (solo trainee in HRR):",
+    sum(is.nan(med_school_intensity_loo$intensity_med_school)), "\n")
 
 
 # 3. Destination HRR leave-one-out intensity ------------------------------
@@ -78,7 +104,7 @@ cat("LOO NaN (solo in HRR-year):", sum(is.nan(destination_loo$intensity_dest_loo
 # 4. Combine measures -----------------------------------------------------
 
 analysis <- analysis %>%
-  left_join(med_school_intensity, by = "hrr_med_school") %>%
+  left_join(med_school_intensity_loo, by = c("npi", "hrr_med_school")) %>%
   left_join(destination_loo, by = c("npi", "year"))
 
 # Change in intensity: destination LOO minus med school HRR

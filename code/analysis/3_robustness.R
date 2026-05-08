@@ -72,19 +72,15 @@ r2_del <- feols(mean_resid_cath ~ intensity_change + intensity_med_school | year
                 cluster = ~hrr_med_school)
 
 
-# 4. Spec 3: Scale by destination LOO ------------------------------------
-
-# intensity_scaled = own / destination_loo; med school scaled identically.
-# Drops cardiologist-years where dest LOO is non-positive (rare).
-movers_scaled <- movers %>%
-  filter(intensity_dest_loo > 0) %>%
-  mutate(intensity_scaled            = mean_resid_cath / intensity_dest_loo,
-         intensity_med_school_scaled = intensity_med_school / intensity_dest_loo)
-
-r3 <- feols(intensity_scaled ~ intensity_med_school_scaled |
-              hrr_practice + year,
-            data = movers_scaled, weights = ~n_nstemi,
-            cluster = ~hrr_med_school)
+# 4. (Dropped) "Scaled" spec ---------------------------------------------
+#
+# Shirley's PUF/surgeons pipeline included a spec dividing own intensity by
+# destination intensity (own / dest_loo). That is interpretable when the
+# outcome is a raw cath rate in [0,1]. Our outcome is the residualized cath
+# rate from a patient-level LPM, which is centered near zero and roughly
+# half negative -- the ratio is unstable, the > 0 filter would drop ~half
+# the sample, and the spec doesn't carry a meaningful interpretation in our
+# setting. Spec dropped.
 
 
 # 5. Spec 4: Delta-intensity quartiles -----------------------------------
@@ -176,32 +172,6 @@ kable(table_a,
   row_spec(4, extra_latex_after = "\\addlinespace") %>%
   row_spec(7, extra_latex_after = "\\midrule") %>%
   save_kable("results/tables/robust-fe.tex")
-
-
-## 7b. Spec 3: Scaled intensity ------------------------------------------
-
-sc <- coef_row(r3, "intensity_med_school_scaled")
-
-body_sc <- tribble(
-  ~term, ~`(1)`,
-  "Scaled med school HRR intensity", fmt_est(sc$est, sc$p),
-  "",                                fmt_se(sc$se)
-)
-footer_sc <- tribble(
-  ~term, ~`(1)`,
-  "Practice HRR FE",     "Yes",
-  "Year FE",             "Yes",
-  "Observations",        format(nobs(r3), big.mark = ","),
-  "$R^2$",               sprintf("%.3f", r2(r3, "r2")),
-  "Mean cath intensity", sprintf("%.3f", mean_y)
-)
-kable(bind_rows(body_sc, footer_sc),
-      format = "latex", booktabs = TRUE, linesep = "", escape = FALSE,
-      align = c("l", "c"),
-      col.names = c("", "Scaled (own / dest LOO)")) %>%
-  row_spec(2, extra_latex_after = "\\addlinespace") %>%
-  row_spec(4, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/robust-scaled.tex")
 
 
 ## 7c. Spec 4: Delta-intensity quartiles ---------------------------------
