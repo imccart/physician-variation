@@ -486,94 +486,114 @@ clean2 <- panel %>%
          !is.na(intensity_dest_loo),
          !is.nan(intensity_dest_loo),
          !is.na(mean_resid_cath),
-         grad_year >= 1983, grad_year <= 2006)
+         grad_year >= 1983, grad_year <= 2006) %>%
+  mutate(years_exp = year - grad_year,
+         female    = as.integer(gender == "F"))
 
-# Baseline spec (B): destination + year FE only
-m_base   <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo |
-                    hrr_practice + year,
-                  data = clean2, weights = ~n_nstemi,
-                  cluster = ~hrr_med_school)
+# Physician controls are restricted to fixed cardiologist characteristics
+# (gender, years since graduation). Subspecialty is excluded because it is
+# itself an outcome of the training environment.
 
-# Add origin-HRR FE: training imprint identified within-origin, across
-# cohorts. Destination FE still absorbs current environment.
-m_origin <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo |
-                    hrr_med_school + hrr_practice + year,
-                  data = clean2, weights = ~n_nstemi,
-                  cluster = ~hrr_med_school)
+# For practice-vars sample, also require non-missing practice characteristics.
+clean2_prac <- clean2 %>%
+  filter(!is.na(hospital_based_share),
+         !is.na(log_tin_volume))
 
-# NPI FE: identifies destination effect within-physician (Molitor design).
-# train_cath_lab is collinear with NPI FE, so it drops.
-m_npi    <- feols(mean_resid_cath ~ intensity_dest_loo |
-                    npi + year,
-                  data = clean2, weights = ~n_nstemi,
-                  cluster = ~npi)
+# Panel A: Destination FE only ------------------------------------------
+# (1) baseline
+a1 <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo |
+              hrr_practice + year,
+            data = clean2, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+# (2) + physician characteristics
+a2 <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo +
+              female + years_exp |
+              hrr_practice + year,
+            data = clean2, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+# (3) + practice characteristics
+a3 <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo +
+              female + years_exp +
+              hospital_based_share + log_tin_volume |
+              hrr_practice + year,
+            data = clean2_prac, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
 
-# Both: NPI FE for destination + the training spec (origin FE) for
-# training. We run them separately since training is collinear with NPI.
-cat("\n=== Tightened identification ===\n")
-cat("\n--- (B) Baseline: destination FE + year FE ---\n")
-print(summary(m_base))
-cat("\n--- (A+B) Origin FE + destination FE + year FE ---\n")
-print(summary(m_origin))
-cat("\n--- (C) NPI FE: destination effect within-physician ---\n")
-print(summary(m_npi))
+# Panel B: Origin + Destination FE --------------------------------------
+b1 <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo |
+              hrr_med_school + hrr_practice + year,
+            data = clean2, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+b2 <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo +
+              female + years_exp |
+              hrr_med_school + hrr_practice + year,
+            data = clean2, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+b3 <- feols(mean_resid_cath ~ train_cath_lab + intensity_dest_loo +
+              female + years_exp +
+              hospital_based_share + log_tin_volume |
+              hrr_med_school + hrr_practice + year,
+            data = clean2_prac, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+
+cat("\n=== Training imprint, identification strategies ===\n")
+cat("\n--- Panel A1: destination FE, baseline ---\n");          print(summary(a1))
+cat("\n--- Panel A2: destination FE + physician vars ---\n");   print(summary(a2))
+cat("\n--- Panel A3: destination FE + physician + practice ---\n"); print(summary(a3))
+cat("\n--- Panel B1: origin + destination FE, baseline ---\n"); print(summary(b1))
+cat("\n--- Panel B2: origin + destination FE + physician vars ---\n"); print(summary(b2))
+cat("\n--- Panel B3: origin + destination FE + physician + practice ---\n"); print(summary(b3))
 
 
 # 11. Side-by-side table -------------------------------------------------
 
-trb <- mc_row(m_base,   "train_cath_lab")
-deb <- mc_row(m_base,   "intensity_dest_loo")
-tro <- mc_row(m_origin, "train_cath_lab")
-deo <- mc_row(m_origin, "intensity_dest_loo")
-den <- mc_row(m_npi,    "intensity_dest_loo")
+# Build a 2-panel x 3-column table by hand. Each panel reports
+# Training-HRR cath lab share and Current-HRR cath culture coefficients
+# across the (baseline, + physician vars, + practice vars) progression.
 
-body_id <- tribble(
-  ~term, ~`(1)`, ~`(2)`, ~`(3)`,
-  "Training-HRR cath lab share",
-    fmt_e(trb$est, trb$p),
-    fmt_e(tro$est, tro$p),
-    " (absorbed)",
-  "",
-    fmt_s(trb$se),
-    fmt_s(tro$se),
-    " ",
-  "Current-HRR cath culture (LOO)",
-    fmt_e(deb$est, deb$p),
-    fmt_e(deo$est, deo$p),
-    fmt_e(den$est, den$p),
-  "",
-    fmt_s(deb$se),
-    fmt_s(deo$se),
-    fmt_s(den$se)
+panel_row <- function(models) {
+  tr <- lapply(models, mc_row, term = "train_cath_lab")
+  de <- lapply(models, mc_row, term = "intensity_dest_loo")
+  paste0(
+    "Training-HRR cath lab share & ",
+    paste(sapply(tr, function(x) fmt_e(x$est, x$p)), collapse = " & "), " \\\\\n",
+    " & ",
+    paste(sapply(tr, function(x) fmt_s(x$se)), collapse = " & "), " \\\\\n",
+    "Current-HRR cath culture (LOO) & ",
+    paste(sapply(de, function(x) fmt_e(x$est, x$p)), collapse = " & "), " \\\\\n",
+    " & ",
+    paste(sapply(de, function(x) fmt_s(x$se)), collapse = " & "), " \\\\\n"
+  )
+}
+
+obs_row <- function(models) {
+  paste0("Observations & ",
+         paste(sapply(models, function(m) format(nobs(m), big.mark = ",")),
+               collapse = " & "),
+         " \\\\\n")
+}
+
+models_a <- list(a1, a2, a3)
+models_b <- list(b1, b2, b3)
+
+tbl <- paste0(
+  "\\begin{tabular}{lccc}\n",
+  "\\toprule\n",
+  " & Baseline & + physician vars & + practice vars \\\\\n",
+  "\\midrule\n",
+  "\\multicolumn{4}{l}{\\textit{Panel A. Destination FE}} \\\\\n",
+  panel_row(models_a),
+  obs_row(models_a),
+  "\\midrule\n",
+  "\\multicolumn{4}{l}{\\textit{Panel B. Origin + Destination FE}} \\\\\n",
+  panel_row(models_b),
+  obs_row(models_b),
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
 )
 
-footer_id <- tribble(
-  ~term, ~`(1)`, ~`(2)`, ~`(3)`,
-  "Practice HRR FE",  "Yes", "Yes", "No",
-  "Year FE",          "Yes", "Yes", "Yes",
-  "Med school HRR FE","No",  "Yes", "No",
-  "Physician FE",     "No",  "No",  "Yes",
-  "Observations",
-    format(nobs(m_base),   big.mark = ","),
-    format(nobs(m_origin), big.mark = ","),
-    format(nobs(m_npi),    big.mark = ",")
-)
-
-table_id <- bind_rows(body_id, footer_id)
-kable(table_id,
-      format    = "latex",
-      booktabs  = TRUE,
-      linesep   = "",
-      escape    = FALSE,
-      align     = c("l", rep("c", 3)),
-      col.names = c("",
-                    "Destination FE",
-                    "Origin + Destination FE",
-                    "Physician FE")) %>%
-  row_spec(4, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/aha-tightened-id.tex")
-
-cat("\n=== Wrote results/tables/aha-tightened-id.tex ===\n")
+writeLines(tbl, "results/tables/training-imprint.tex")
+cat("\n=== Wrote results/tables/training-imprint.tex ===\n")
 
 
 # 12. Mechanism: teaching-hospital cath-lab vs all-hospital cath-lab ----
@@ -691,7 +711,7 @@ cat("\n--- Med school x decade FE (training only) ---\n")
 print(summary(m_orig_dec_train))
 
 # Side-by-side with the headline within-origin spec
-hl_train  <- mc_row(m_origin,         "train_cath_lab")
+hl_train  <- mc_row(b1,         "train_cath_lab")
 dec_train <- mc_row(m_orig_dec,       "train_cath_lab")
 dec_only  <- mc_row(m_orig_dec_train, "train_cath_lab")
 
@@ -715,7 +735,7 @@ footer_coh <- tribble(
   "Year FE",                  "Yes", "Yes", "Yes",
   "Current cath culture",     "Yes", "No",  "Yes",
   "Observations",
-    format(nobs(m_origin),         big.mark = ","),
+    format(nobs(b1),         big.mark = ","),
     format(nobs(m_orig_dec_train), big.mark = ","),
     format(nobs(m_orig_dec),       big.mark = ",")
 )

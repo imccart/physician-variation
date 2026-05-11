@@ -30,11 +30,17 @@ mdppas_files <- list.files("data/input/mdppas", pattern = "\\.csv$",
 
 read_mdppas <- function(f) {
   read_csv(f,
-           col_select = c("npi", "Year", "spec_prim_1_name", "phy_zip_perf1"),
+           col_select = c("npi", "Year", "spec_prim_1_name", "phy_zip_perf1",
+                          "pos_inpat", "pos_opd",
+                          "npi_unq_benes", "tin1_unq_benes"),
            col_types  = cols(npi = col_character(),
                              Year = col_integer(),
                              spec_prim_1_name = col_character(),
-                             phy_zip_perf1 = col_character()),
+                             phy_zip_perf1 = col_character(),
+                             pos_inpat = col_double(),
+                             pos_opd = col_double(),
+                             npi_unq_benes = col_double(),
+                             tin1_unq_benes = col_double()),
            show_col_types = FALSE) %>%
     rename(year = Year, zip5 = phy_zip_perf1, specialty = spec_prim_1_name)
 }
@@ -42,8 +48,11 @@ read_mdppas <- function(f) {
 mdppas <- map_dfr(mdppas_files, read_mdppas) %>%
   filter(npi %in% sample_npis,
          specialty %in% cardio_specialties) %>%
-  mutate(zip5 = str_pad(zip5, width = 5, pad = "0")) %>%
-  select(npi, year, specialty, zip5)
+  mutate(zip5 = str_pad(zip5, width = 5, pad = "0"),
+         hospital_based_share = pos_inpat + pos_opd,
+         log_tin_volume       = log(pmax(tin1_unq_benes, 1))) %>%
+  select(npi, year, specialty, zip5,
+         hospital_based_share, log_tin_volume)
 
 
 # 2. Zip to HRR crosswalk ------------------------------------------------

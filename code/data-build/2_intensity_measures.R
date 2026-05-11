@@ -29,7 +29,8 @@ analysis <- cardio_year %>%
   inner_join(
     physician_panel %>%
       select(npi, year, hrr_practice, hrr_med_school, med_school,
-             grad_year, gender, specialty),
+             grad_year, gender, specialty,
+             hospital_based_share, log_tin_volume),
     by = c("npi", "year")
   )
 
