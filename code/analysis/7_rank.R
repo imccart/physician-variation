@@ -85,10 +85,17 @@ print(ranked %>% filter(!is.na(nih_tier)) %>% count(nih_tier))
 # 2. Main rank-gradient regressions --------------------------------------
 
 # Drop "OTHER" (non-US / unknown) schools and rows with no NIH match.
+# Set the reference category for tier indicators to "05_unranked" (below
+# top 100) so coefficients are interpreted as the additional cath rate for
+# each tier relative to unranked schools.
 reg_data <- ranked %>%
   filter(!is.na(med_school), med_school != "OTHER",
          !is.na(nih_tier),
-         !is.na(mean_resid_cath))
+         !is.na(mean_resid_cath)) %>%
+  mutate(nih_tier = factor(nih_tier,
+                           levels = c("05_unranked", "04_top51_100",
+                                      "03_top26_50", "02_top11_25",
+                                      "01_top10")))
 
 cat("\nRegression sample:", nrow(reg_data), "rows,",
     n_distinct(reg_data$npi), "cardiologists\n\n")
@@ -164,15 +171,13 @@ fmt_s <- function(x) {
   paste0("(", sprintf("%.3f", x), ")")
 }
 
-lr   <- mc_row(m_logrank, "I(-log(nih_rank))")
-t10v <- mc_row(m_tier,    "nih_tier01_top10")
-t25v <- mc_row(m_tier,    "nih_tier02_top25")
-t50v <- mc_row(m_tier,    "nih_tier03_top50")
-t100v<- mc_row(m_tier,    "nih_tier04_top100")
-b25  <- mc_row(m_t25,     "nih_top25")
-b10  <- mc_row(m_t10,     "nih_top10")
-b25m <- mc_row(m_t25_mov, "nih_top25")
-b10m <- mc_row(m_t10_mov, "nih_top10")
+lr    <- mc_row(m_logrank, "I(-log(nih_rank))")
+t10v  <- mc_row(m_tier,    "nih_tier01_top10")
+t25v  <- mc_row(m_tier,    "nih_tier02_top11_25")
+t50v  <- mc_row(m_tier,    "nih_tier03_top26_50")
+t100v <- mc_row(m_tier,    "nih_tier04_top51_100")
+b25   <- mc_row(m_t25,     "nih_top25")
+b25m  <- mc_row(m_t25_mov, "nih_top25")
 
 body_rk <- tribble(
   ~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`,
@@ -181,9 +186,9 @@ body_rk <- tribble(
   "",
     fmt_s(lr$se), " ", " ", " ",
   "Top 10",
-    " ", fmt_e(t10v$est, t10v$p), fmt_e(b10$est, b10$p), fmt_e(b10m$est, b10m$p),
+    " ", fmt_e(t10v$est, t10v$p), " ", " ",
   "",
-    " ", fmt_s(t10v$se), fmt_s(b10$se), fmt_s(b10m$se),
+    " ", fmt_s(t10v$se), " ", " ",
   "Top 11-25",
     " ", fmt_e(t25v$est, t25v$p), " ", " ",
   "",
@@ -224,9 +229,9 @@ kable(table_rk,
       align     = c("l", rep("c", 4)),
       col.names = c("",
                     "$-\\log$ rank",
-                    "Tiers",
-                    "Top 10/25",
-                    "Movers")) %>%
+                    "Tier indicators",
+                    "Top 25 binary",
+                    "Top 25 (movers)")) %>%
   row_spec(12, extra_latex_after = "\\midrule") %>%
   save_kable("results/tables/rank.tex")
 

@@ -156,7 +156,7 @@ Table~\ref{tab:rank} reports the rank specifications. The continuous $-\log(\tex
 
 A natural follow-up is whether the rank null reflects rank being orthogonal to cath lab availability, or whether the two channels actively compete and one dominates. Table~\ref{tab:rank-stratified} stratifies the cath-imprint specification by rank tier. The within-tier estimates are similar in sign and magnitude to the headline, slightly larger in the below-Top-25 sample and slightly smaller in the Top-25 sample, with overlapping confidence intervals. Adding rank as a covariate to the cath-imprint regression leaves the cath coefficient unchanged. The two measures capture nearly orthogonal dimensions of medical school environment, with the cath measure carrying the predictive content for cath behavior.
 
-To make the orthogonality between rank and cath lab availability concrete, we cross-tabulate cardiologists by both training-period dimensions and report mean cath-rate effects relative to the lowest cell. Table~\ref{tab:rank-cells} shows the four cells defined by Top-25 rank versus below, and high versus low training-period cath lab share. The Top-25 / High-cath cell shows the largest effect, roughly 1.4 percentage points above the reference cell. The Top-25 / Low-cath cell is statistically indistinguishable from the reference. The pattern is consistent with cath-availability driving the imprint regardless of rank tier. It is not the prestige label that matters but whether the school sat in a procedurally rich market during the student's training.
+It is not the prestige label that matters but whether the school sat in a procedurally rich market during the student's training.
 
 Taken together, the evidence is consistent with the medical school environment shaping later cath behavior through training-environment features rather than through the prestige or research orientation of the school itself. A cardiologist trained at a non-elite medical school in a cath-rich HRR carries the imprint as cleanly as one trained at an elite school in a cath-rich HRR, while training at a top-ranked school in a cath-poor HRR does not produce an imprint of comparable magnitude. We do not attempt to disentangle the specific channel through which a procedurally rich training environment imprints on later practice style, since our setting cannot separately identify direct-observation channels (e.g., medical students observing catheterization decisions during clinical rotations) from broader training-environment channels (e.g., regional norms among teaching faculty or peer-effect spillovers within the cardiology workforce a graduate later joins).
 
@@ -270,7 +270,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Summary statistics, cardiologist sample}
+  \caption{Summary Statistics}
   \label{tab:summ}
   \centering
   \input{../results/tables/summary-stats.tex}
@@ -282,7 +282,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Movers vs.\ stayers (cross-sectional), cardiologist-level}
+  \caption{Movers vs.\ Stayers}
   \label{tab:balance}
   \centering
   \input{../results/tables/balance.tex}
@@ -294,7 +294,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Training imprint on residualized catheterization rate}
+  \caption{Effect of Training Environment on Residualized Catheterization Rate}
   \label{tab:imprint}
   \centering
   \resizebox{\textwidth}{!}{\input{../results/tables/training-imprint.tex}}
@@ -306,7 +306,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{medical school NIH-funding rank specifications}
+  \caption{Effect of School Rank on Residualized Catheterization Rate}
   \label{tab:rank}
   \centering
   \input{../results/tables/rank.tex}
@@ -318,7 +318,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Cath-share imprint, stratified by NIH rank tier}
+  \caption{Effect of Training Environment by Rank Tier}
   \label{tab:rank-stratified}
   \centering
   \input{../results/tables/rank-x-cath-stratified.tex}
@@ -330,19 +330,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Cell effects, rank tier crossed with training cath lab share}
-  \label{tab:rank-cells}
-  \centering
-  \input{../results/tables/rank-x-cath-cells.tex}
-\end{minipage}
-\end{table}
-
-\clearpage
-
-\begin{table}[!h]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption{Training imprint by cardiology subspecialty}
+  \caption{Effect of Training Environment by Cardiology Subspecialty}
   \label{tab:by-spec}
   \centering
   \input{../results/tables/aha-training-by-subspecialty.tex}
@@ -354,7 +342,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Selection robustness via inverse probability weighting (within-origin spec)}
+  \caption{Effect of Training Environment, Inverse-Probability-Weighted}
   \label{tab:selection}
   \centering
   \input{../results/tables/selection-aha.tex}
@@ -366,7 +354,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Robustness: alternative AHA training-environment measures}
+  \caption{Effect of Alternative Training-Environment Measures}
   \label{tab:aha-alt}
   \centering
   \input{../results/tables/aha-training.tex}
@@ -378,7 +366,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Mid-career movers vs.\ non-movers, cardiologist-level}
+  \caption{Mid-Career Movers vs.\ Non-Movers}
   \label{tab:mover-balance}
   \centering
   \input{../results/tables/mover-balance.tex}
