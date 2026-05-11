@@ -116,6 +116,9 @@ For each cardiologist, we match the AHA HRR-year cath lab share at the start of 
 \paragraph{\textit{Mover status and current practice environment.}}
 We assign each cardiologist's current-practice HRR using the Dartmouth ZIP-to-HRR crosswalk applied to the MD-PPAS practice ZIP. Movers are defined as cardiologists whose current practice HRR differs from their medical school HRR. To measure the current peer environment, we construct a leave-one-out HRR-year cath rate, defined as the volume-weighted mean residualized cath rate of all other cardiologists practicing in the cardiologist's HRR-year cell, excluding the focal cardiologist.
 
+\paragraph{\textit{Practice characteristics.}}
+Cardiologists in our sample work in varied settings, ranging from large hospital-affiliated cardiology groups to smaller office-based practices, and these settings may themselves shape catheterization behavior independently of the training environment we are estimating. We construct two practice-setting characteristics from MD-PPAS to capture this dimension of the cardiologist's current work environment. The first is the share of the cardiologist's Medicare claims rendered at inpatient or hospital-outpatient places of service, which proxies for whether the practice is predominantly hospital-based versus office-based or ambulatory. The second is the log of the cardiologist's primary TIN-level Medicare patient volume, which proxies for the size of the practice group the cardiologist works within. Both vary at the cardiologist-year level. We use them as covariates in our preferred specifications to test whether the training imprint is sensitive to differences in current practice setting beyond what practice HRR fixed effects absorb.
+
 \subsection{Descriptive Statistics}\label{sec:desc}
 
 The final analytical panel contains roughly 10{,}800 cardiologist-year observations covering about 3{,}200 unique cardiologists with non-missing training-period exposure, restricted to the 1983--2006 graduation-year window. Table~\ref{tab:summ} reports summary statistics at both the cardiologist-year and cardiologist levels. The mean residualized cath rate is approximately zero by construction, with a standard deviation of roughly 0.16. Average NSTEMI volume is 16 patients per cardiologist-year. Roughly three-quarters of the cardiologists in our sample are general cardiologists, with another 20\% in interventional cardiology and the remainder split among electrophysiology and advanced heart failure.
@@ -125,6 +128,8 @@ Most cardiologists in our sample are cross-sectional movers in the sense that th
 Two features of the data help to inform our identification strategy. First, training-period cath lab availability varies substantially across HRRs, as do realized cath rates. Figure~\ref{fig:hrr-map} maps the average residualized cath rate across HRRs in our sample. Clusters of high-cath and low-cath markets persist across years, consistent with the place-based variation in practice style that motivates the paper more generally. Second, movers face meaningful variation in the gap between their training environment and their current peer environment, which is the source of identifying variation in our destination event study. Figure~\ref{fig:hist-change} plots the distribution of this gap, which is roughly symmetric around zero with substantial mass in both tails. The symmetry indicates that movers in our sample do not concentrate in one direction of move, so we have variation to identify both up- and down-movers in the event study (Section~\ref{sec:dest}). We discuss details of these analyses and identification strategies in their respective sections below.
 
 \section{Medical School Environments and Physician Treatment Styles}\label{sec:imprint}
+
+The descriptive evidence in Section~\ref{sec:desc} hints at a positive association between training-period cath lab availability and later catheterization rates. The raw correlation, however, cannot speak to whether the medical school environment causally shapes later practice style. Cardiologists who train in cath-rich HRRs may subsequently settle in cath-rich practice destinations, exhibit stronger procedural orientation that influenced their school choice in the first place, or attend higher-ranked schools whose prestige drives the pattern. This section uses a mover-design framework to isolate the medical school imprint on cardiologist catheterization decisions. We first lay out our identification strategy and present the headline estimates, then assess whether the imprint operates through procedural exposure rather than medical school ranking, examine subspecialty heterogeneity, and close with a battery of robustness checks.
 
 \subsection{Identification Strategy}\label{sec:imprint-id}
 
@@ -158,13 +163,17 @@ The evidence is therefore consistent with the medical school environment shaping
 
 The training-environment interpretation makes a sharp prediction about subspecialty heterogeneity. If exposure to a procedurally rich training environment imprints a procedural orientation that persists into practice, then the imprint should manifest most strongly in cardiologists who later select into the most procedurally focused subspecialty. Interventional cardiologists perform catheterizations themselves, general cardiologists primarily make referral and management decisions, and electrophysiologists and advanced heart failure cardiologists perform other types of procedures and rarely catheterize NSTEMI patients directly. We test the prediction by stratifying the within-origin specification by cardiology subspecialty.
 
-Table~\ref{tab:by-spec} reports the within-origin training-imprint estimate stratified by subspecialty. Among interventional cardiologists, $\hat\beta_{\text{train}} = 0.058$ (SE 0.019, $p = 0.002$). Among general cardiologists, the point estimate is 0.013 (SE 0.019) and statistically indistinguishable from zero. The corresponding minimum detectable effect at 80\% power is approximately 0.053, so the general-cardiology null is informative against effects of magnitude similar to the interventional coefficient. Electrophysiologists and advanced-heart-failure cardiologists have small samples (358 and 65 cardiologist-years respectively) and imprecise estimates. The interventional concentration is consistent with the training-environment interpretation. Cardiologists who selected into the most procedurally oriented subspecialty bear the strongest imprint, while generalists, whose role is less procedurally focused, do not.
+Table~\ref{tab:by-spec} reports the within-origin training-imprint estimate stratified by subspecialty. Among interventional cardiologists, $\hat\beta_{\text{train}} = 0.058$ (SE 0.019, $p = 0.002$). Among general cardiologists, the point estimate is 0.013 (SE 0.019) and statistically indistinguishable from zero.\footnote{The corresponding minimum detectable effect at 80\% power is approximately 0.053, so the general-cardiology null is informative against effects of magnitude similar to the interventional coefficient.} Electrophysiologists and advanced-heart-failure cardiologists have small samples (358 and 65 cardiologist-years respectively) and imprecise estimates. The interventional concentration is consistent with the training-environment interpretation. Cardiologists who selected into the most procedurally oriented subspecialty bear the strongest imprint, while generalists, whose role is less procedurally focused, do not.
 
 We caution that subspecialty selection is endogenous. Cardiologists with strong procedural orientation may sort into interventional cardiology, in which case the subspecialty heterogeneity reflects both a within-subspecialty practice-style effect and a between-subspecialty selection effect. Both interpretations are consistent with the broader claim that the imprint operates through procedural orientation rather than through generic medical school quality.
 
 \subsection{Robustness}\label{sec:imprint-robust}
 
-Our results are robust to a range of alternative specifications. Table~\ref{tab:selection} reports a within-origin specification with inverse-probability weighting that addresses the cross-sectional mover-stayer imbalance documented in Table~\ref{tab:balance}. The IPW-weighted training-imprint coefficient (0.057, SE 0.021) is essentially identical to the unweighted baseline (0.058, SE 0.021), indicating that observable selection on graduation cohort, gender, subspecialty, and training-period cath lab share does not drive the imprint. Adding medical school HRR \texttimes\ graduation-decade fixed effects to the within-origin specification produces a similar point estimate (0.067) with a wider standard error (SE 0.051) reflecting the limited within-decade-school variation in the training-period measure; the imprint survives the absorption qualitatively even though the precision drops. Alternative AHA training-environment measures, reported in Table~\ref{tab:aha-alt}, include cardiac-surgery (open-heart) and cardiac-ICU presence. These yield directionally consistent estimates, with the cath lab measure remaining the cleanest signal, and the pattern holds when we restrict to the movers-only sample. Time-invariant cardiologist characteristics that could correlate with training-environment exposure are absorbed by physician fixed effects in our event-study specification (Section~\ref{sec:dest}), where the training imprint survives the within-physician absorption modulo the structural differences between the two designs. Full results are reported in the supplemental appendix.
+We assess two threats to the within-origin training-imprint estimate.
+
+The first is selection into being a mover, where we define a mover as a cardiologist whose current practice HRR differs from their medical school HRR (about 87\% of our analytical sample). Table~\ref{tab:balance} shows that movers and stayers differ on observable characteristics, including graduation cohort, gender, subspecialty composition, and training-period cath lab share. The threat is that the same characteristics also correlate with unobserved practice-style propensities, in which case our cross-sectional mover variation reflects selection rather than a causal training effect. To address this, Table~\ref{tab:selection} reports an inverse-probability-weighted (IPW) version of the within-origin specification. We estimate a logit propensity score predicting mover status from the observable cardiologist characteristics listed above. We then weight each cardiologist by the inverse of their predicted probability of being in their observed mover-or-stayer group, which re-balances the sample so that movers and stayers have the same distribution of observable characteristics. The IPW-weighted training-imprint coefficient is 0.057 (SE 0.021), essentially identical to the unweighted baseline of 0.058. Observable selection on mover status does not drive the imprint.
+
+The second is unobserved cohort-level variation within medical school HRR. Our within-origin specification absorbs fixed medical school HRR features but not features that shift over time within an HRR. Cohorts entering medical school in the early 1980s and the early 2000s differ along many margins beyond local cath lab proliferation, including managed care diffusion, the introduction of stenting and drug-eluting stents, and curriculum shifts. If any of these cohort-era shifts are correlated with cath lab proliferation within HRRs, our estimate could be picking up the era rather than the cath lab availability itself. To tighten the identification further, we add medical school HRR $\times$ graduation-decade fixed effects, which restrict the identifying variation to within-decade-within-HRR differences in training-period cath availability. The resulting coefficient is 0.067 with a wider standard error of 0.051, reflecting the more limited variation that remains. The imprint survives the absorption with similar magnitude, even as the precision drops.
 
 \section{Adaptation to Current Practice Environments}\label{sec:dest}
 
@@ -264,7 +273,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Summary Statistics}
+  \caption[Summary Statistics]{\textbf{Summary Statistics}\footnote{Cardiologist-year observations from the 2008--2018 Medicare fee-for-service panel, restricted to cardiologists treating at least 11 NSTEMI patients in a given year and to graduation cohorts 1983--2006. The residualized cath rate is the volume-weighted mean of patient-level residuals from a linear probability model regressing an indicator for catheterization within two days of NSTEMI admission on the 31 Elixhauser comorbidities and year fixed effects.}}
   \label{tab:summ}
   \centering
   \input{../results/tables/summary-stats.tex}
@@ -276,7 +285,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Movers vs.\ Stayers}
+  \caption[Movers vs. Stayers]{\textbf{Movers vs.\ Stayers}\footnote{Cardiologist-level comparison of movers (whose current practice HRR differs from their medical school HRR) and stayers. Means are reported by group, with the difference in means and a $p$-value from a two-sample $t$-test. The training cath share is the share of hospitals in the cardiologist's medical school HRR with a cardiac catheterization laboratory in the year of matriculation, drawn from the AHA Annual Survey.}}
   \label{tab:balance}
   \centering
   \input{../results/tables/balance.tex}
@@ -288,7 +297,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Effect of Training Environment on Residualized Catheterization Rate}
+  \caption[Effect of Training Environment]{\textbf{Effect of Training Environment on Residualized Catheterization Rate}\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Panel A reports the cross-sectional mover specification with destination HRR and year fixed effects (equation~\ref{eq:cs}). Panel B adds medical school HRR fixed effects (equation~\ref{eq:origin}). Column (1) is the baseline. Column (2) adds physician characteristics (gender and years since graduation). Column (3) further adds practice characteristics (hospital-based share of Medicare claims and log of TIN-level Medicare patient volume). All specifications weight by NSTEMI volume and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:imprint}
   \centering
   \resizebox{\textwidth}{!}{\input{../results/tables/training-imprint.tex}}
@@ -300,7 +309,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Effect of School Rank on Residualized Catheterization Rate}
+  \caption[Effect of School Rank]{\textbf{Effect of School Rank on Residualized Catheterization Rate}\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. NIH rank is the year-matched ranking of the cardiologist's medical school by total NIH research funding, constructed from the NIH ExPORTER bulk files. Panel A enters rank as $-\log(\text{rank})$. Panel B enters tier indicators with unranked schools as the reference. Column (1) is the rank-only specification. Column (2) adds the training-HRR cath lab share. Column (3) further adds physician characteristics (gender and years since graduation) and practice characteristics (hospital-based share of Medicare claims and log of TIN-level Medicare patient volume). All specifications weight by NSTEMI volume and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:rank}
   \centering
   \input{../results/tables/rank.tex}
@@ -312,7 +321,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Effect of Training Environment by Rank Tier}
+  \caption[Effect of Training Environment by Rank Tier]{\textbf{Effect of Training Environment by Rank Tier}\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Columns report the within-origin training-imprint specification stratified by the NIH-rank tier of the cardiologist's medical school. The Top 25 sample restricts to cardiologists who attended a medical school ranked in the top 25 by NIH research funding in the matriculation year. Below Top 25 restricts to all other ranked or unranked schools. All specifications include medical school HRR, practice HRR, and year fixed effects, weight by NSTEMI volume, and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:rank-stratified}
   \centering
   \input{../results/tables/rank-x-cath-stratified.tex}
@@ -324,7 +333,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Effect of Training Environment by Cardiology Subspecialty}
+  \caption[Effect by Subspecialty]{\textbf{Effect of Training Environment by Cardiology Subspecialty}\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Columns report the within-origin training-imprint specification stratified by cardiology subspecialty as recorded in MD-PPAS. General Cards covers cardiologists with the Cardiology primary specialty. Interventional, EP, and Adv HF correspond to Interventional Cardiology, Clinical Cardiac Electrophysiology, and Advanced Heart Failure and Transplant Cardiology, respectively. All specifications include medical school HRR, practice HRR, and year fixed effects, weight by NSTEMI volume, and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:by-spec}
   \centering
   \input{../results/tables/aha-training-by-subspecialty.tex}
@@ -336,7 +345,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Effect of Training Environment, Inverse-Probability-Weighted}
+  \caption[Effect with IPW]{\textbf{Effect of Training Environment, Inverse-Probability-Weighted}\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Column (1) is the unweighted within-origin baseline (equation~\ref{eq:origin}). Column (2) re-weights cardiologists by the inverse of their estimated propensity to be a mover, where the propensity score is estimated as a function of graduation cohort, gender, subspecialty, and training-period cath lab share. All specifications include medical school HRR, practice HRR, and year fixed effects, and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:selection}
   \centering
   \input{../results/tables/selection-aha.tex}
@@ -348,19 +357,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{table}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Effect of Alternative Training-Environment Measures}
-  \label{tab:aha-alt}
-  \centering
-  \input{../results/tables/aha-training.tex}
-\end{minipage}
-\end{table}
-
-\clearpage
-
-\begin{table}[!h]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption{Mid-Career Movers vs.\ Non-Movers}
+  \caption[Mid-Career Movers vs. Non-Movers]{\textbf{Mid-Career Movers vs.\ Non-Movers}\footnote{Cardiologist-level comparison of mid-career movers (cardiologists with at least two distinct practice HRRs over the 2008--2018 panel) and non-movers. Means are reported by group, with the difference in means and a $p$-value from a two-sample $t$-test. The training cath share is the AHA HRR-year cath lab share at the cardiologist's medical school HRR in the year of matriculation.}}
   \label{tab:mover-balance}
   \centering
   \input{../results/tables/mover-balance.tex}
@@ -372,7 +369,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{figure}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{HRR-level mean residualized cath rate}
+  \caption[HRR-level Residualized Cath Rate]{\textbf{HRR-level Mean Residualized Cath Rate}\footnote{Each polygon is a hospital referral region (HRR). HRRs are shaded by the mean residualized cath rate across cardiologist-years in the analytical sample, with darker shading indicating higher residualized cath rates. The residualized cath rate is the volume-weighted mean of patient-level residuals from a linear probability model regressing an indicator for catheterization within two days of NSTEMI admission on the 31 Elixhauser comorbidities and year fixed effects.}}
   \label{fig:hrr-map}
   \centering
   \includegraphics[width=0.85\textwidth]{hrr-cath-intensity.png}
@@ -384,7 +381,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{figure}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Distribution of intensity change for movers}
+  \caption[Distribution of Intensity Change]{\textbf{Distribution of Intensity Change for Movers}\footnote{Histogram of the gap, for movers, between the destination peer cath rate (the leave-one-out mean residualized cath rate of other cardiologists in the current practice HRR-year) and the training-period cath lab share at the cardiologist's medical school HRR in the year of matriculation. Movers are cardiologists whose current practice HRR differs from their medical school HRR.}}
   \label{fig:hist-change}
   \centering
   \includegraphics[width=0.7\textwidth]{hist-intensity-change.png}
@@ -396,7 +393,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{figure}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Origin-destination flows, top 25 origins and destinations}
+  \caption[Origin-Destination Flows]{\textbf{Origin-Destination Flows, Top 25 Origins and Destinations}\footnote{Heatmap of mover counts by medical school HRR (rows) and current practice HRR (columns), restricted to the top 25 origins and top 25 destinations by mover count. Shading intensity indicates the number of movers from each origin HRR to each destination HRR.}}
   \label{fig:od-heatmap}
   \centering
   \includegraphics[width=0.85\textwidth]{od-heatmap.png}
@@ -408,7 +405,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{figure}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Event study around mid-career moves}
+  \caption[Event Study Around Mid-Career Moves]{\textbf{Event Study Around Mid-Career Moves}\footnote{Event-study coefficients with 95\% confidence intervals from a within-physician specification of the destination response (equation~\ref{eq:es}). The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Event time $\tau$ is measured in years relative to the move year, with the coefficient at $\tau = -1$ normalized to zero. The specification includes cardiologist and calendar-year fixed effects, weights by NSTEMI volume, and clusters standard errors at the cardiologist level.}}
   \label{fig:event-study}
   \centering
   \includegraphics[width=0.85\textwidth]{event-study.png}
@@ -420,7 +417,7 @@ We conclude with three policy observations. First, training-side reform is a slo
 \begin{figure}[!h]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Event study by direction of move}
+  \caption[Event Study by Direction]{\textbf{Event Study by Direction of Move}\footnote{Event-study coefficients with 95\% confidence intervals from the within-physician destination-response specification (equation~\ref{eq:es}), stratified by direction of move. Up-movers are cardiologists whose destination peer cath rate exceeds their origin peer rate at the move year. Down-movers are the reverse. The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. The specification includes cardiologist and calendar-year fixed effects, weights by NSTEMI volume, and clusters standard errors at the cardiologist level.}}
   \label{fig:event-direction}
   \centering
   \includegraphics[width=0.85\textwidth]{event-study-by-direction.png}

@@ -1,24 +1,31 @@
-
-\begin{tabular}{lcccc}
+\begin{tabular}{lccc}
 \toprule
- & $-\log$ rank & Tier indicators & Top 25 binary & Top 25 (movers)\\
+ & (1) & (2) & (3) \\
 \midrule
-$-\log(\text{NIH rank})$ & 0.002 &  &  & \\
- & (0.002) &  &  & \\
-Top 10 &  & 0.011 &  & \\
- &  & (0.009) &  & \\
-Top 11-25 &  & 0.008 &  & \\
- &  & (0.007) &  & \\
-Top 26-50 &  & 0.008 &  & \\
- &  & (0.006) &  & \\
-Top 51-100 &  & 0.007 &  & \\
- &  & (0.005) &  & \\
-Top 25 (binary) &  &  & 0.003 & 0.005\\
- &  &  & (0.006) & (0.006)\\
+\multicolumn{4}{l}{\textit{Panel A. $-\log$(NIH rank)}} \\
+$-\log(\text{NIH rank})$ & 0.006** & 0.005* & 0.005 \\
+ & (0.003) & (0.003) & (0.003) \\
+Training cath lab share &   & 0.058*** & 0.066* \\
+ &   & (0.022) & (0.035) \\
 \midrule
-Practice HRR FE & Yes & Yes & Yes & Yes\\
-Year FE & Yes & Yes & Yes & Yes\\
-Sample & Full & Full & Full & Movers\\
-Observations & 15,072 & 15,072 & 15,072 & 13,058\\
+\multicolumn{4}{l}{\textit{Panel B. NIH rank tier indicators (ref.\ = unranked)}} \\
+Top 51-100 & 0.001 & 0.003 & 0.000 \\
+ & (0.012) & (0.012) & (0.011) \\
+Top 26-50 & -0.003 & -0.002 & -0.005 \\
+ & (0.015) & (0.015) & (0.015) \\
+Top 11-25 & 0.013 & 0.015 & 0.012 \\
+ & (0.013) & (0.012) & (0.013) \\
+Top 10 & 0.014 & 0.015 & 0.011 \\
+ & (0.015) & (0.015) & (0.015) \\
+Training cath lab share &   & 0.059*** & 0.066* \\
+ &   & (0.021) & (0.035) \\
+\midrule
+Physician characteristics & No & No & Yes \\
+Practice characteristics & No & No & Yes \\
+Med school HRR FE & Yes & Yes & Yes \\
+Practice HRR FE & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes \\
+Observations & 10,609 & 10,609 & 10,609 \\
 \bottomrule
 \end{tabular}
+

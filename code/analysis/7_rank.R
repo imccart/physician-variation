@@ -82,7 +82,37 @@ cat("\nDistribution of NIH tier among matched cardiologist-years:\n")
 print(ranked %>% filter(!is.na(nih_tier)) %>% count(nih_tier))
 
 
-# 2. Main rank-gradient regressions --------------------------------------
+# 2. Join training-period AHA cath lab share onto the panel ---------------
+
+# Replicates the AHA matching from 8_aha_training.R so that the rank table
+# can include a horse race against the training cath lab share.
+aha_hosp <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                     col_types = cols(HRRCODE = col_integer(),
+                                      year = col_integer(),
+                                      CCLABHOS = col_character(),
+                                      .default = col_guess()))
+aha_hrr <- aha_hosp %>%
+  filter(!is.na(HRRCODE), !is.na(year)) %>%
+  mutate(has_cath_lab = as.integer(CCLABHOS == "1")) %>%
+  group_by(HRRCODE, year) %>%
+  summarize(cath_lab_share = mean(has_cath_lab, na.rm = TRUE),
+            .groups = "drop") %>%
+  rename(hrr = HRRCODE) %>%
+  mutate(cath_lab_share = if_else(is.nan(cath_lab_share),
+                                  NA_real_, cath_lab_share))
+
+phys_train <- ranked %>%
+  filter(!is.na(grad_year), !is.na(hrr_med_school)) %>%
+  distinct(npi, hrr_med_school, grad_year) %>%
+  mutate(aha_match_year = pmin(pmax(grad_year - 3L, 1980L), 2003L)) %>%
+  left_join(aha_hrr, by = c("hrr_med_school" = "hrr",
+                            "aha_match_year"  = "year")) %>%
+  select(npi, hrr_med_school, train_cath_lab = cath_lab_share)
+
+ranked <- ranked %>% left_join(phys_train, by = c("npi", "hrr_med_school"))
+
+
+# 3. Main rank-gradient regressions ---------------------------------------
 
 # Drop "OTHER" (non-US / unknown) schools and rows with no NIH match.
 # Set the reference category for tier indicators to "05_unranked" (below
@@ -91,61 +121,68 @@ print(ranked %>% filter(!is.na(nih_tier)) %>% count(nih_tier))
 reg_data <- ranked %>%
   filter(!is.na(med_school), med_school != "OTHER",
          !is.na(nih_tier),
-         !is.na(mean_resid_cath)) %>%
+         !is.na(mean_resid_cath),
+         grad_year >= 1983, grad_year <= 2006) %>%
   mutate(nih_tier = factor(nih_tier,
                            levels = c("05_unranked", "04_top51_100",
                                       "03_top26_50", "02_top11_25",
-                                      "01_top10")))
+                                      "01_top10")),
+         years_exp = year - grad_year,
+         female    = as.integer(gender == "F"))
 
-cat("\nRegression sample:", nrow(reg_data), "rows,",
-    n_distinct(reg_data$npi), "cardiologists\n\n")
+reg_data_cath <- reg_data %>% filter(!is.na(train_cath_lab))
+reg_data_full <- reg_data_cath %>%
+  filter(!is.na(hospital_based_share), !is.na(log_tin_volume))
 
-# Continuous: NIH rank (1 = top, larger = lower). Lower is better.
-# Use -log(rank) so positive coefficient means top schools have higher cath
-m_logrank <- feols(mean_resid_cath ~ I(-log(nih_rank)) |
-                     hrr_practice + year,
-                   data = reg_data, weights = ~n_nstemi,
-                   cluster = ~hrr_med_school)
+cat("\nRegression samples:\n")
+cat("  base:        ", nrow(reg_data),      "rows\n")
+cat("  + cath:      ", nrow(reg_data_cath), "rows\n")
+cat("  + full ctrl: ", nrow(reg_data_full), "rows\n\n")
 
-# Tier indicators (relative to "below top 100")
-m_tier <- feols(mean_resid_cath ~ nih_tier | hrr_practice + year,
-                data = reg_data, weights = ~n_nstemi,
-                cluster = ~hrr_med_school)
+# All specs use origin + destination FE (matching Table 3 Panel B preferred
+# specification). Rank is identified within medical-school HRR across schools
+# and cohorts; training cath lab share is identified within HRR across
+# graduation cohorts.
 
-# Binary top 25
-m_t25  <- feols(mean_resid_cath ~ nih_top25 | hrr_practice + year,
-                data = reg_data, weights = ~n_nstemi,
-                cluster = ~hrr_med_school)
+# Panel A: -log(rank) ----------------------------------------------------
+a1 <- feols(mean_resid_cath ~ I(-log(nih_rank)) |
+              hrr_med_school + hrr_practice + year,
+            data = reg_data, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+a2 <- feols(mean_resid_cath ~ I(-log(nih_rank)) + train_cath_lab |
+              hrr_med_school + hrr_practice + year,
+            data = reg_data_cath, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+a3 <- feols(mean_resid_cath ~ I(-log(nih_rank)) + train_cath_lab +
+              female + years_exp + hospital_based_share + log_tin_volume |
+              hrr_med_school + hrr_practice + year,
+            data = reg_data_full, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
 
-# Binary top 10
-m_t10  <- feols(mean_resid_cath ~ nih_top10 | hrr_practice + year,
-                data = reg_data, weights = ~n_nstemi,
-                cluster = ~hrr_med_school)
+# Panel B: Tier indicators -----------------------------------------------
+b1 <- feols(mean_resid_cath ~ nih_tier |
+              hrr_med_school + hrr_practice + year,
+            data = reg_data, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+b2 <- feols(mean_resid_cath ~ nih_tier + train_cath_lab |
+              hrr_med_school + hrr_practice + year,
+            data = reg_data_cath, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
+b3 <- feols(mean_resid_cath ~ nih_tier + train_cath_lab +
+              female + years_exp + hospital_based_share + log_tin_volume |
+              hrr_med_school + hrr_practice + year,
+            data = reg_data_full, weights = ~n_nstemi,
+            cluster = ~hrr_med_school)
 
-cat("=== A: -log(rank) (positive => higher-ranked schools cath more) ===\n")
-print(summary(m_logrank))
-cat("\n=== B: NIH tier indicators (ref = lowest tier) ===\n")
-print(summary(m_tier))
-cat("\n=== C: binary Top 25 ===\n")
-print(summary(m_t25))
-cat("\n=== D: binary Top 10 ===\n")
-print(summary(m_t10))
-
-
-# 3. Movers-only sensitivity ---------------------------------------------
-
-mov <- reg_data %>% filter(mover == 1)
-m_t25_mov <- feols(mean_resid_cath ~ nih_top25 | hrr_practice + year,
-                   data = mov, weights = ~n_nstemi,
-                   cluster = ~hrr_med_school)
-m_t10_mov <- feols(mean_resid_cath ~ nih_top10 | hrr_practice + year,
-                   data = mov, weights = ~n_nstemi,
-                   cluster = ~hrr_med_school)
-cat("\n=== Movers-only Top 25 ===\n");  print(summary(m_t25_mov))
-cat("\n=== Movers-only Top 10 ===\n");  print(summary(m_t10_mov))
+cat("=== Panel A1: -log(rank) only ===\n");                       print(summary(a1))
+cat("\n=== Panel A2: + cath lab ===\n");                          print(summary(a2))
+cat("\n=== Panel A3: + cath lab + physician + practice ===\n");   print(summary(a3))
+cat("\n=== Panel B1: tier indicators only ===\n");                print(summary(b1))
+cat("\n=== Panel B2: + cath lab ===\n");                          print(summary(b2))
+cat("\n=== Panel B3: + cath lab + physician + practice ===\n");   print(summary(b3))
 
 
-# 4. Export side-by-side table -------------------------------------------
+# 4. Export 2-panel x 3-col table ----------------------------------------
 
 mc_row <- function(model, term) {
   td <- tidy(model)
@@ -171,68 +208,77 @@ fmt_s <- function(x) {
   paste0("(", sprintf("%.3f", x), ")")
 }
 
-lr    <- mc_row(m_logrank, "I(-log(nih_rank))")
-t10v  <- mc_row(m_tier,    "nih_tier01_top10")
-t25v  <- mc_row(m_tier,    "nih_tier02_top11_25")
-t50v  <- mc_row(m_tier,    "nih_tier03_top26_50")
-t100v <- mc_row(m_tier,    "nih_tier04_top51_100")
-b25   <- mc_row(m_t25,     "nih_top25")
-b25m  <- mc_row(m_t25_mov, "nih_top25")
+# Panel A coefficients
+a_lr  <- list(mc_row(a1, "I(-log(nih_rank))"),
+              mc_row(a2, "I(-log(nih_rank))"),
+              mc_row(a3, "I(-log(nih_rank))"))
+a_cl  <- list(mc_row(a1, "train_cath_lab"),
+              mc_row(a2, "train_cath_lab"),
+              mc_row(a3, "train_cath_lab"))
 
-body_rk <- tribble(
-  ~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`,
-  "$-\\log(\\text{NIH rank})$",
-    fmt_e(lr$est, lr$p), " ", " ", " ",
-  "",
-    fmt_s(lr$se), " ", " ", " ",
-  "Top 10",
-    " ", fmt_e(t10v$est, t10v$p), " ", " ",
-  "",
-    " ", fmt_s(t10v$se), " ", " ",
-  "Top 11-25",
-    " ", fmt_e(t25v$est, t25v$p), " ", " ",
-  "",
-    " ", fmt_s(t25v$se), " ", " ",
-  "Top 26-50",
-    " ", fmt_e(t50v$est, t50v$p), " ", " ",
-  "",
-    " ", fmt_s(t50v$se), " ", " ",
-  "Top 51-100",
-    " ", fmt_e(t100v$est, t100v$p), " ", " ",
-  "",
-    " ", fmt_s(t100v$se), " ", " ",
-  "Top 25 (binary)",
-    " ", " ", fmt_e(b25$est, b25$p), fmt_e(b25m$est, b25m$p),
-  "",
-    " ", " ", fmt_s(b25$se), fmt_s(b25m$se)
+# Panel B coefficients (one row per tier)
+tier_terms <- c("nih_tier04_top51_100", "nih_tier03_top26_50",
+                "nih_tier02_top11_25",  "nih_tier01_top10")
+tier_labels <- c("Top 51-100", "Top 26-50", "Top 11-25", "Top 10")
+b_tiers <- lapply(tier_terms, function(tt) {
+  list(mc_row(b1, tt), mc_row(b2, tt), mc_row(b3, tt))
+})
+b_cl <- list(mc_row(b1, "train_cath_lab"),
+             mc_row(b2, "train_cath_lab"),
+             mc_row(b3, "train_cath_lab"))
+
+# Row builders
+row_3col <- function(label, rs) {
+  paste0(label, " & ",
+         paste(sapply(rs, function(x) fmt_e(x$est, x$p)), collapse = " & "),
+         " \\\\\n",
+         " & ",
+         paste(sapply(rs, function(x) fmt_s(x$se)), collapse = " & "),
+         " \\\\\n")
+}
+
+panel_a <- paste0(
+  row_3col("$-\\log(\\text{NIH rank})$", a_lr),
+  row_3col("Training cath lab share",    a_cl)
 )
 
-footer_rk <- tribble(
-  ~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`,
-  "Practice HRR FE", "Yes", "Yes", "Yes", "Yes",
-  "Year FE",         "Yes", "Yes", "Yes", "Yes",
-  "Sample",          "Full", "Full", "Full", "Movers",
-  "Observations",
-    format(nobs(m_logrank), big.mark = ","),
-    format(nobs(m_tier),    big.mark = ","),
-    format(nobs(m_t25),     big.mark = ","),
-    format(nobs(m_t25_mov), big.mark = ",")
+panel_b <- paste0(
+  paste(mapply(row_3col, tier_labels, b_tiers,
+               SIMPLIFY = TRUE), collapse = ""),
+  row_3col("Training cath lab share", b_cl)
 )
 
-table_rk <- bind_rows(body_rk, footer_rk)
+obs_row <- function(models) {
+  paste0("Observations & ",
+         paste(sapply(models, function(m) format(nobs(m), big.mark = ",")),
+               collapse = " & "),
+         " \\\\\n")
+}
 
-kable(table_rk,
-      format    = "latex",
-      booktabs  = TRUE,
-      linesep   = "",
-      escape    = FALSE,
-      align     = c("l", rep("c", 4)),
-      col.names = c("",
-                    "$-\\log$ rank",
-                    "Tier indicators",
-                    "Top 25 binary",
-                    "Top 25 (movers)")) %>%
-  row_spec(12, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/rank.tex")
+bottom_section <- paste0(
+  "Physician characteristics & No & No & Yes \\\\\n",
+  "Practice characteristics & No & No & Yes \\\\\n",
+  "Med school HRR FE & Yes & Yes & Yes \\\\\n",
+  "Practice HRR FE & Yes & Yes & Yes \\\\\n",
+  "Year FE & Yes & Yes & Yes \\\\\n"
+)
 
+tbl <- paste0(
+  "\\begin{tabular}{lccc}\n",
+  "\\toprule\n",
+  " & (1) & (2) & (3) \\\\\n",
+  "\\midrule\n",
+  "\\multicolumn{4}{l}{\\textit{Panel A. $-\\log$(NIH rank)}} \\\\\n",
+  panel_a,
+  "\\midrule\n",
+  "\\multicolumn{4}{l}{\\textit{Panel B. NIH rank tier indicators (ref.\\ = unranked)}} \\\\\n",
+  panel_b,
+  "\\midrule\n",
+  bottom_section,
+  obs_row(list(a1, a2, a3)),
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
+)
+
+writeLines(tbl, "results/tables/rank.tex")
 cat("\n=== Wrote results/tables/rank.tex ===\n")
