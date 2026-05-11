@@ -46,17 +46,43 @@ write_csv(sumstats, "results/tables/summary-stats.csv")
 
 # 2b. Full summary statistics table (cardiologist sample) ----------------
 
+# Bring in the year-matched AHA training-period cath lab share so the
+# summary statistics reflect the actual training measure used in the
+# main analysis (rather than the LOO peer-cath measure constructed
+# inline in script 2 of the data-build).
+aha_hosp_summ <- read_csv("data/input/aha_hospital.csv",
+                          show_col_types = FALSE,
+                          col_types = cols(HRRCODE = col_integer(),
+                                           year = col_integer(),
+                                           CCLABHOS = col_character(),
+                                           .default = col_guess()))
+aha_hrr_summ <- aha_hosp_summ %>%
+  filter(!is.na(HRRCODE), !is.na(year)) %>%
+  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
+  group_by(HRRCODE, year) %>%
+  summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
+  rename(hrr = HRRCODE) %>%
+  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_,
+                                  cath_lab_share))
+
+panel_summ <- analysis %>%
+  mutate(aha_match_year = pmin(pmax(grad_year - 3L, 1980L), 2003L)) %>%
+  left_join(aha_hrr_summ %>% rename(train_cath_lab = cath_lab_share),
+            by = c("hrr_med_school" = "hrr",
+                   "aha_match_year"  = "year")) %>%
+  mutate(years_exp = year - grad_year)
+
 # Cardiologist-level (collapse panel to one row per NPI, first observation
 # for time-invariant fields, mean for time-varying)
-cardio_summ <- analysis %>%
+cardio_summ <- panel_summ %>%
   arrange(npi, year) %>%
   group_by(npi) %>%
   summarize(
-    grad_year             = first(grad_year),
-    gender                = first(gender),
-    specialty             = first(specialty),
-    intensity_med_school  = first(intensity_med_school),
-    n_years               = n(),
+    grad_year      = first(grad_year),
+    gender         = first(gender),
+    specialty      = first(specialty),
+    train_cath_lab = first(train_cath_lab),
+    n_years        = n(),
     .groups = "drop"
   )
 
@@ -76,15 +102,17 @@ fmt_summ <- function(x, digits = 3) {
 # Cardiologist-year level rows
 cy_rows <- list(
   list(label = "Residualized cath rate",
-       vals  = fmt_summ(analysis$mean_resid_cath, 3)),
+       vals  = fmt_summ(panel_summ$mean_resid_cath, 3)),
   list(label = "NSTEMI volume per year",
-       vals  = fmt_summ(analysis$n_nstemi, 1)),
-  list(label = "Med school HRR intensity",
-       vals  = fmt_summ(analysis$intensity_med_school, 3)),
-  list(label = "Destination HRR LOO intensity",
-       vals  = fmt_summ(analysis$intensity_dest_loo, 3)),
-  list(label = "$\\Delta$ intensity (dest $-$ med school)",
-       vals  = fmt_summ(analysis$intensity_change, 3))
+       vals  = fmt_summ(panel_summ$n_nstemi, 1)),
+  list(label = "Training-HRR cath lab share",
+       vals  = fmt_summ(panel_summ$train_cath_lab, 3)),
+  list(label = "Current-HRR peer cath rate (LOO)",
+       vals  = fmt_summ(panel_summ$intensity_dest_loo, 3)),
+  list(label = "Hospital-based share of claims",
+       vals  = fmt_summ(panel_summ$hospital_based_share, 3)),
+  list(label = "Log TIN-level patient volume",
+       vals  = fmt_summ(panel_summ$log_tin_volume, 3))
 )
 
 # Cardiologist-level rows (one row per NPI)
@@ -226,20 +254,21 @@ ggsave("results/figures/panel-size-by-year.png", p4,
 # 7. Balance table: movers vs stayers ------------------------------------
 
 # Collapse panel to one row per cardiologist (first-observation values for
-# pre-treatment characteristics, mean of time-varying ones)
-cardio_balance <- analysis %>%
+# pre-treatment characteristics, mean of time-varying ones). Use panel_summ
+# so train_cath_lab is available for the balance comparison.
+cardio_balance <- panel_summ %>%
   filter(!is.na(mover)) %>%
   arrange(npi, year) %>%
   group_by(npi) %>%
   summarize(
-    mover                = first(mover),
-    grad_year            = first(grad_year),
-    gender               = first(gender),
-    specialty            = first(specialty),
-    intensity_med_school = first(intensity_med_school),
-    n_years              = n(),
-    mean_volume          = mean(n_nstemi),
-    first_year           = min(year),
+    mover          = first(mover),
+    grad_year      = first(grad_year),
+    gender         = first(gender),
+    specialty      = first(specialty),
+    train_cath_lab = first(train_cath_lab),
+    n_years        = n(),
+    mean_volume    = mean(n_nstemi),
+    first_year     = min(year),
     .groups = "drop"
   )
 
@@ -253,7 +282,7 @@ balance_means <- cardio_balance %>%
     pct_ic      = mean(specialty == "Interventional Cardiology", na.rm = TRUE),
     pct_ep      = mean(specialty == "Clinical Cardiac Electrophysiology", na.rm = TRUE),
     pct_hf      = mean(specialty == "Advanced Heart Failure and Transplant Cardiology", na.rm = TRUE),
-    train_int   = mean(intensity_med_school, na.rm = TRUE),
+    train_cath  = mean(train_cath_lab, na.rm = TRUE),
     n_years     = mean(n_years),
     volume      = mean(mean_volume),
     first_year  = mean(first_year),
@@ -280,7 +309,7 @@ vars <- list(
   list(label = "Interventional Cardiology (\\%)",  var = "specialty", binary = "ic"),
   list(label = "Electrophysiology (\\%)",          var = "specialty", binary = "ep"),
   list(label = "Adv.\\ Heart Failure (\\%)",       var = "specialty", binary = "hf"),
-  list(label = "Med school HRR intensity",         var = "intensity_med_school", binary = FALSE),
+  list(label = "Training-HRR cath lab share",      var = "train_cath_lab", binary = FALSE),
   list(label = "Years in panel",                   var = "n_years", binary = FALSE),
   list(label = "Mean NSTEMI volume per year",      var = "mean_volume", binary = FALSE),
   list(label = "First observation year",           var = "first_year", binary = FALSE)
@@ -318,26 +347,37 @@ balance_rows <- map(vars, function(v) {
 
 balance_body <- bind_rows(balance_rows)
 
-balance_footer <- tibble(
+# Build LaTeX by hand to avoid kableExtra's phantom blank line between
+# `extra_latex_after = "\\midrule"` and the next row.
+body_rows <- apply(balance_body, 1, function(r) {
+  paste0(r[1], " & ", r[2], " & ", r[3], " & ", r[4], " & ", r[5], " \\\\\n")
+})
+footer_row <- paste0(
+  "Cardiologists & ",
+  format(sum(cardio_balance$mover == 1), big.mark = ","), " & ",
+  format(sum(cardio_balance$mover == 0), big.mark = ","), " &  &  \\\\\n"
+)
+
+tbl_balance <- paste0(
+  "\\begin{tabular}{lcccc}\n",
+  "\\toprule\n",
+  " & Movers & Stayers & Diff. & $p$-value \\\\\n",
+  "\\midrule\n",
+  paste(body_rows, collapse = ""),
+  "\\midrule\n",
+  footer_row,
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
+)
+writeLines(tbl_balance, "results/tables/balance.tex")
+
+balance_table <- bind_rows(balance_body, tibble(
   Variable = "Cardiologists",
   Movers   = format(sum(cardio_balance$mover == 1), big.mark = ","),
   Stayers  = format(sum(cardio_balance$mover == 0), big.mark = ","),
   Diff     = "",
   `p-value` = ""
-)
-
-balance_table <- bind_rows(balance_body, balance_footer)
-
-kable(balance_table,
-      format    = "latex",
-      booktabs  = TRUE,
-      linesep   = "",
-      escape    = FALSE,
-      align     = c("l", rep("c", 4)),
-      col.names = c("", "Movers", "Stayers", "Diff.", "$p$-value")) %>%
-  row_spec(nrow(balance_table) - 1, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/balance.tex")
-
+))
 write_csv(balance_table, "results/tables/balance.csv")
 
 

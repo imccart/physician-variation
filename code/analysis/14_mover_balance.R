@@ -128,12 +128,30 @@ cat("=== Balance: mid-career movers vs non-movers ===\n")
 print(balance_table)
 
 write_csv(balance_table, "results/tables/mover-balance.csv")
-kable(balance_table,
-      format = "latex", booktabs = TRUE, linesep = "", escape = FALSE,
-      align = c("l", rep("c", 4)),
-      col.names = c("", "Movers", "Non-movers", "Diff.", "$p$-value")) %>%
-  row_spec(nrow(balance_table) - 1, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/mover-balance.tex")
+
+# Build LaTeX by hand to avoid kableExtra's phantom blank line between
+# `extra_latex_after = "\\midrule"` and the next row.
+body_rows_mb <- apply(balance, 1, function(r) {
+  paste0(r[1], " & ", r[2], " & ", r[3], " & ", r[4], " & ", r[5], " \\\\\n")
+})
+footer_row_mb <- paste0(
+  "Cardiologists & ",
+  format(sum(phys$is_mover == 1), big.mark = ","), " & ",
+  format(sum(phys$is_mover == 0), big.mark = ","), " &  &  \\\\\n"
+)
+
+tbl_mb <- paste0(
+  "\\begin{tabular}{lcccc}\n",
+  "\\toprule\n",
+  " & Movers & Non-movers & Diff. & $p$-value \\\\\n",
+  "\\midrule\n",
+  paste(body_rows_mb, collapse = ""),
+  "\\midrule\n",
+  footer_row_mb,
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
+)
+writeLines(tbl_mb, "results/tables/mover-balance.tex")
 
 
 # 3. Among movers: where do they go relative to training? ---------------
