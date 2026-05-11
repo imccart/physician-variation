@@ -175,6 +175,34 @@ kable(summ_table,
   save_kable("results/tables/summary-stats.tex")
 
 
+# 2c. Binscatter: training cath lab share vs residualized cath rate ------
+# The descriptive motivation for Section 3: do cardiologists from cath-rich
+# training HRRs have higher residualized cath rates? This is the unadjusted
+# cross-cardiologist relationship.
+
+bs_data <- panel_summ %>%
+  filter(!is.na(train_cath_lab), !is.na(mean_resid_cath))
+
+bs <- bs_data %>%
+  mutate(bin = ntile(train_cath_lab, 20)) %>%
+  group_by(bin) %>%
+  summarize(x = weighted.mean(train_cath_lab, n_nstemi),
+            y = weighted.mean(mean_resid_cath, n_nstemi),
+            .groups = "drop")
+
+p_bs <- ggplot(bs, aes(x = x, y = y)) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_smooth(data = bs_data, aes(x = train_cath_lab, y = mean_resid_cath),
+              method = "lm", se = TRUE, color = "firebrick",
+              inherit.aes = FALSE) +
+  labs(x = "Training-period cath lab share (medical school HRR)",
+       y = "Residualized catheterization rate") +
+  theme_minimal(base_size = 12)
+
+ggsave("results/figures/binscatter-training-vs-cath.png", p_bs,
+       width = 7, height = 5, dpi = 300)
+
+
 # 3. Scatterplot: med school intensity vs practice intensity ---------------
 
 scatter_data <- analysis %>%
