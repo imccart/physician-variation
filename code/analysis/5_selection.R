@@ -309,7 +309,14 @@ clean_aha <- panel_aha_ipw %>%
   mutate(w_unweighted = n_nstemi,
          w_ipw        = n_nstemi * ipw_trim)
 
-# Within-origin spec, baseline and IPW-weighted, in parallel
+# Within-origin spec, three columns:
+#   (1) Baseline (matches Table 3 Panel B col 1)
+#   (2) + IPW
+#   (3) + Med school HRR x graduation-decade FE (replaces med school HRR FE)
+clean_aha <- clean_aha %>%
+  mutate(grad_decade  = (grad_year %/% 10) * 10,
+         school_decade = paste0(hrr_med_school, "_", grad_decade))
+
 m_aha_base <- feols(mean_resid_cath ~ train_cath_lab |
                       hrr_med_school + hrr_practice + year,
                     data = clean_aha, weights = ~w_unweighted,
@@ -318,44 +325,49 @@ m_aha_ipw  <- feols(mean_resid_cath ~ train_cath_lab |
                       hrr_med_school + hrr_practice + year,
                     data = clean_aha, weights = ~w_ipw,
                     cluster = ~hrr_med_school)
+m_aha_dec  <- feols(mean_resid_cath ~ train_cath_lab |
+                      school_decade + hrr_practice + year,
+                    data = clean_aha, weights = ~w_unweighted,
+                    cluster = ~hrr_med_school)
 
-cat("\n=== AHA spec, baseline ===\n");      print(summary(m_aha_base))
-cat("\n=== AHA spec, IPW-weighted ===\n");  print(summary(m_aha_ipw))
+cat("\n=== AHA spec, baseline ===\n");                 print(summary(m_aha_base))
+cat("\n=== AHA spec, IPW-weighted ===\n");             print(summary(m_aha_ipw))
+cat("\n=== AHA spec, med school HRR x decade FE ===\n");  print(summary(m_aha_dec))
 
 aha_b <- sel_row(m_aha_base, "train_cath_lab")
 aha_i <- sel_row(m_aha_ipw,  "train_cath_lab")
+aha_d <- sel_row(m_aha_dec,  "train_cath_lab")
 
-body_aha_sel <- tribble(
-  ~term, ~`(1)`, ~`(2)`,
-  "Training-HRR cath lab share",
-    fmt_est(aha_b$est, aha_b$p),
-    fmt_est(aha_i$est, aha_i$p),
-  "",
-    fmt_se(aha_b$se),
-    fmt_se(aha_i$se)
+obs_row_3 <- function(models) {
+  paste0("Observations & ",
+         paste(sapply(models, function(m) format(nobs(m), big.mark = ",")),
+               collapse = " & "),
+         " \\\\\n")
+}
+
+tbl_aha_sel <- paste0(
+  "\\begin{tabular}{lccc}\n",
+  "\\toprule\n",
+  " & (1) & (2) & (3) \\\\\n",
+  "\\midrule\n",
+  "Training-HRR cath lab share & ",
+    fmt_est(aha_b$est, aha_b$p), " & ",
+    fmt_est(aha_i$est, aha_i$p), " & ",
+    fmt_est(aha_d$est, aha_d$p), " \\\\\n",
+  " & ",
+    fmt_se(aha_b$se), " & ",
+    fmt_se(aha_i$se), " & ",
+    fmt_se(aha_d$se), " \\\\\n",
+  "\\midrule\n",
+  "IPW & No & Yes & No \\\\\n",
+  "Med school HRR FE & Yes & Yes & No \\\\\n",
+  "Med school HRR $\\times$ decade FE & No & No & Yes \\\\\n",
+  "Practice HRR FE & Yes & Yes & Yes \\\\\n",
+  "Year FE & Yes & Yes & Yes \\\\\n",
+  obs_row_3(list(m_aha_base, m_aha_ipw, m_aha_dec)),
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
 )
-
-footer_aha_sel <- tribble(
-  ~term, ~`(1)`, ~`(2)`,
-  "Med school HRR FE", "Yes", "Yes",
-  "Practice HRR FE",   "Yes", "Yes",
-  "Year FE",           "Yes", "Yes",
-  "IPW",               "No",  "Yes",
-  "Observations",
-    format(nobs(m_aha_base), big.mark = ","),
-    format(nobs(m_aha_ipw),  big.mark = ",")
-)
-
-table_aha_sel <- bind_rows(body_aha_sel, footer_aha_sel)
-
-kable(table_aha_sel,
-      format    = "latex",
-      booktabs  = TRUE,
-      linesep   = "",
-      escape    = FALSE,
-      align     = c("l", rep("c", 2)),
-      col.names = c("", "Baseline", "IPW")) %>%
-  row_spec(2, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/selection-aha.tex")
+writeLines(tbl_aha_sel, "results/tables/selection-aha.tex")
 
 cat("\n=== Wrote results/tables/selection-aha.tex ===\n")

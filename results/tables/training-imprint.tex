@@ -1,19 +1,23 @@
 \begin{tabular}{lccc}
 \toprule
- & Baseline & + physician vars & + practice vars \\
+ & (1) & (2) & (3) \\
 \midrule
 \multicolumn{4}{l}{\textit{Panel A. Destination FE}} \\
 Training-HRR cath lab share & 0.035*** & 0.025* & 0.025* \\
  & (0.011) & (0.013) & (0.014) \\
 Current-HRR cath culture (LOO) & 0.047 & 0.046 & 0.050 \\
  & (0.030) & (0.031) & (0.031) \\
-Observations & 10,729 & 10,729 & 10,729 \\
 \midrule
 \multicolumn{4}{l}{\textit{Panel B. Origin + Destination FE}} \\
 Training-HRR cath lab share & 0.058*** & 0.062* & 0.071** \\
  & (0.021) & (0.034) & (0.034) \\
 Current-HRR cath culture (LOO) & 0.049 & 0.048 & 0.054* \\
  & (0.030) & (0.031) & (0.030) \\
+\midrule
+Physician characteristics & No & Yes & Yes \\
+Practice characteristics & No & No & Yes \\
+Practice HRR FE & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes \\
 Observations & 10,729 & 10,729 & 10,729 \\
 \bottomrule
 \end{tabular}

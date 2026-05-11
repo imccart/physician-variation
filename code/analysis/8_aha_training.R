@@ -309,26 +309,46 @@ cat("\n=== Wrote results/tables/aha-training.tex ===\n")
 # Subspecialty choice is partly endogenous to the imprint, so within-
 # subspecialty estimates may attenuate (the selection channel is shut).
 
-clean_spec <- clean %>% filter(!is.na(specialty))
+clean_spec <- clean %>%
+  filter(!is.na(specialty)) %>%
+  mutate(years_exp = year - grad_year,
+         female    = as.integer(gender == "F"))
+clean_spec_prac <- clean_spec %>%
+  filter(!is.na(hospital_based_share), !is.na(log_tin_volume))
 
-m_genl <- feols(mean_resid_cath ~ train_cath_lab | hrr_practice + year,
-                data = clean_spec %>% filter(specialty == "Cardiology"),
-                weights = ~n_nstemi, cluster = ~hrr_med_school)
-m_ic   <- feols(mean_resid_cath ~ train_cath_lab | hrr_practice + year,
-                data = clean_spec %>% filter(specialty == "Interventional Cardiology"),
-                weights = ~n_nstemi, cluster = ~hrr_med_school)
-m_ep   <- feols(mean_resid_cath ~ train_cath_lab | hrr_practice + year,
-                data = clean_spec %>% filter(specialty == "Clinical Cardiac Electrophysiology"),
-                weights = ~n_nstemi, cluster = ~hrr_med_school)
-m_hf   <- feols(mean_resid_cath ~ train_cath_lab | hrr_practice + year,
-                data = clean_spec %>% filter(specialty == "Advanced Heart Failure and Transplant Cardiology"),
-                weights = ~n_nstemi, cluster = ~hrr_med_school)
+spec_levels <- list(
+  Gen = "Cardiology",
+  IC  = "Interventional Cardiology"
+)
+# EP and AHF are reported descriptively in text but excluded from this
+# table. With n = 358 (EP) and n = 65 (AHF) and within-origin FE
+# absorption, the coefficients are imprecise at baseline and produce
+# implausibly large estimates once physician and practice controls are
+# added on top of the small sample.
 
-cat("\n=== Subspecialty heterogeneity (clean grad-year window) ===\n")
-cat("\n--- General Cardiology ---\n");                  print(summary(m_genl))
-cat("\n--- Interventional Cardiology ---\n");           print(summary(m_ic))
-cat("\n--- Electrophysiology ---\n");                   print(summary(m_ep))
-cat("\n--- Adv Heart Failure ---\n");                   print(summary(m_hf))
+fit_spec <- function(spec, data, rhs) {
+  feols(as.formula(paste("mean_resid_cath ~", rhs, "| hrr_practice + year")),
+        data = data %>% filter(specialty == spec),
+        weights = ~n_nstemi, cluster = ~hrr_med_school)
+}
+
+# Panel A: baseline (cath only)
+m_p1 <- lapply(spec_levels, fit_spec, data = clean_spec,
+               rhs = "train_cath_lab")
+# Panel B: + physician characteristics
+m_p2 <- lapply(spec_levels, fit_spec, data = clean_spec,
+               rhs = "train_cath_lab + female + years_exp")
+# Panel C: + practice characteristics
+m_p3 <- lapply(spec_levels, fit_spec, data = clean_spec_prac,
+               rhs = paste("train_cath_lab + female + years_exp +",
+                           "hospital_based_share + log_tin_volume"))
+
+cat("\n=== Subspecialty heterogeneity ===\n")
+for (s in names(spec_levels)) {
+  cat("\n--- ", s, ": baseline ---\n");      print(summary(m_p1[[s]]))
+  cat("\n--- ", s, ": + phys ---\n");        print(summary(m_p2[[s]]))
+  cat("\n--- ", s, ": + practice ---\n");    print(summary(m_p3[[s]]))
+}
 
 # Pooled with interaction (formal test of equality across specialties)
 m_inter <- feols(mean_resid_cath ~ train_cath_lab * specialty |
@@ -338,49 +358,43 @@ m_inter <- feols(mean_resid_cath ~ train_cath_lab * specialty |
 cat("\n--- Interaction spec ---\n")
 print(summary(m_inter))
 
-# Build a table
-gn  <- mc_row(m_genl, "train_cath_lab")
-ic  <- mc_row(m_ic,   "train_cath_lab")
-ep  <- mc_row(m_ep,   "train_cath_lab")
-hf  <- mc_row(m_hf,   "train_cath_lab")
+# Build 3-panel x 4-col table by hand
+panel_row_4 <- function(label, models) {
+  rs <- lapply(models, mc_row, term = "train_cath_lab")
+  paste0(label, " & ",
+         paste(sapply(rs, function(x) fmt_e(x$est, x$p)), collapse = " & "),
+         " \\\\\n",
+         " & ",
+         paste(sapply(rs, function(x) fmt_s(x$se)), collapse = " & "),
+         " \\\\\n")
+}
+obs_row_4 <- function(models) {
+  paste0("Observations & ",
+         paste(sapply(models, function(m) format(nobs(m), big.mark = ",")),
+               collapse = " & "),
+         " \\\\\n")
+}
 
-body_sp <- tribble(
-  ~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`,
-  "Cath lab share, training HRR",
-    fmt_e(gn$est, gn$p),
-    fmt_e(ic$est, ic$p),
-    fmt_e(ep$est, ep$p),
-    fmt_e(hf$est, hf$p),
-  "",
-    fmt_s(gn$se), fmt_s(ic$se), fmt_s(ep$se), fmt_s(hf$se)
+tbl_sp <- paste0(
+  "\\begin{tabular}{lcc}\n",
+  "\\toprule\n",
+  " & General Cards & Interventional \\\\\n",
+  "\\midrule\n",
+  "\\multicolumn{3}{l}{\\textit{Panel A. Baseline}} \\\\\n",
+  panel_row_4("Cath lab share, training HRR", m_p1),
+  obs_row_4(m_p1),
+  "\\midrule\n",
+  "\\multicolumn{3}{l}{\\textit{Panel B. + Physician characteristics}} \\\\\n",
+  panel_row_4("Cath lab share, training HRR", m_p2),
+  obs_row_4(m_p2),
+  "\\midrule\n",
+  "\\multicolumn{3}{l}{\\textit{Panel C. + Practice characteristics}} \\\\\n",
+  panel_row_4("Cath lab share, training HRR", m_p3),
+  obs_row_4(m_p3),
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
 )
-
-footer_sp <- tribble(
-  ~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`,
-  "Practice HRR FE", "Yes", "Yes", "Yes", "Yes",
-  "Year FE",         "Yes", "Yes", "Yes", "Yes",
-  "Observations",
-    format(nobs(m_genl), big.mark = ","),
-    format(nobs(m_ic),   big.mark = ","),
-    format(nobs(m_ep),   big.mark = ","),
-    format(nobs(m_hf),   big.mark = ",")
-)
-
-table_sp <- bind_rows(body_sp, footer_sp)
-kable(table_sp,
-      format    = "latex",
-      booktabs  = TRUE,
-      linesep   = "",
-      escape    = FALSE,
-      align     = c("l", rep("c", 4)),
-      col.names = c("",
-                    "General Cards",
-                    "Interventional",
-                    "EP",
-                    "Adv HF")) %>%
-  row_spec(2, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/aha-training-by-subspecialty.tex")
-
+writeLines(tbl_sp, "results/tables/aha-training-by-subspecialty.tex")
 cat("\n=== Wrote results/tables/aha-training-by-subspecialty.tex ===\n")
 
 
@@ -576,17 +590,25 @@ obs_row <- function(models) {
 models_a <- list(a1, a2, a3)
 models_b <- list(b1, b2, b3)
 
+bottom_section <- paste0(
+  "Physician characteristics & No & Yes & Yes \\\\\n",
+  "Practice characteristics & No & No & Yes \\\\\n",
+  "Practice HRR FE & Yes & Yes & Yes \\\\\n",
+  "Year FE & Yes & Yes & Yes \\\\\n"
+)
+
 tbl <- paste0(
   "\\begin{tabular}{lccc}\n",
   "\\toprule\n",
-  " & Baseline & + physician vars & + practice vars \\\\\n",
+  " & (1) & (2) & (3) \\\\\n",
   "\\midrule\n",
   "\\multicolumn{4}{l}{\\textit{Panel A. Destination FE}} \\\\\n",
   panel_row(models_a),
-  obs_row(models_a),
   "\\midrule\n",
   "\\multicolumn{4}{l}{\\textit{Panel B. Origin + Destination FE}} \\\\\n",
   panel_row(models_b),
+  "\\midrule\n",
+  bottom_section,
   obs_row(models_b),
   "\\bottomrule\n",
   "\\end{tabular}\n"

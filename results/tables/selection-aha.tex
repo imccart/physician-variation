@@ -1,15 +1,16 @@
-
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
- & Baseline & IPW\\
+ & (1) & (2) & (3) \\
 \midrule
-Training-HRR cath lab share & 0.058*** & 0.057***\\
- & (0.021) & (0.021)\\
+Training-HRR cath lab share & 0.058*** & 0.057*** & 0.068 \\
+ & (0.021) & (0.021) & (0.051) \\
 \midrule
-Med school HRR FE & Yes & Yes\\
-Practice HRR FE & Yes & Yes\\
-Year FE & Yes & Yes\\
-IPW & No & Yes\\
-Observations & 10,729 & 10,729\\
+IPW & No & Yes & No \\
+Med school HRR FE & Yes & Yes & No \\
+Med school HRR $\times$ decade FE & No & No & Yes \\
+Practice HRR FE & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes \\
+Observations & 10,729 & 10,729 & 10,728 \\
 \bottomrule
 \end{tabular}
+

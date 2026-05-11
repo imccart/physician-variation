@@ -127,17 +127,54 @@ print(summary(m_inter))
 
 # 5. Stratified cath effect: within each rank tier ----------------------
 
-m_top25 <- feols(mean_resid_cath ~ train_cath_lab |
-                   hrr_practice + year,
-                 data = clean %>% filter(rank_top25 == 1),
-                 weights = ~n_nstemi, cluster = ~hrr_med_school)
-m_below <- feols(mean_resid_cath ~ train_cath_lab |
-                   hrr_practice + year,
-                 data = clean %>% filter(rank_top25 == 0),
-                 weights = ~n_nstemi, cluster = ~hrr_med_school)
+# Add the same physician + practice controls used in Tables 3 and 4 so the
+# stratified results progress through the same set of specifications.
+clean_strat <- clean %>%
+  mutate(years_exp = year - grad_year,
+         female    = as.integer(gender == "F"))
+clean_strat_prac <- clean_strat %>%
+  filter(!is.na(hospital_based_share), !is.na(log_tin_volume))
 
-cat("\n=== Cath-lab effect among Top-25 schools ===\n");      print(summary(m_top25))
-cat("\n=== Cath-lab effect among Below Top-25 ===\n");        print(summary(m_below))
+# Top 25 stratum -------------------------------------------------------
+m_top25_a1 <- feols(mean_resid_cath ~ train_cath_lab |
+                      hrr_practice + year,
+                    data = clean_strat %>% filter(rank_top25 == 1),
+                    weights = ~n_nstemi, cluster = ~hrr_med_school)
+m_top25_a2 <- feols(mean_resid_cath ~ train_cath_lab + female + years_exp |
+                      hrr_practice + year,
+                    data = clean_strat %>% filter(rank_top25 == 1),
+                    weights = ~n_nstemi, cluster = ~hrr_med_school)
+m_top25_a3 <- feols(mean_resid_cath ~ train_cath_lab + female + years_exp +
+                      hospital_based_share + log_tin_volume |
+                      hrr_practice + year,
+                    data = clean_strat_prac %>% filter(rank_top25 == 1),
+                    weights = ~n_nstemi, cluster = ~hrr_med_school)
+
+# Below Top 25 stratum --------------------------------------------------
+m_below_a1 <- feols(mean_resid_cath ~ train_cath_lab |
+                      hrr_practice + year,
+                    data = clean_strat %>% filter(rank_top25 == 0),
+                    weights = ~n_nstemi, cluster = ~hrr_med_school)
+m_below_a2 <- feols(mean_resid_cath ~ train_cath_lab + female + years_exp |
+                      hrr_practice + year,
+                    data = clean_strat %>% filter(rank_top25 == 0),
+                    weights = ~n_nstemi, cluster = ~hrr_med_school)
+m_below_a3 <- feols(mean_resid_cath ~ train_cath_lab + female + years_exp +
+                      hospital_based_share + log_tin_volume |
+                      hrr_practice + year,
+                    data = clean_strat_prac %>% filter(rank_top25 == 0),
+                    weights = ~n_nstemi, cluster = ~hrr_med_school)
+
+# Aliases for backward compatibility (later cell table uses m_top25/m_below)
+m_top25 <- m_top25_a1
+m_below <- m_below_a1
+
+cat("\n=== Cath-lab effect among Top-25 schools (baseline) ===\n");      print(summary(m_top25_a1))
+cat("\n=== Cath-lab effect among Top-25 schools (+ phys) ===\n");        print(summary(m_top25_a2))
+cat("\n=== Cath-lab effect among Top-25 schools (+ practice) ===\n");    print(summary(m_top25_a3))
+cat("\n=== Cath-lab effect among Below Top-25 (baseline) ===\n");        print(summary(m_below_a1))
+cat("\n=== Cath-lab effect among Below Top-25 (+ phys) ===\n");          print(summary(m_below_a2))
+cat("\n=== Cath-lab effect among Below Top-25 (+ practice) ===\n");      print(summary(m_below_a3))
 
 
 # 6. 2x2 cell-effects table -----------------------------------------------
@@ -183,35 +220,53 @@ fmt_s <- function(x) {
   paste0("(", sprintf("%.3f", x), ")")
 }
 
-# Stratified cath-effect table
-top  <- mc_row(m_top25, "train_cath_lab")
-blo  <- mc_row(m_below, "train_cath_lab")
-body_strat <- tribble(
-  ~term, ~`(1)`, ~`(2)`,
-  "Cath lab share, training HRR",
-    fmt_e(top$est, top$p), fmt_e(blo$est, blo$p),
-  "",
-    fmt_s(top$se), fmt_s(blo$se)
+# Stratified cath-effect table: 2 panels x 3 cols (baseline / + phys / + practice)
+top_rows   <- list(mc_row(m_top25_a1, "train_cath_lab"),
+                   mc_row(m_top25_a2, "train_cath_lab"),
+                   mc_row(m_top25_a3, "train_cath_lab"))
+below_rows <- list(mc_row(m_below_a1, "train_cath_lab"),
+                   mc_row(m_below_a2, "train_cath_lab"),
+                   mc_row(m_below_a3, "train_cath_lab"))
+
+row_3col <- function(label, rs) {
+  paste0(label, " & ",
+         paste(sapply(rs, function(x) fmt_e(x$est, x$p)), collapse = " & "),
+         " \\\\\n",
+         " & ",
+         paste(sapply(rs, function(x) fmt_s(x$se)), collapse = " & "),
+         " \\\\\n")
+}
+obs_row <- function(models) {
+  paste0("Observations & ",
+         paste(sapply(models, function(m) format(nobs(m), big.mark = ",")),
+               collapse = " & "),
+         " \\\\\n")
+}
+
+bottom_section <- paste0(
+  "Physician characteristics & No & Yes & Yes \\\\\n",
+  "Practice characteristics & No & No & Yes \\\\\n",
+  "Practice HRR FE & Yes & Yes & Yes \\\\\n",
+  "Year FE & Yes & Yes & Yes \\\\\n"
 )
-footer_strat <- tribble(
-  ~term, ~`(1)`, ~`(2)`,
-  "Practice HRR FE", "Yes", "Yes",
-  "Year FE",         "Yes", "Yes",
-  "Sample",          "Top 25", "Below Top 25",
-  "Observations",
-    format(nobs(m_top25), big.mark = ","),
-    format(nobs(m_below), big.mark = ",")
+
+tbl_strat <- paste0(
+  "\\begin{tabular}{lccc}\n",
+  "\\toprule\n",
+  " & (1) & (2) & (3) \\\\\n",
+  "\\midrule\n",
+  "\\multicolumn{4}{l}{\\textit{Panel A. Top 25 schools}} \\\\\n",
+  row_3col("Cath lab share, training HRR", top_rows),
+  "\\midrule\n",
+  "\\multicolumn{4}{l}{\\textit{Panel B. Below Top 25 schools}} \\\\\n",
+  row_3col("Cath lab share, training HRR", below_rows),
+  "\\midrule\n",
+  bottom_section,
+  obs_row(list(m_below_a1, m_below_a2, m_below_a3)),
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
 )
-table_strat <- bind_rows(body_strat, footer_strat)
-kable(table_strat,
-      format    = "latex",
-      booktabs  = TRUE,
-      linesep   = "",
-      escape    = FALSE,
-      align     = c("l", rep("c", 2)),
-      col.names = c("", "Top 25 schools", "Below Top 25")) %>%
-  row_spec(2, extra_latex_after = "\\midrule") %>%
-  save_kable("results/tables/rank-x-cath-stratified.tex")
+writeLines(tbl_strat, "results/tables/rank-x-cath-stratified.tex")
 
 # Cell-effects table (relative to ref cell)
 c2 <- mc_row(m_cells, "cellBelow Top 25 / High cath")
