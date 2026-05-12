@@ -10,9 +10,10 @@
    training, rather than relying on the AHA binary cath-lab indicator.
 
    Inputs:  PL027710.NSTEMI_Patients (PRVDR_NUM, CLM_ADMSN_DT, D_Cath_D2)
-   Outputs: PL027710.Hospital_Year_Cath  (full panel, stays in SAS)
-            PL027710.Hospital_Year_Cath_Export  (volume-filtered for export)
-   Export:  Manual via SAS EG -> CSV into the R container's data/input/
+   Outputs: PL027710.Hospital_Year_Cath  (full panel, with counts, stays in SAS)
+            PL027710.Hospital_Year_Cath_Export  (counts suppressed where
+              n_nstemi <= 11, per CMS small-cell rule; rate kept for all rows)
+   Export:  Manual via SAS EG -> CSV into the R container's data/input/.
 */
 
 %include "0_config.sas";
@@ -39,36 +40,33 @@ QUIT;
 
 
 /* ------------------------------------------------------------------------
-   2. Cell-size filter for export (CMS minimum cell size = 11)
+   2. Export table: rate only (drop n_nstemi and n_cath_d2)
    ------------------------------------------------------------------------ */
 
 DATA PL027710.Hospital_Year_Cath_Export;
     SET PL027710.Hospital_Year_Cath;
-    IF n_nstemi >= 11;
+    IF n_nstemi  <= 11 THEN n_nstemi  = .;
+    IF n_cath_d2 <= 11 THEN n_cath_d2 = .;
 RUN;
 
 
 /* ------------------------------------------------------------------------
-   3. Diagnostics
+   3. Diagnostics (full table with counts stays in SAS)
    ------------------------------------------------------------------------ */
 
 PROC SQL;
-    SELECT  "All cells"  AS label,
-            COUNT(*)     AS n_cells,
+    SELECT  COUNT(*)                  AS n_cells,
             COUNT(DISTINCT prvdr_num) AS n_hospitals,
-            MEAN(rate_cath_d2)        AS mean_rate FORMAT=6.4
-    FROM PL027710.Hospital_Year_Cath
-    UNION
-    SELECT  "Export (n_nstemi>=11)",
-            COUNT(*),
-            COUNT(DISTINCT prvdr_num),
-            MEAN(rate_cath_d2) FORMAT=6.4
-    FROM PL027710.Hospital_Year_Cath_Export;
+            MEAN(rate_cath_d2)        AS mean_rate FORMAT=6.4,
+            MIN(n_nstemi)             AS min_n,
+            MEDIAN(n_nstemi)          AS median_n,
+            MAX(n_nstemi)             AS max_n
+    FROM PL027710.Hospital_Year_Cath;
 QUIT;
 
-PROC FREQ DATA=PL027710.Hospital_Year_Cath_Export;
+PROC FREQ DATA=PL027710.Hospital_Year_Cath;
     TABLES year / NOROW NOCOL NOPERCENT;
-    TITLE "Hospital-year export rows by year";
+    TITLE "Hospital-year rows by year (full panel)";
 RUN;
 TITLE;
 
@@ -76,5 +74,5 @@ TITLE;
 /*  Manual export step (right-click Hospital_Year_Cath_Export in SAS EG):
     -> Export -> CSV
     Save as hospital_year_cath.csv in the R container's data/input/.
-    Columns: prvdr_num, year, n_nstemi, n_cath_d2, rate_cath_d2
+    Columns: prvdr_num, year, rate_cath_d2
 */
