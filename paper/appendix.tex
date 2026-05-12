@@ -158,11 +158,13 @@ The main paper documents that medical-school NIH-funding rank does not predict l
 
 The continuous $-\log(\text{rank})$ specification, the binary Top-25 indicator, and the four-tier specification all yield small and statistically insignificant coefficients on the cardiologist-year panel. Restricting to the mover sample produces similar nulls. The interpretation is that whatever channel rank captures, it does not show up in NSTEMI cath rates. The rank-by-cath stratification reported in the main paper further indicates that the cath-lab imprint is similar in magnitude within the Top-25 and Below-Top-25 subsamples, confirming that cath-availability and rank capture nearly orthogonal dimensions of medical-school environment.
 
-\section{Selection Robustness}\label{sec:app-ipw}
+\section{Selection Diagnostics}\label{sec:app-ipw}
 
-The cross-sectional balance comparison documented in the main paper indicates that movers come from medical-school HRRs with somewhat lower mean cath-lab share than stayers, with smaller differences on graduation cohort and subspecialty composition. The main paper reports the inverse-probability-weighted within-origin specification on the AHA training-period cath-lab measure. This section presents a parallel selection robustness exercise using a complementary measure of training-environment intensity, the leave-one-out peer cath rate in the medical-school HRR.
+The main analysis addresses two distinct selection concerns. The first is that movers and stayers differ on observable characteristics, raising the possibility that the imprint estimate reflects mover-vs-stayer selection rather than a causal training effect. The second is that cardiologists from cath-rich training environments may systematically end up in cath-rich practice destinations, in which case our cross-sectional identification would conflate training imprint with destination-type sorting. We address the first with the inverse-probability-weighted (IPW) specification reported in the main paper. This section reports a parallel IPW exercise using a complementary measure of training-environment intensity, and a separate diagnostic for the destination-sorting concern.
 
-Table~\ref{tab:app-selection-alt} reports the IPW-weighted estimate alongside the unweighted baseline. The IPW weighting raises the imprint coefficient slightly (from 0.076 to 0.087), with the IPW change in $\Delta$ intensity also small. Both the AHA spec in the main paper and the peer-cath spec here indicate that observable selection on graduation cohort, gender, subspecialty, and training-period intensity does not drive the imprint we estimate.
+\subsection{IPW Robustness Using the Peer-Cath Measure}
+
+The main paper reports the IPW-weighted within-origin specification on the AHA training-period cath-lab measure. Table~\ref{tab:app-selection-alt} reports a parallel IPW exercise using the leave-one-out peer cath rate in the medical-school HRR as the training-intensity measure. The IPW weighting raises the imprint coefficient slightly (from 0.076 to 0.087), with the IPW change in $\Delta$ intensity also small. Both the AHA spec in the main paper and the peer-cath spec here indicate that observable selection on graduation cohort, gender, subspecialty, and training-period intensity does not drive the imprint we estimate.
 
 \begin{table}[htbp]
 \centering
@@ -174,9 +176,17 @@ Table~\ref{tab:app-selection-alt} reports the IPW-weighted estimate alongside th
 \end{minipage}
 \end{table}
 
+\subsection{Training Intensity and Destination Choice}\label{sec:app-train-dest}
+
+A separate identification concern is that cardiologists from cath-rich training environments may end up in cath-rich current peer environments. If so, the training imprint we estimate in the main paper could partly reflect destination-type sorting on the training measure rather than a causal effect of training. To assess this directly, we regress each cardiologist's current peer cath rate (the leave-one-out residualized cath rate of other cardiologists in the same HRR-year) on their training-period cath lab share, with year fixed effects and clustering at the medical-school HRR level.
+
+On the full cardiologist-year panel (10{,}736 observations from 3{,}207 cardiologists with non-missing training-period and current-peer data), the coefficient on training-period cath lab share is $-$0.012 (SE 0.016), statistically indistinguishable from zero. Restricting to each cardiologist's earliest panel observation as a cross-section produces a similarly small estimate: $-$0.027 (SE 0.018), $n = 3{,}207$. The pairwise correlation between training-period cath lab share and current peer cath rate is $-$0.03.
+
+Training-period cath lab availability does not predict the current peer cath rate in our sample. Cardiologists from cath-rich training environments are not systematically located in cath-rich destinations, and the destination-type-sorting concern does not appear to drive our cross-sectional imprint estimate. We caveat that our cardiologist-level cross-section uses the earliest panel observation rather than the first practice location after training, so this is a contemporaneous diagnostic rather than a direct test of training-induced sorting at first placement.
+
 \section{Event-Study Details}\label{sec:app-es}
 
-This section reports the full coefficient table for the within-physician event study around mid-career moves and the corresponding direction-asymmetric specification.
+This section reports the full coefficient table for the within-physician event study around mid-career moves.
 
 Table~\ref{tab:app-es-coefs} reports point estimates, standard errors, and 95\% confidence intervals for each event-time coefficient $\hat\beta_\tau$ in the within-physician event study, with $\tau \in [-3, 5]$ and $\tau = -1$ omitted as the reference period. The pre-move coefficients ($\tau \in \{-3, -2\}$) are statistically indistinguishable from zero, consistent with the parallel-trends assumption. Adaptation jumps at $\tau = 0$ to 0.443 (SE 0.097, 95\% CI [0.25, 0.63]) and persists through $\tau = 5$. The $\tau \in \{2, 3\}$ coefficients are smaller and noisier than the $\tau = 0, 1, 4, 5$ coefficients, but the post-move trajectory is broadly stable rather than fading.
 
@@ -205,38 +215,6 @@ Table~\ref{tab:app-es-coefs} reports point estimates, standard errors, and 95\% 
 \end{table}
 
 Pre-trends are formally tested by the joint $F$-statistic on $\hat\beta_{-3}$ and $\hat\beta_{-2}$, which fails to reject the null of zero pre-trends at conventional levels. The post-move pooled coefficient (constraining $\beta_\tau = \beta$ for $\tau \geq 0$) is 0.350, which we use in the cohort-transition calibration in the main paper.
-
-\subsection{Event-Study Coefficients by Direction of Move}
-
-Table~\ref{tab:app-es-direction} reports the event-study coefficients separately for up-movers ($\Delta_i > 0$) and down-movers ($\Delta_i < 0$). Up-movers are cardiologists whose destination peer cath rate exceeds their origin peer rate. Down-movers are the reverse. The pre-move coefficients ($\tau \in \{-3, -2\}$) are statistically indistinguishable from zero in both subsamples, supporting parallel trends within each direction. The asymmetry in post-move trajectories is therefore not driven by differential pre-move dynamics but by direction-asymmetric malleability after the move.
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption{Event-study coefficients by direction of move}
-  \label{tab:app-es-direction}
-  \centering
-  \begin{tabular}{lcccccc}
-  \toprule
-   & \multicolumn{2}{c}{Up-movers ($\Delta > 0$)} & & \multicolumn{2}{c}{Down-movers ($\Delta < 0$)} \\
-  \cmidrule(lr){2-3} \cmidrule(lr){5-6}
-  Event time $\tau$ & Estimate & SE & & Estimate & SE \\
-  \midrule
-  $-3$ & $-$0.189 & 0.177 & & 0.226    & 0.222 \\
-  $-2$ & $-$0.040 & 0.141 & & $-$0.176 & 0.200 \\
-  $-1$ & 0       & ref.   & & 0       & ref.  \\
-  $0$  & 0.454   & 0.144 & & 0.504   & 0.151 \\
-  $1$  & 0.474   & 0.178 & & 0.292   & 0.203 \\
-  $2$  & 0.208   & 0.185 & & 0.330   & 0.249 \\
-  $3$  & 0.424   & 0.240 & & 0.170   & 0.248 \\
-  $4$  & 0.840   & 0.274 & & 0.122   & 0.325 \\
-  $5$  & 0.831   & 0.334 & & 0.156   & 0.355 \\
-  \bottomrule
-  \end{tabular}
-\end{minipage}
-\end{table}
-
-The point estimates make the direction-asymmetric malleability concrete. At the move year, up-movers and down-movers have similar magnitudes (0.454 and 0.504 respectively, both statistically distinguishable from zero). Post-move trajectories diverge sharply. The up-mover trajectory grows from 0.45 at $\tau=0$ to 0.83 at $\tau=5$, with the late-event-time coefficients statistically distinguishable from zero. The down-mover trajectory drops from 0.50 at $\tau=0$ to 0.16 at $\tau=5$, and the post-move coefficients beyond $\tau=0$ are not statistically distinguishable from zero. The asymmetry is consistent with cardiologists from cath-rich training environments resisting downward pressure from a less procedurally aggressive destination, while cardiologists from cath-poor training environments adapt more fully to a more procedurally aggressive destination.
 
 \section{Heterogeneity}\label{sec:app-het}
 
@@ -300,34 +278,6 @@ Table~\ref{tab:app-quartiles} stratifies the change specification by quartiles o
 \end{minipage}
 \end{table}
 
-\subsection{Positive vs.\ Negative $\Delta$}
-
-Table~\ref{tab:app-pos-neg} reports the change specification separately for cardiologists with negative $\Delta$ (down-movers in the cross-sectional sense) and positive $\Delta$ (up-movers). Both subsamples produce small and statistically insignificant coefficients on $\Delta$ intensity. The cross-sectional level effect dominates the change effect in our specification, consistent with the structure documented for the within-physician event study where the asymmetry by direction emerges over post-move horizons rather than at the move year.
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{0.6\textwidth}
-  \caption{Change specification by sign of $\Delta$ intensity}
-  \label{tab:app-pos-neg}
-  \centering
-  \input{../results/tables/robust-pos-neg.tex}
-\end{minipage}
-\end{table}
-
-\subsection{Within-Physician Heterogeneity by Training Tercile}
-
-Table~\ref{tab:app-train-x-dest} stratifies the within-physician destination-response specification by training-cath tercile to test whether the destination response varies by the cardiologist's training-environment intensity. The point estimates of $\hat\beta_{\text{dest}}$ are similar across the low (0.199, SE 0.049), mid (0.146, SE 0.047), and high (0.129, SE 0.048) training-cath terciles, all statistically distinguishable from zero at the 1\% level. An interaction specification yields a small and statistically insignificant interaction coefficient on training cath share ($-$0.131, SE 0.163 in the full sample). The within-physician destination response does not depend strongly on training intensity in the cross-section, which is consistent with the substitutability interpretation in the main paper if the asymmetry is realized over post-move horizons rather than in the immediate response.
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption{Within-physician destination response by training-cath tercile}
-  \label{tab:app-train-x-dest}
-  \centering
-  \resizebox{\textwidth}{!}{\input{../results/tables/heterogeneity-train-x-dest.tex}}
-\end{minipage}
-\end{table}
-
 \subsection{Variance Decomposition Diagnostic}
 
 A natural follow-up to our reduced-form coefficients is to ask how much of the cross-physician variance in cath rates is attributable to training-period exposure. We construct an Abowd-Kramarz-Margolis-style two-way fixed-effect decomposition of the residualized cath rate into physician ($\alpha_i$), place ($\gamma_{d(i,t)}$), year ($\tau_t$), and residual components. Table~\ref{tab:app-fgw-top} reports the variance shares.
@@ -387,7 +337,7 @@ The simulation tracks the per-cardiologist response to a uniform 10-percentage-p
 \begin{equation*}
 y_t = \beta_{\text{train}} \cdot \Delta\tau \cdot \text{share}_t + \beta_{\text{dest}} \cdot y_{t-1},
 \end{equation*}
-with the direct training effect compounding through the destination feedback loop. The path approaches the long-run multiplier $1/(1 - \beta_{\text{dest}}) = 1.54$ asymptotically under the within-physician estimate $\beta_{\text{dest}} = 0.35$, and 2.38 under the cross-sectional estimate $\beta_{\text{dest}} = 0.58$. Half of the long-run effect is realized within roughly 10 years of the equalization shock under either estimate, and the system reaches 95\% of steady state by year 20.
+with the direct training effect compounding through the destination feedback loop. The path approaches the long-run multiplier $1/(1 - \beta_{\text{dest}}) = 1.54$ asymptotically under our within-physician estimate of $\beta_{\text{dest}} = 0.35$. Half of the long-run effect is realized within roughly 10 years of the equalization shock, and the system reaches 95\% of steady state by year 20.
 
 \subsection{Place-Based Variance Reduction Path}
 
@@ -402,8 +352,6 @@ The place-based variance reduction follows the same transition path, scaled by t
   \includegraphics[width=\textwidth]{place-variance-path.png}
 \end{minipage}
 \end{figure}
-
-The asymmetric persistence documented in the main paper applies to the variance-reduction path as well. An equalization regime that raises low-availability training HRRs to the national mean propagates more durably than one that lowers high-availability training HRRs, because the asymmetric malleability concentrates adaptation in the up-mover direction. The pooled simulation reported here averages over both directions and therefore understates the long-run reduction achievable by upward-only equalization while overstating the reduction achievable by downward-only equalization.
 
 \clearpage
 
