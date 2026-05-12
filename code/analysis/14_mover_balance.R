@@ -235,13 +235,11 @@ print(summary(m_delta))
 p_select <- mover_panel %>%
   filter(!is.na(delta_dest)) %>%
   ggplot(aes(x = train_cath_lab, y = delta_dest)) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
-  geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", color = "firebrick") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+  geom_point(alpha = 0.4, color = "gray25") +
+  geom_smooth(method = "lm", color = "gray45", fill = "gray80") +
   labs(x = "Training-period cath-lab share",
-       y = "Destination cath share - origin cath share",
-       title = "Where mid-career movers go, by training intensity",
-       subtitle = "Slope > 0 means high-trained movers go to higher-cath destinations.") +
+       y = "Destination cath share - origin cath share") +
   theme_minimal()
 
 ggsave("results/figures/mover-selection.png", p_select,

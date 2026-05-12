@@ -52,9 +52,9 @@ map_df <- hrr_sf %>%
   left_join(hrr_pool, by = c("hrrnum" = "hrr_practice"))
 
 p_map <- ggplot(map_df) +
-  geom_sf(aes(fill = intensity), color = "gray60", linewidth = 0.1) +
-  scale_fill_distiller(palette = "Reds", direction = 1,
-                       na.value = "gray90",
+  geom_sf(aes(fill = intensity), color = "gray70", linewidth = 0.1) +
+  scale_fill_distiller(palette = "Greys", direction = 1,
+                       na.value = "gray95",
                        name = "Mean residualized\ncath rate") +
   coord_sf(crs = 5070) +   # Albers equal area for the lower 48
   theme_void() +

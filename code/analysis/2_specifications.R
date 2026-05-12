@@ -408,9 +408,9 @@ p_spline <- ggplot(curves,
                        color = group, fill = group, linetype = group)) +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
   geom_line(linewidth = 1) +
-  scale_color_manual(values = c("Mover" = "#82A6B1", "Stayer" = "#DC851F")) +
-  scale_fill_manual( values = c("Mover" = "#82A6B1", "Stayer" = "#DC851F")) +
-  scale_linetype_manual(values = c("Mover" = "solid", "Stayer" = "dotted")) +
+  scale_color_manual(values = c("Mover" = "gray20", "Stayer" = "gray60")) +
+  scale_fill_manual( values = c("Mover" = "gray20", "Stayer" = "gray60")) +
+  scale_linetype_manual(values = c("Mover" = "solid", "Stayer" = "dashed")) +
   labs(x = "Med school HRR intensity",
        y = "Predicted residualized cath rate",
        color = NULL, fill = NULL, linetype = NULL) +

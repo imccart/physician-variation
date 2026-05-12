@@ -191,9 +191,9 @@ bs <- bs_data %>%
             .groups = "drop")
 
 p_bs <- ggplot(bs, aes(x = x, y = y)) +
-  geom_point(size = 3, color = "steelblue") +
+  geom_point(size = 3, color = "gray25") +
   geom_smooth(data = bs_data, aes(x = train_cath_lab, y = mean_resid_cath),
-              method = "lm", se = TRUE, color = "firebrick",
+              method = "lm", se = TRUE, color = "gray45", fill = "gray80",
               inherit.aes = FALSE) +
   labs(x = "Training-period cath lab share (medical school HRR)",
        y = "Residualized catheterization rate") +
@@ -209,11 +209,10 @@ scatter_data <- analysis %>%
   filter(mover == 1, !is.na(intensity_med_school), !is.na(intensity_dest_loo))
 
 p1 <- ggplot(scatter_data, aes(x = intensity_med_school, y = mean_resid_cath)) +
-  geom_point(alpha = 0.1, size = 0.5) +
-  geom_smooth(method = "lm", color = "firebrick", se = TRUE) +
+  geom_point(alpha = 0.1, size = 0.5, color = "gray25") +
+  geom_smooth(method = "lm", color = "gray45", fill = "gray80", se = TRUE) +
   labs(x = "Medical School HRR Intensity",
-       y = "Cardiologist Residualized Cath Rate",
-       title = "Training environment predicts practice intensity") +
+       y = "Cardiologist Residualized Cath Rate") +
   theme_minimal()
 
 ggsave("results/figures/scatter-med-school-vs-practice.png", p1,
@@ -232,11 +231,10 @@ binscatter_data <- scatter_data %>%
   )
 
 p2 <- ggplot(binscatter_data, aes(x = x, y = y)) +
-  geom_point(size = 3) +
-  geom_smooth(method = "lm", se = FALSE, color = "firebrick") +
+  geom_point(size = 3, color = "gray25") +
+  geom_smooth(method = "lm", se = FALSE, color = "gray45") +
   labs(x = "Medical School HRR Intensity (ventile means)",
-       y = "Mean Residualized Cath Rate",
-       title = "Training environment predicts practice intensity (binscatter)") +
+       y = "Mean Residualized Cath Rate") +
   theme_minimal()
 
 ggsave("results/figures/binscatter-med-school-vs-practice.png", p2,
@@ -248,11 +246,10 @@ ggsave("results/figures/binscatter-med-school-vs-practice.png", p2,
 p3 <- analysis %>%
   filter(mover == 1, !is.na(intensity_change)) %>%
   ggplot(aes(x = intensity_change)) +
-  geom_histogram(bins = 50, fill = "steelblue", color = "white") +
-  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_histogram(bins = 50, fill = "gray45", color = "white") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray20") +
   labs(x = "Change in Intensity (Destination LOO - Med School)",
-       y = "Count",
-       title = "Distribution of intensity change for movers") +
+       y = "Count") +
   theme_minimal()
 
 ggsave("results/figures/hist-intensity-change.png", p3,
@@ -269,10 +266,9 @@ p4 <- analysis %>%
     .groups = "drop"
   ) %>%
   ggplot(aes(x = year, y = n_cardiologists)) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 2) +
-  labs(x = "Year", y = "Number of Cardiologists",
-       title = "Panel size over time") +
+  geom_line(linewidth = 1, color = "gray25") +
+  geom_point(size = 2, color = "gray25") +
+  labs(x = "Year", y = "Number of Cardiologists") +
   theme_minimal()
 
 ggsave("results/figures/panel-size-by-year.png", p4,
@@ -453,11 +449,10 @@ od_counts <- od_data %>%
 
 p_od <- ggplot(od_counts, aes(x = dest, y = origin, fill = n)) +
   geom_tile(color = "white") +
-  scale_fill_gradient(low = "#F0F0F0", high = "#1F2D5C", trans = "log10") +
+  scale_fill_gradient(low = "gray90", high = "gray15", trans = "log10") +
   labs(x = "Destination HRR (top 25)",
        y = "Origin HRR (top 25)",
-       fill = "Movers",
-       title = "Origin-destination flows for cardiologist movers") +
+       fill = "Movers") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7),
         axis.text.y = element_text(size = 7))
@@ -467,12 +462,11 @@ ggsave("results/figures/od-heatmap.png", p_od,
 
 # Distribution of HHI across origins (the actual diagnostic)
 p_hhi <- ggplot(od_dispersion, aes(x = hhi_dest)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  geom_histogram(bins = 30, fill = "gray45", color = "white") +
   geom_vline(xintercept = median(od_dispersion$hhi_dest),
-             linetype = "dashed", color = "firebrick") +
+             linetype = "dashed", color = "gray20") +
   labs(x = "Destination HHI within origin HRR",
-       y = "Number of origin HRRs",
-       title = "Movers do not concentrate on one destination") +
+       y = "Number of origin HRRs") +
   theme_minimal()
 
 ggsave("results/figures/od-hhi.png", p_hhi,

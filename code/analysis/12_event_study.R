@@ -137,16 +137,14 @@ cat("\nEvent-time coefficients (share of Delta_dest reflected in own cath):\n")
 print(es_coef %>% select(event_time, estimate, std.error, p.value))
 
 p_es <- ggplot(es_coef, aes(x = event_time, y = estimate)) +
-  geom_ribbon(aes(ymin = lo95, ymax = hi95), alpha = 0.2, fill = "steelblue") +
-  geom_line(color = "steelblue", linewidth = 1) +
-  geom_point(size = 2.5, color = "steelblue") +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
-  geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey40") +
+  geom_ribbon(aes(ymin = lo95, ymax = hi95), alpha = 0.25, fill = "gray70") +
+  geom_line(color = "gray25", linewidth = 1) +
+  geom_point(size = 2.5, color = "gray25") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+  geom_vline(xintercept = -0.5, linetype = "dotted", color = "gray40") +
   scale_x_continuous(breaks = window) +
   labs(x = "Event time (years from move)",
-       y = expression(hat(beta)[tau]),
-       title = "Cardiologist cath rate response to mid-career move",
-       subtitle = "Coefficient on Delta_dest by event time. Reference: t = -1.") +
+       y = expression(hat(beta)[tau])) +
   theme_minimal()
 
 ggsave("results/figures/event-study.png", p_es,
@@ -235,22 +233,25 @@ write_csv(curves, "results/tables/event-study-coefs-by-direction.csv")
 cat("\nWrote results/tables/event-study-coefs-by-direction.csv\n")
 
 p_es_dir <- ggplot(curves, aes(x = event_time, y = estimate,
-                                color = direction, fill = direction)) +
+                                color = direction, fill = direction,
+                                linetype = direction, shape = direction)) +
   geom_ribbon(aes(ymin = lo95, ymax = hi95), alpha = 0.15, color = NA) +
   geom_line(linewidth = 1) +
   geom_point(size = 2.5) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
-  geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey40") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+  geom_vline(xintercept = -0.5, linetype = "dotted", color = "gray40") +
   scale_x_continuous(breaks = window) +
-  scale_color_manual(values = c("Up-mover (Δ > 0)"   = "steelblue",
-                                "Down-mover (Δ < 0)" = "firebrick")) +
-  scale_fill_manual( values = c("Up-mover (Δ > 0)"   = "steelblue",
-                                "Down-mover (Δ < 0)" = "firebrick")) +
+  scale_color_manual(values = c("Up-mover (Δ > 0)"   = "gray20",
+                                "Down-mover (Δ < 0)" = "gray60")) +
+  scale_fill_manual( values = c("Up-mover (Δ > 0)"   = "gray20",
+                                "Down-mover (Δ < 0)" = "gray60")) +
+  scale_linetype_manual(values = c("Up-mover (Δ > 0)"   = "solid",
+                                   "Down-mover (Δ < 0)" = "dashed")) +
+  scale_shape_manual(values = c("Up-mover (Δ > 0)"   = 16,
+                                "Down-mover (Δ < 0)" = 17)) +
   labs(x = "Event time (years from move)",
        y = expression(hat(beta)[tau]),
-       color = NULL, fill = NULL,
-       title = "Adaptation by direction of move",
-       subtitle = "Coefficient on Delta_dest. Asymmetric malleability => up > down.") +
+       color = NULL, fill = NULL, linetype = NULL, shape = NULL) +
   theme_minimal()
 
 ggsave("results/figures/event-study-by-direction.png", p_es_dir,
@@ -349,19 +350,21 @@ print(summary(m_diff))
 
 # Plot: deviation vs training cath share, separately by phase
 p_dev <- ggplot(two_phase, aes(x = train_cath_lab, y = deviation,
-                                color = phase, fill = phase)) +
+                                color = phase, fill = phase,
+                                linetype = phase, shape = phase)) +
   geom_smooth(method = "lm", alpha = 0.2) +
   geom_point(alpha = 0.3, size = 1) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
-  scale_color_manual(values = c("origin" = "steelblue",
-                                "destination" = "firebrick")) +
-  scale_fill_manual( values = c("origin" = "steelblue",
-                                "destination" = "firebrick")) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+  scale_color_manual(values = c("origin" = "gray20",
+                                "destination" = "gray60")) +
+  scale_fill_manual( values = c("origin" = "gray20",
+                                "destination" = "gray60")) +
+  scale_linetype_manual(values = c("origin" = "solid",
+                                   "destination" = "dashed")) +
+  scale_shape_manual(values = c("origin" = 16, "destination" = 17)) +
   labs(x = "Training-period cath-lab share",
        y = "Deviation from current peer mean",
-       color = NULL, fill = NULL,
-       title = "Deviation from peers, by training intensity",
-       subtitle = "Same physician at origin vs destination practice; long-run only.") +
+       color = NULL, fill = NULL, linetype = NULL, shape = NULL) +
   theme_minimal()
 
 ggsave("results/figures/two-peer-deviation.png", p_dev,

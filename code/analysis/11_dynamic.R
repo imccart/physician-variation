@@ -61,21 +61,19 @@ print(path %>%
 # 3. Plot ---------------------------------------------------------------
 
 p_dyn <- ggplot(path, aes(x = year, y = cath_change * 100)) +
-  geom_line(linewidth = 1, color = "steelblue") +
+  geom_line(linewidth = 1, color = "gray25") +
   geom_hline(yintercept = beta_train * shock_train * 100,
-             linetype = "dashed", color = "grey40") +
+             linetype = "dashed", color = "gray40") +
   geom_hline(yintercept = long_run * shock_train * 100,
-             linetype = "dotted", color = "firebrick") +
+             linetype = "dotted", color = "gray40") +
   annotate("text", x = horizon * 0.95, y = beta_train * shock_train * 100,
            label = "Direct (one-cohort) effect",
-           hjust = 1, vjust = -0.5, color = "grey20", size = 3) +
+           hjust = 1, vjust = -0.5, color = "gray20", size = 3) +
   annotate("text", x = horizon * 0.95, y = long_run * shock_train * 100,
            label = "Steady-state (with feedback)",
-           hjust = 1, vjust = -0.5, color = "firebrick", size = 3) +
+           hjust = 1, vjust = -0.5, color = "gray20", size = 3) +
   labs(x = "Years since training reform",
-       y = "Cath rate change (pp)",
-       title = "Dynamic transition: 10pp training-cath shock",
-       subtitle = "Direct training imprint plus destination feedback through cohort turnover") +
+       y = "Cath rate change (pp)") +
   theme_minimal()
 
 ggsave("results/figures/dynamic-calibration.png", p_dyn,
@@ -120,15 +118,12 @@ var_panel <- tibble(
 
 p_var <- ggplot(var_panel, aes(x = year)) +
   geom_ribbon(aes(ymin = lo, ymax = hi),
-              fill = "grey75", alpha = 0.55) +
-  geom_line(aes(y = anchor), color = "steelblue", linewidth = 1.1) +
+              fill = "gray75", alpha = 0.55) +
+  geom_line(aes(y = anchor), color = "gray25", linewidth = 1.1) +
   scale_y_continuous(labels = scales::percent_format(),
                      limits = c(0, 1)) +
   labs(x = "Years since training equalization",
-       y = "Reduction in place-based cross-HRR variance",
-       title = "Place-based variance reduction under training equalization",
-       subtitle = paste0("Anchor (solid): s = 0.5. ",
-                         "Gray band: s in [0.3, 0.7] (Cutler/Badinski-anchored).")) +
+       y = "Reduction in place-based cross-HRR variance") +
   theme_minimal()
 
 ggsave("results/figures/place-variance-path.png", p_var,
