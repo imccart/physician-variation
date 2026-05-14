@@ -160,6 +160,20 @@ We map each Doximity training-program string to an AHA hospital identifier in th
 
 For each matched cardiologist, we construct two residency-stage exposure measures from the AHA Annual Survey. The own-hospital cath measure is the mean of the AHA cath lab indicator at the cardiologist's residency hospital over their first three years of post-graduate training, where the years are derived from the cardiologist's medical-school graduation year and a three-year residency window. The same-HRR-system share measure is the mean across the same window of the share of cath-equipped hospitals among all hospitals in the same AHA-coded health system as the residency hospital, restricted to hospitals within the same hospital referral region. For residency hospitals not affiliated with a multi-hospital system, or whose system has only one hospital in the same HRR, the same-HRR-system share is set equal to the own-hospital cath measure.
 
+\subsection{Direct-Exposure Test on Recent Graduates}\label{sec:app-recent-grad}
+
+The AHA cath lab indicator is a coarse proxy for procedural exposure during residency. A sharper measure is the residency hospital's realized NSTEMI catheterization rate during the trainee's first three years of post-graduate training, constructed directly from the claims data. We implement this measure for cardiologists with medical-school graduation year 2006 or later, whose first three post-graduate years (PGY1--PGY3) overlap the 2008--2018 claims window. The recent-graduate subsample includes 266 cardiologists and 487 cardiologist-years, with a mean of 2.05 PGY years observed per cardiologist. Table~\ref{tab:training-recent-grad} reports three specifications, progressing from practice-HRR and year fixed effects only (column~1) to the within-origin specification that adds medical-school HRR fixed effects (column~2) and a restriction to the cleaner manual-plus-exact residency-match subsample (column~3). The residency exposure coefficient is statistically indistinguishable from zero in all three columns. Point estimates are mildly negative but imprecisely estimated, and the confidence intervals do not support a positive residency imprint of the magnitude detected for medical school. The direct-exposure test on recent graduates corroborates the headline pipeline finding that residency exposure does not add to the medical school imprint.
+
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption{Residency cath rate and own catheterization, recent-graduate subsample}
+  \label{tab:training-recent-grad}
+  \centering
+  \input{../results/tables/training-recent-grad.tex}
+\end{minipage}
+\end{table}
+
 \section{Selection Diagnostics}\label{sec:app-ipw}
 
 The main analysis addresses two distinct selection concerns. The first is that movers and stayers differ on observable characteristics, raising the possibility that the imprint estimate reflects mover-vs-stayer selection rather than a causal training effect. The second is that cardiologists from cath-rich training environments may systematically end up in cath-rich practice destinations, in which case our cross-sectional identification would conflate training imprint with destination-type sorting. We address the first with the inverse-probability-weighted (IPW) specification reported in the main paper. This section reports a parallel IPW exercise using a complementary measure of training-environment intensity, and a separate diagnostic for the destination-sorting concern.
