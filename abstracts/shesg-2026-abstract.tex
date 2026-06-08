@@ -1,0 +1,44 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+\usepackage[right=1.0in,left=1.0in,top=0.9in,bottom=0.9in]{geometry}
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{titling}
+\setlength{\droptitle}{-4em}
+\usepackage{titlesec}
+\titleformat{\subsection}{\normalfont\large\bfseries}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{0.9ex}{0.4ex}
+
+\title{Medical School Environments and Physician Treatment Styles}
+\author{Shirley Cai\\[0.2em]Emory University \and Ian McCarthy\\[0.2em]Emory University \& NBER}
+\date{\vspace{-0.6em}\normalsize Extended Abstract --- Southeastern Health Economics Study Group 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\vspace{-1.5em}
+
+\subsection*{Motivation}
+
+\noindent Physicians exercise substantial discretion over treatment, and they differ markedly in how they treat clinically similar patients. This variation is a well-documented source of geographic dispersion in health care spending, with as much as 60\% of regional variation in Medicare spending attributable to place-based supply-side factors rather than to patient need (Finkelstein et al.\ 2016; Molitor 2018). Practice style is shaped over a long training pipeline, yet the medical school and residency environments have received less direct empirical attention than the post-training stages. The common proxy in this literature, medical school rank, bundles prestige with many other features and does not isolate the training environment itself. In this paper, we provide direct evidence on whether the medical school environment imprints a durable component of practice style, and we quantify how that imprint propagates over a physician's career.
+
+\subsection*{Data and Setting}
+
+We study cardiologists treating non-ST-elevation myocardial infarction (NSTEMI) patients, a setting in which the catheterization decision is meaningfully discretionary, with substantial gray-zone cases left to physician practice style. In our main results, we measure each cardiologist's training environment as the share of hospitals in their medical school hospital referral region (HRR) with a cardiac catheterization laboratory in the year of matriculation, drawn from the American Hospital Association (AHA) Annual Survey. This measure varies across HRRs and, within HRR, across graduation cohorts, since cath labs proliferated steadily between 1980 and 2003. Our panel links 100\% Medicare fee-for-service claims for 2008 through 2018 to medical school and training histories and to AHA hospital characteristics, yielding roughly 10,800 cardiologist-years on about 3,200 cardiologists from graduation cohorts between 1983 and 2006. Our primary outcome is the physician's risk-adjusted catheterization rate, which proxies for intensity of care.
+
+\subsection*{Identification}
+
+Our identification rests on a mover design. About 87\% of cardiologists practice in a different HRR than the one where they attended medical school, so conditional on current practice HRR and year, cardiologists trained in different HRRs were exposed to different training-period cath lab availability. Our preferred specification adds medical school HRR fixed effects, identifying the imprint from cardiologists trained in the same HRR but in different graduation cohorts, who encountered different cath lab availability during their clinical rotations. This rules out fixed characteristics of medical school markets that might correlate with the physicians they produce.
+
+\subsection*{Results}
+
+We find that training-environment exposure meaningfully raises later catheterization. Our preferred within-origin imprint is 0.058 (SE 0.021), up from 0.035 in the cross-sectional mover specification, such that a 10-percentage-point increase in training-period cath lab share raises later catheterization rates by about 0.58 percentage points. The imprint is concentrated among interventional cardiologists and absent among general cardiologists, consistent with procedural exposure during training mattering most for the subspecialty most directly engaged in catheterization. It reflects the training environment rather than prestige, since a year-matched NIH research-funding rank yields null results and does not displace the cath lab measure. Residency hospital exposure adds little once medical school exposure is included. Further, medical school exposure does not predict residency placement, so the imprint appears to operate through direct medical school exposure rather than sorting into similar residency programs.
+
+Analogous to existing work in the literature, we then estimate how cardiologists adapt to their current peer environment. A within-physician event study around mid-career moves shows a sharp jump at the move year, no pre-trends, and a pooled post-move adaptation of about 35\% of the peer-environment gap. Because each cohort's imprint shifts the peer environment that later cardiologists adapt toward, this destination response also amplifies training-side shifts across cohorts. A cohort-transition calibration combining the two parameters implies a long-run multiplier of roughly 1.5, so a uniform 10-percentage-point increase in training-period cath lab share raises per-cardiologist catheterization by about 0.89 percentage points over the long run.
+
+\subsection*{Implications}
+
+These findings speak to policies that aim to shape the geographic distribution of physician practice through the training pipeline, including loan-repayment and residency-expansion programs targeting underserved areas. If the medical school environment imprints durable practice-style features that persist into practice and propagate through peer turnover, training-side interventions offer a slow but compounding lever on place-based variation in treatment intensity.
+
+\end{document}
