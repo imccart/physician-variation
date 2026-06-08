@@ -114,21 +114,19 @@ Table~\ref{tab:app-balance-spec} reports the training-period cath lab comparison
 \end{minipage}
 \end{table}
 
-\section{Head-to-Head with Current Peer Environment}\label{sec:app-aha}
+\section{Cohort-Trend Robustness}\label{sec:app-cohort}
 
-The within-origin specification in the main paper absorbs the current peer environment through destination HRR fixed effects, which condition out all cross-HRR variation in peer cath rates. A natural alternative is to replace the destination HRR fixed effects with a continuous control for current peer cath culture, which allows training-period exposure and current peer environment to be compared on the same scale. Table~\ref{tab:app-head-to-head} reports the head-to-head specification, in which both the training-period cath lab share and the leave-one-out current-HRR peer cath rate ($z$-scored) enter as regressors, with year fixed effects and clustering at the medical school HRR level.
+The main text reports a linear graduation-year trend as the cohort-robustness check. Table~\ref{tab:app-cohort} reports the training imprint under the full set of cohort controls we consider, on the same within-origin sample. Columns (1) through (3) are the within-origin baseline and the baseline augmented with a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the cardiologist's matriculation year, a measured national trend, so that the imprint is identified from how a region's cath lab availability deviates from the national rollout rather than from the rollout itself. The point estimate is stable across all four columns, between 0.052 and 0.060. Precision declines relative to the baseline because cath lab availability varies across both region and cohort, so any control for the cohort dimension absorbs part of the variation that identifies the imprint. We do not saturate the cohort dimension with graduation-year fixed effects, since doing so removes most of the within-HRR variation that identifies the training effect.
 
 \begin{table}[htbp]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Head-to-head specification, training cath share and current peer cath culture}
-  \label{tab:app-head-to-head}
+  \caption[]{Training imprint under alternative cohort controls\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level, on the within-origin sample. Column (1) is the within-origin baseline. Columns (2) and (3) add a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the matriculation year. All specifications include medical school HRR, practice HRR, and year fixed effects, weight by NSTEMI volume, and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-cohort}
   \centering
-  \input{../results/tables/aha-head-to-head.tex}
+  \input{../results/tables/cohort-robust.tex}
 \end{minipage}
 \end{table}
-
-The training-period cath lab share retains a statistically significant marginal effect of 0.006 (SE 0.002, $p < 0.001$), while the current-HRR peer cath culture coefficient is smaller (0.004, SE 0.002) and not statistically distinguishable from zero at the 5\% level. A cardiologist who trained in a procedurally rich market continues to catheterize at higher rates than one who trained in a procedurally poor market, even when current peer environment is included as a continuous covariate rather than absorbed by HRR fixed effects.
 
 \section{NIH Rank Specifications}\label{sec:app-rank}
 
@@ -138,7 +136,7 @@ The continuous $-\log(\text{rank})$ specification, the binary Top-25 indicator, 
 
 \section{Doximity Match Procedure}\label{sec:app-doximity}
 
-Section~\ref{sec:training-pipeline} uses Doximity profile data to test whether residency exposure adds to the medical school imprint. This appendix section documents the match procedure that links our Medicare cardiologists to Doximity profiles, maps Doximity training-program strings to AHA hospital identifiers, and constructs the residency-stage exposure measures used in Table~\ref{tab:training-pipeline}.
+The main text uses Doximity profile data to test whether residency exposure adds to the medical school imprint. This appendix section documents the match procedure that links our Medicare cardiologists to Doximity profiles, maps Doximity training-program strings to AHA hospital identifiers, and constructs the residency-stage exposure measures used in that analysis.
 
 \subsection{Doximity Profile Data}
 
@@ -167,7 +165,7 @@ The AHA cath lab indicator is a coarse proxy for procedural exposure during resi
 \begin{table}[htbp]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Residency cath rate and own catheterization, recent-graduate subsample}
+  \caption[]{Residency cath rate and own catheterization, recent-graduate subsample\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. All columns include practice HRR and year fixed effects, with medical school HRR fixed effects added in columns (2) and (3), and weight by NSTEMI volume. Standard errors are clustered at the cardiologist level in column (1) and at the medical school HRR level in columns (2) and (3). *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:training-recent-grad}
   \centering
   \input{../results/tables/training-recent-grad.tex}
@@ -180,12 +178,12 @@ The main analysis addresses two distinct selection concerns. The first is that m
 
 \subsection{IPW Robustness Using the Peer-Cath Measure}
 
-The main paper reports the IPW-weighted within-origin specification on the AHA training-period cath lab measure. Table~\ref{tab:app-selection-alt} reports a parallel IPW exercise using the leave-one-out peer cath rate in the medical school HRR as a complementary measure of training-environment intensity. The IPW weighting moves the imprint coefficient modestly relative to the unweighted within-origin baseline, in the same direction and of comparable magnitude to the shift we observe with the AHA measure in the main paper. Both exercises indicate that observable selection on graduation cohort, gender, subspecialty, and training-period intensity does not drive the imprint we estimate.
+The main paper reports the IPW-weighted within-origin specification on the AHA training-period cath lab measure. Table~\ref{tab:app-selection-alt} reports a parallel IPW exercise using the leave-one-out peer cath rate in the medical school HRR as a complementary measure of training-environment intensity. The IPW weighting moves the imprint coefficient modestly relative to the within-origin baseline, in the same direction and of comparable magnitude to the shift we observe with the AHA measure in the main paper. Both exercises indicate that observable selection on graduation cohort, gender, subspecialty, and training-period intensity does not drive the imprint we estimate.
 
 \begin{table}[htbp]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption{Selection robustness via inverse probability weighting (peer-cath measure)}
+  \caption[]{Selection robustness via inverse probability weighting (peer-cath measure)\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level, estimated on the mover subsample. Both columns include practice HRR and year fixed effects and cluster standard errors at the medical school HRR level. Column (1) weights by NSTEMI volume; column (2) weights additionally by the inverse propensity of mover status. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:app-selection-alt}
   \centering
   \input{../results/tables/selection.tex}
@@ -209,7 +207,7 @@ Table~\ref{tab:app-es-coefs} reports point estimates, standard errors, and 95\% 
 \begin{table}[htbp]
 \centering
 \begin{minipage}[h]{0.85\textwidth}
-  \caption{Event-study coefficients, within-physician adaptation around mid-career moves}
+  \caption[]{Event-study coefficients, within-physician adaptation around mid-career moves\footnote{Coefficients from the within-physician event study around mid-career moves described in the main text. The specification includes cardiologist and calendar-year fixed effects, weights by NSTEMI volume, and clusters standard errors at the cardiologist level. Event time $\tau$ is measured in years relative to the move year, with $\tau=-1$ the omitted reference period.}}
   \label{tab:app-es-coefs}
   \centering
   \begin{tabular}{lccccc}

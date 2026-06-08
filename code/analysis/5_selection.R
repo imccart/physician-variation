@@ -309,14 +309,25 @@ clean_aha <- panel_aha_ipw %>%
   mutate(w_unweighted = n_nstemi,
          w_ipw        = n_nstemi * ipw_trim)
 
-# Within-origin spec, three columns:
+# National cath-lab share by matriculation year: the measured national
+# trend used in the cohort-robustness checks. A region-by-cohort treatment
+# (cath lab availability) is partly the national rollout, so we want to
+# confirm the imprint survives controlling for that national level.
+nat_share <- aha_hosp %>%
+  filter(!is.na(year)) %>%
+  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
+  group_by(year) %>%
+  summarize(national_cath_share = mean(has_cath, na.rm = TRUE), .groups = "drop")
+
+clean_aha <- clean_aha %>%
+  left_join(nat_share, by = c("aha_match_year" = "year")) %>%
+  mutate(grad_c = grad_year - 1995)   # centered for the cohort trend
+
+# Main selection-aha table (cols 1-3):
 #   (1) Baseline (matches Table 3 Panel B col 1)
 #   (2) + IPW
-#   (3) + Med school HRR x graduation-decade FE (replaces med school HRR FE)
-clean_aha <- clean_aha %>%
-  mutate(grad_decade  = (grad_year %/% 10) * 10,
-         school_decade = paste0(hrr_med_school, "_", grad_decade))
-
+#   (3) + linear graduation-year trend (isolates within-HRR variation net
+#       of the national cohort trend)
 m_aha_base <- feols(mean_resid_cath ~ train_cath_lab |
                       hrr_med_school + hrr_practice + year,
                     data = clean_aha, weights = ~w_unweighted,
@@ -325,18 +336,18 @@ m_aha_ipw  <- feols(mean_resid_cath ~ train_cath_lab |
                       hrr_med_school + hrr_practice + year,
                     data = clean_aha, weights = ~w_ipw,
                     cluster = ~hrr_med_school)
-m_aha_dec  <- feols(mean_resid_cath ~ train_cath_lab |
-                      school_decade + hrr_practice + year,
+m_aha_lin  <- feols(mean_resid_cath ~ train_cath_lab + grad_c |
+                      hrr_med_school + hrr_practice + year,
                     data = clean_aha, weights = ~w_unweighted,
                     cluster = ~hrr_med_school)
 
-cat("\n=== AHA spec, baseline ===\n");                 print(summary(m_aha_base))
-cat("\n=== AHA spec, IPW-weighted ===\n");             print(summary(m_aha_ipw))
-cat("\n=== AHA spec, med school HRR x decade FE ===\n");  print(summary(m_aha_dec))
+cat("\n=== AHA spec, baseline ===\n");               print(summary(m_aha_base))
+cat("\n=== AHA spec, IPW-weighted ===\n");           print(summary(m_aha_ipw))
+cat("\n=== AHA spec, linear grad-year trend ===\n"); print(summary(m_aha_lin))
 
 aha_b <- sel_row(m_aha_base, "train_cath_lab")
 aha_i <- sel_row(m_aha_ipw,  "train_cath_lab")
-aha_d <- sel_row(m_aha_dec,  "train_cath_lab")
+aha_l <- sel_row(m_aha_lin,  "train_cath_lab")
 
 obs_row_3 <- function(models) {
   paste0("Observations & ",
@@ -353,21 +364,79 @@ tbl_aha_sel <- paste0(
   "Training-HRR cath lab share & ",
     fmt_est(aha_b$est, aha_b$p), " & ",
     fmt_est(aha_i$est, aha_i$p), " & ",
-    fmt_est(aha_d$est, aha_d$p), " \\\\\n",
+    fmt_est(aha_l$est, aha_l$p), " \\\\\n",
   " & ",
     fmt_se(aha_b$se), " & ",
     fmt_se(aha_i$se), " & ",
-    fmt_se(aha_d$se), " \\\\\n",
+    fmt_se(aha_l$se), " \\\\\n",
   "\\midrule\n",
   "IPW & No & Yes & No \\\\\n",
-  "Med school HRR FE & Yes & Yes & No \\\\\n",
-  "Med school HRR $\\times$ decade FE & No & No & Yes \\\\\n",
+  "Linear cohort trend & No & No & Yes \\\\\n",
+  "Med school HRR FE & Yes & Yes & Yes \\\\\n",
   "Practice HRR FE & Yes & Yes & Yes \\\\\n",
   "Year FE & Yes & Yes & Yes \\\\\n",
-  obs_row_3(list(m_aha_base, m_aha_ipw, m_aha_dec)),
+  obs_row_3(list(m_aha_base, m_aha_ipw, m_aha_lin)),
   "\\bottomrule\n",
   "\\end{tabular}\n"
 )
 writeLines(tbl_aha_sel, "results/tables/selection-aha.tex")
 
 cat("\n=== Wrote results/tables/selection-aha.tex ===\n")
+
+
+# 7. Appendix cohort-trend robustness table ------------------------------
+# Full gradient on the same within-origin sample: baseline, linear trend,
+# quadratic trend, and a control for the national cath-lab share in the
+# matriculation year. None saturate the cohort dimension, so each leaves
+# usable within-HRR variation in cath lab availability.
+m_aha_quad <- feols(mean_resid_cath ~ train_cath_lab + grad_c + I(grad_c^2) |
+                      hrr_med_school + hrr_practice + year,
+                    data = clean_aha, weights = ~w_unweighted,
+                    cluster = ~hrr_med_school)
+m_aha_nat  <- feols(mean_resid_cath ~ train_cath_lab + national_cath_share |
+                      hrr_med_school + hrr_practice + year,
+                    data = clean_aha, weights = ~w_unweighted,
+                    cluster = ~hrr_med_school)
+
+cat("\n=== AHA spec, quadratic grad-year trend ===\n"); print(summary(m_aha_quad))
+cat("\n=== AHA spec, national cath share ===\n");       print(summary(m_aha_nat))
+
+coh_b <- sel_row(m_aha_base, "train_cath_lab")
+coh_l <- sel_row(m_aha_lin,  "train_cath_lab")
+coh_q <- sel_row(m_aha_quad, "train_cath_lab")
+coh_n <- sel_row(m_aha_nat,  "train_cath_lab")
+
+obs_cohort <- paste0("Observations & ",
+  paste(sapply(list(m_aha_base, m_aha_lin, m_aha_quad, m_aha_nat),
+               function(m) format(nobs(m), big.mark = ",")),
+        collapse = " & "), " \\\\\n")
+
+tbl_cohort <- paste0(
+  "\\begin{tabular}{lcccc}\n",
+  "\\toprule\n",
+  " & (1) & (2) & (3) & (4) \\\\\n",
+  " & Baseline & Linear & Quadratic & Nat.\\ share \\\\\n",
+  "\\midrule\n",
+  "Training-HRR cath lab share & ",
+    fmt_est(coh_b$est, coh_b$p), " & ",
+    fmt_est(coh_l$est, coh_l$p), " & ",
+    fmt_est(coh_q$est, coh_q$p), " & ",
+    fmt_est(coh_n$est, coh_n$p), " \\\\\n",
+  " & ",
+    fmt_se(coh_b$se), " & ",
+    fmt_se(coh_l$se), " & ",
+    fmt_se(coh_q$se), " & ",
+    fmt_se(coh_n$se), " \\\\\n",
+  "\\midrule\n",
+  "Graduation-year trend & None & Linear & Quadratic & None \\\\\n",
+  "National cath share & No & No & No & Yes \\\\\n",
+  "Med school HRR FE & Yes & Yes & Yes & Yes \\\\\n",
+  "Practice HRR FE & Yes & Yes & Yes & Yes \\\\\n",
+  "Year FE & Yes & Yes & Yes & Yes \\\\\n",
+  obs_cohort,
+  "\\bottomrule\n",
+  "\\end{tabular}\n"
+)
+writeLines(tbl_cohort, "results/tables/cohort-robust.tex")
+
+cat("\n=== Wrote results/tables/cohort-robust.tex ===\n")
