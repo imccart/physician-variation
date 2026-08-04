@@ -621,3 +621,31 @@ kable(table_mech,
   save_kable("results/tables/aha-mechanism-teaching.tex")
 
 cat("\n=== Wrote results/tables/aha-mechanism-teaching.tex ===\n")
+
+
+# 13. Persistence across the career --------------------------------------
+
+# Two numbers cited in the "Persistence across the Career" subsection.
+# (a) Median years since graduation in the within-origin sample (practice
+#     tenure is roughly this minus the ~6 GME years), which shows the imprint
+#     is measured well after training.
+# (b) Within-physician trend: interacting training exposure with calendar
+#     time under cardiologist fixed effects tests whether the imprint drifts
+#     as the same physicians accumulate experience over the panel.
+
+persist <- clean2 %>%
+  mutate(train_year = train_cath_lab * (year - 2013))
+
+cat("\n=== Persistence across the career ===\n")
+cat("median years since graduation:", median(persist$years_exp), "\n")
+cat("median years in practice (~ minus 6 GME):",
+    median(persist$years_exp) - 6, "\n")
+
+m_within_trend <- feols(mean_resid_cath ~ train_year | npi + year,
+                        data = persist, weights = ~n_nstemi,
+                        cluster = ~hrr_med_school)
+b_tr <- coef(m_within_trend)["train_year"]
+s_tr <- se(m_within_trend)["train_year"]
+cat(sprintf("within-physician trend: %.4f  (95%% CI [%.4f, %.4f])\n",
+            b_tr, b_tr - 1.96 * s_tr, b_tr + 1.96 * s_tr))
+print(summary(m_within_trend))

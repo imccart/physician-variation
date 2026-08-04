@@ -128,6 +128,24 @@ The main text reports a linear graduation-year trend as the cohort-robustness ch
 \end{minipage}
 \end{table}
 
+\subsection{Permutation Inference}
+
+The within-origin estimate is identified from variation in training-period cath lab availability across graduation cohorts within a medical school HRR. A permutation test asks whether the actual pairing of cohorts to training environments predicts later catheterization better than a random pairing within the same region. The test has leverage only if training exposure genuinely varies within HRR across cohorts. It does. Of the total variance in training-period cath lab share across cardiologists, roughly 41\% is within medical school HRR across cohorts, a within-HRR standard deviation of 0.11 against a between-HRR standard deviation of 0.13, so reshuffling cohorts within a region moves the exposure measure over a wide range.
+
+We reassign each cardiologist the training-period cath lab share that a different graduation cohort from the same medical school HRR actually faced, holding the outcome, the fixed effects, and the NSTEMI weights unchanged, and re-estimate the within-origin specification. Repeating this 1{,}000 times traces the distribution of the training coefficient under randomized cohort assignment. Figure~\ref{fig:perm-null} plots the result. The permuted coefficient centers on zero, with 95\% of draws falling between $-0.044$ and 0.040. The actual estimate of 0.058 lies in the upper tail beyond all but one of the 1{,}000 permuted draws, for a two-sided randomization-inference $p$-value of 0.005. This is close to the clustered-SE $p$-value of 0.007 from the same specification, so the result does not rest on the cluster-robust asymptotics.
+
+We read the permutation test as evidence that the pairing of cohorts to training environments is informative rather than an artifact of the limited within-region variation. It does not by itself establish that the operative feature is cath lab availability as opposed to another regional attribute moving on the same cohort schedule, a distinction we take up through the subspecialty and rank results in the main text.
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \centering
+  \includegraphics[width=0.85\textwidth]{perm-null.png}
+  \caption[]{Permutation test for the within-origin training imprint\footnote{The histogram plots the training-period cath lab coefficient from 1{,}000 re-estimations of the within-origin specification, each reassigning cardiologists the training-period cath lab share of a different graduation cohort from the same medical school HRR. The dashed line marks zero and the solid line marks the actual estimate of 0.058. The outcome, fixed effects, and NSTEMI weights are held fixed across permutations.}}
+  \label{fig:perm-null}
+\end{minipage}
+\end{figure}
+
 \section{NIH Rank Specifications}\label{sec:app-rank}
 
 The main paper documents that medical school NIH-funding rank does not predict later catheterization rates, in contrast to the cath lab availability measure, which does. This section reports additional rank specifications that test the robustness of the rank null result.

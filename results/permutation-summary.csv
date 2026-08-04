@@ -1,0 +1,15 @@
+statistic,value
+beta_true,0.05835495828683762
+placebo_mean,3.338756125793881e-4
+placebo_sd,0.021114272933055254
+placebo_p025,-0.043792216494290825
+placebo_p975,0.039649554541311034
+ri_p_two_sided,0.005
+ri_p_right_tail,0.001
+within_hrr_sd,0.1096547924430605
+between_hrr_sd,0.1321292281753677
+within_share,0.4078437190316403
+n_perm,1000
+n_obs,10736
+n_cardio,3207
+n_hrr,92
