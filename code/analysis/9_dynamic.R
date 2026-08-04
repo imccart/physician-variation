@@ -9,14 +9,14 @@
 ##                from destination feedback and traces the transition path
 ##                of a one-time training-cath shock through cohort turnover.
 ##
-##                Coefficients come from 8_aha_training.R section 10
+##                Coefficients come from 7_aha_training.R section 10
 ##                (tightened identification specs).
 
 
 # 1. Coefficients from the tightened-ID specs ---------------------------
 
 beta_train <- 0.058   # from origin-FE + destination-FE + year-FE spec
-beta_dest  <- 0.350   # pooled pre/post from event study (12_event_study.R)
+beta_dest  <- 0.350   # pooled pre/post from event study (10_event_study.R)
 amp        <- 1 / (1 - beta_dest)
 long_run   <- beta_train * amp
 

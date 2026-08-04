@@ -15,7 +15,7 @@
 ##                cohorts. We decompose the variance to confirm this.
 ##
 ##                Reconstructs train_cath_lab from source rather than
-##                depending on 8_aha_training.R's in-memory objects.
+##                depending on 7_aha_training.R's in-memory objects.
 ##
 ##                Outputs:
 ##                  results/figures/perm-null.png
@@ -23,7 +23,7 @@
 
 set.seed(20260804)
 
-# 1. Build train_cath_lab (same construction as 8_aha_training.R) ----------
+# 1. Build train_cath_lab (same construction as 7_aha_training.R) ----------
 
 analysis <- read_csv("data/output/analysis_panel.csv",
                      col_types = cols(npi = col_character(),

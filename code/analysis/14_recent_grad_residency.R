@@ -9,7 +9,7 @@
 ##                where data is available) is observable on the VRDC seat. This
 ##                is a tighter analogue to the medical-school AHA cath-share
 ##                imprint than the cross-sectional hospital cath-lab indicator
-##                used in 15_training_pipeline.R.
+##                used in 13_training_pipeline.R.
 ##
 ##                The test exploits within-origin variation: practice HRR FE,
 ##                medical-school HRR FE, and year FE soak up current and

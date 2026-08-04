@@ -2,7 +2,7 @@
 
 ## Author:        Ian McCarthy
 ## Date Created:  2026-05-12
-## Description:   Training-pipeline analyses (parallel to 8_aha_training.R
+## Description:   Training-pipeline analyses (parallel to 7_aha_training.R
 ##                for medical school, but extending to residency and
 ##                fellowship via the Doximity crosswalk and per-cardiologist
 ##                training exposure).
@@ -33,7 +33,7 @@ exposure <- read_csv("data/output/cardiologist_training_exposure.csv",
                                       .default = col_guess()),
                      show_col_types = FALSE)
 
-# Med-school cath share at matriculation year (parallel to 8_aha_training.R).
+# Med-school cath share at matriculation year (parallel to 7_aha_training.R).
 aha <- fread("data/input/aha_hospital.csv",
              select = c("HRRCODE", "year", "CCLABHOS"),
              na.strings = c("", "NA"), showProgress = FALSE)

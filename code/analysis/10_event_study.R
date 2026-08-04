@@ -269,7 +269,7 @@ cat("\nWrote results/figures/event-study-by-direction.png\n")
 # training.
 #
 # We need each mover's training cath share. Bring in via the same
-# crosswalk used in 8_aha_training.R.
+# crosswalk used in 7_aha_training.R.
 
 aha_hosp_for_dev  <- read_csv("data/input/aha_hospital.csv",
                               show_col_types = FALSE,

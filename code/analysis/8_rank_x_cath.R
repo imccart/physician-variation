@@ -36,7 +36,7 @@ cardio_xw <- read_csv("data/input/cardio-school-to-nih.csv",
                       show_col_types = FALSE,
                       col_types = cols(.default = col_character()))
 
-# AHA HRR-year cath lab share (replicates the build inside 8_aha_training.R)
+# AHA HRR-year cath lab share (replicates the build inside 7_aha_training.R)
 aha_hrr <- aha_hosp %>%
   filter(!is.na(HRRCODE), !is.na(year)) %>%
   mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
