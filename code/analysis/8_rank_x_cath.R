@@ -257,12 +257,13 @@ tbl_strat <- paste0(
   "\\midrule\n",
   "\\multicolumn{4}{l}{\\textit{Panel A. Top 25 schools}} \\\\\n",
   row_3col("Cath lab share, training HRR", top_rows),
+  obs_row(list(m_top25_a1, m_top25_a2, m_top25_a3)),
   "\\midrule\n",
   "\\multicolumn{4}{l}{\\textit{Panel B. Below Top 25 schools}} \\\\\n",
   row_3col("Cath lab share, training HRR", below_rows),
+  obs_row(list(m_below_a1, m_below_a2, m_below_a3)),
   "\\midrule\n",
   bottom_section,
-  obs_row(list(m_below_a1, m_below_a2, m_below_a3)),
   "\\bottomrule\n",
   "\\end{tabular}\n"
 )
