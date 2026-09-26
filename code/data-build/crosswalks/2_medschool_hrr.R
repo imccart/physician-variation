@@ -74,6 +74,16 @@ cat("  via defunct_zip fallback:    ", match_defunct, "\n")
 cat("  no ZIP assigned:              ",
     sum(is.na(resolved$zip)), "\n")
 
+# Resolution counts quoted in appendix A.3, persisted alongside the crosswalk.
+write_csv(tibble(statistic = c("n_rows", "n_md_schools", "match_lcme", "match_defunct",
+                               "n_no_zip", "n_md_no_zip"),
+                 value = c(nrow(resolved),
+                           sum(!resolved$is_nonmd & !resolved$is_foreign),
+                           match_lcme, match_defunct,
+                           sum(is.na(resolved$zip)),
+                           sum(is.na(resolved$zip) & !resolved$is_nonmd & !resolved$is_foreign))),
+          "data/crosswalks/med-school-hrr-match-counts.csv")
+
 
 # 3. Join ZIP -> HRR ------------------------------------------------------
 

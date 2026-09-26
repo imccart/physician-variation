@@ -173,7 +173,7 @@ Raw inputs referred to below:
 - Files: `crosswalks/0_zip_hrr.R`, `1_physicians.R`, `2_intensity_measures.R`, `3_movers.R`; then `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `10`, `11`, `12`, `13`, `14`.
 
 ### `mover` (mover indicator)
-- Paper: the mover-share statistic (~87%); the mover-vs-full-sample comparison.
+- Paper: the mover-share statistic (~86% in the analytical sample); the mover-vs-full-sample comparison.
 - Chain: `3_movers.R` sets `mover = as.integer(!is.na(hrr_med_school) & !is.na(hrr_practice) & hrr_med_school != hrr_practice)`, written back onto `analysis_panel.csv`. `5_selection.R` and `1_descriptive.R` collapse it to an ever-mover cardiologist-level flag. Distinct from the mid-career mover (>=2 distinct `hrr_practice`) used in `10`, `11`, `12`.
 - Level: cardiologist-year 0/1.
 - Files: `3_movers.R`; `1`, `2`, `3`, `5`, `7`.
@@ -272,26 +272,32 @@ Descriptive numbers in the paper trace to these outputs. All `.tex` are bare
 standard-error row below. The persistence numbers, the pooled `delta_dest`, the
 within-residency-hospital and placement specs, the destination-sorting diagnostic
 and the national HRR-mean cath share now each write a CSV (added 2026-09-25), so
-every reported number has an on-disk artifact. One residual coupling: `9_dynamic.R`
+every reported number has an on-disk artifact. On 2026-09-26 the descriptive frame in
+`1_descriptive.R` (`panel_summ`, which feeds `summary-stats.tex`, `balance.tex` and the
+training binscatter) was restricted to the analytical sample, so Table 1 now reports the
+10,736 cardiologist-years and 3,207 cardiologists the prose describes; the same pass added
+`binscatter-slope.csv`, `recent-grad-sample.csv` and `rank-x-cath-panel-n.csv`, and persisted
+the crosswalk resolution counts to `data/crosswalks/med-school-hrr-match-counts.csv`. One
+residual coupling: `9_dynamic.R`
 still hardcodes `beta_train = 0.058` and `beta_dest = 0.350` rather than reading
 `training-imprint.tex` and `event-study-pooled.csv`.
 
 | Script | Outputs |
 |---|---|
-| `1_descriptive.R` | `summary-stats.{tex,csv}`, `balance.{tex,csv}`, `origin-dispersion.csv`; figures `binscatter-training-vs-cath`, `scatter-med-school-vs-practice`, `binscatter-med-school-vs-practice`, `hist-intensity-change`, `panel-size-by-year`, `od-heatmap`, `od-hhi` |
+| `1_descriptive.R` | `summary-stats.{tex,csv}`, `balance.{tex,csv}`, `origin-dispersion.csv`, `binscatter-slope.csv`; figures `binscatter-training-vs-cath`, `scatter-med-school-vs-practice`, `binscatter-med-school-vs-practice`, `hist-intensity-change`, `panel-size-by-year`, `od-heatmap`, `od-hhi` |
 | `2_specifications.R` | `main-regressions.tex`, `movers-vs-full.tex`, `career-stage.tex`, `ysg-interaction.csv`; figure `spline-pred` |
 | `3_robustness.R` | `robust-fe.tex`, `robust-quartiles.tex`, `robust-pos-neg.tex` |
 | `4_hrr_map.R` | figure `hrr-cath-intensity` |
 | `5_selection.R` | `balance-by-specialty.csv`, `selection.tex`, `selection-aha.tex`, `cohort-robust.tex`, `destination-sorting.csv`, `national-cath-share.csv` |
 | `6_rank.R` | `rank.tex` |
 | `7_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `training-imprint.tex` (headline 0.058 within-origin), `aha-mechanism-teaching.tex`, `persistence.csv` |
-| `8_rank_x_cath.R` | `rank-x-cath-stratified.tex`, `rank-x-cath-cells.tex` |
+| `8_rank_x_cath.R` | `rank-x-cath-stratified.tex`, `rank-x-cath-cells.tex`, `rank-x-cath-panel-n.csv` |
 | `9_dynamic.R` | `dynamic-path.csv`, `place-variance-path.csv`; figures `dynamic-calibration`, `place-variance-path` (betas hardcoded) |
 | `10_event_study.R` | `event-study-coefs.csv`, `event-study-pooled.csv`, `event-study-coefs-by-direction.csv`; figures `event-study`, `event-study-by-direction`, `two-peer-deviation` |
 | `11_heterogeneity.R` | `heterogeneity-train-x-dest.tex` |
 | `12_mover_balance.R` | `mover-balance.{tex,csv}`; figure `mover-selection` |
 | `13_training_pipeline.R` | `training-pipeline.tex`, `training-pipeline-robust.csv`, `training-pipeline-selection.csv` |
-| `14_recent_grad_residency.R` | `training-recent-grad.tex` |
+| `14_recent_grad_residency.R` | `training-recent-grad.tex`, `recent-grad-sample.csv` |
 | `15_permutation.R` | `permutation-summary.csv` (at `results/`, not `results/tables/`); figure `perm-null` |
 
 Removed 2026-09-25 as stale and unused: `fgw-decomp-*.{csv,tex}` in

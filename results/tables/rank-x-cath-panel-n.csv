@@ -1,0 +1,7 @@
+panel,spec,n_obs
+top25,baseline,1754
+top25,physician,1754
+top25,practice,1754
+below25,baseline,8831
+below25,physician,8831
+below25,practice,8831

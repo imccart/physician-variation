@@ -36,12 +36,9 @@ hosp_cath <- read_csv("data/input/hospital_year_cath.csv",
                                        rate_cath_d2 = col_double()),
                       show_col_types = FALSE)
 
-aha_bridge <- fread("data/input/aha_hospital.csv",
-                    select = c("ID", "year", "MCRNUM"),
-                    colClasses = c(ID = "character", MCRNUM = "character"),
-                    na.strings = c("", "NA"), showProgress = FALSE)
-setDF(aha_bridge)
-aha_bridge <- aha_bridge %>%
+aha_bridge <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                       col_types = cols(ID = col_character(), year = col_integer(),
+                                        MCRNUM = col_character(), .default = col_guess())) %>%
   filter(!is.na(MCRNUM), !is.na(year)) %>%
   mutate(MCRNUM = str_pad(MCRNUM, 6, pad = "0")) %>%
   distinct(ID, year, MCRNUM)
@@ -116,6 +113,14 @@ cat(sprintf("PGY-years observed per cardiologist: mean = %.2f, min = %d, max = %
             mean(p$n_pgy_years_obs[!duplicated(p$npi)]),
             min(p$n_pgy_years_obs[!duplicated(p$npi)]),
             max(p$n_pgy_years_obs[!duplicated(p$npi)])))
+
+# Raw recent-grad subsample counts quoted in appendix E.4. The output table
+# reports the regression N, which is smaller after fixed-effect singletons drop.
+write_csv(tibble(statistic = c("n_cardiologist_years", "n_cardiologists",
+                               "mean_pgy_years_obs"),
+                 value = c(nrow(p), n_distinct(p$npi),
+                           mean(p$n_pgy_years_obs[!duplicated(p$npi)]))),
+          "results/tables/recent-grad-sample.csv")
 
 
 # 5. Specifications --------------------------------------------------------

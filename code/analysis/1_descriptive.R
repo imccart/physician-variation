@@ -65,11 +65,18 @@ aha_hrr_summ <- aha_hosp_summ %>%
   mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_,
                                   cath_lab_share))
 
+# Restrict the descriptive frame to the analytical panel used for the
+# within-origin estimates: graduation years whose matriculation falls inside
+# AHA cath-lab coverage, with an observed training-period cath lab share and
+# an observed current peer environment.
 panel_summ <- analysis %>%
   mutate(aha_match_year = pmin(pmax(grad_year - 3L, 1980L), 2003L)) %>%
   left_join(aha_hrr_summ %>% rename(train_cath_lab = cath_lab_share),
             by = c("hrr_med_school" = "hrr",
                    "aha_match_year"  = "year")) %>%
+  filter(grad_year >= 1983, grad_year <= 2006,
+         !is.na(train_cath_lab),
+         !is.na(intensity_dest_loo), !is.nan(intensity_dest_loo)) %>%
   mutate(years_exp = year - grad_year)
 
 # Cardiologist-level (collapse panel to one row per NPI, first observation
@@ -189,6 +196,13 @@ bs <- bs_data %>%
   summarize(x = weighted.mean(train_cath_lab, n_nstemi),
             y = weighted.mean(mean_resid_cath, n_nstemi),
             .groups = "drop")
+
+# Slope of the fitted line drawn on the figure, persisted so the figure quoted
+# in Section 3 traces to an artifact.
+bs_slope <- coef(lm(mean_resid_cath ~ train_cath_lab, data = bs_data))["train_cath_lab"]
+write_csv(tibble(statistic = "binscatter_slope", value = unname(bs_slope),
+                 n_obs = nrow(bs_data)),
+          "results/tables/binscatter-slope.csv")
 
 p_bs <- ggplot(bs, aes(x = x, y = y)) +
   geom_point(size = 3, color = "gray25") +

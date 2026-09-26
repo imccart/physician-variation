@@ -268,6 +268,14 @@ tbl_strat <- paste0(
 )
 writeLines(tbl_strat, "results/tables/rank-x-cath-stratified.tex")
 
+# Per-panel observation counts. The stratified table's footer reports only the
+# Below-Top-25 N, so the Top-25 panel N quoted in Section 3.2 is persisted here.
+write_csv(tibble(panel = rep(c("top25", "below25"), each = 3),
+                 spec  = rep(c("baseline", "physician", "practice"), 2),
+                 n_obs = c(nobs(m_top25_a1), nobs(m_top25_a2), nobs(m_top25_a3),
+                           nobs(m_below_a1), nobs(m_below_a2), nobs(m_below_a3))),
+          "results/tables/rank-x-cath-panel-n.csv")
+
 # Cell-effects table (relative to ref cell)
 c2 <- mc_row(m_cells, "cellBelow Top 25 / High cath")
 c3 <- mc_row(m_cells, "cellTop 25 / Low cath")
