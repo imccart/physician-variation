@@ -440,3 +440,51 @@ tbl_cohort <- paste0(
 writeLines(tbl_cohort, "results/tables/cohort-robust.tex")
 
 cat("\n=== Wrote results/tables/cohort-robust.tex ===\n")
+
+
+# 8. Destination-sorting diagnostic --------------------------------------
+
+# Regress current peer cath rate (intensity_dest_loo) on training-period cath
+# lab share, year FE, clustered on medical school HRR. Tests whether
+# cardiologists from cath-rich training environments end up in cath-rich
+# destinations. Quoted in Section 3.1 and the supplemental appendix;
+# previously console-only.
+sort_data <- panel_aha %>%
+  filter(!is.na(train_cath_lab),
+         !is.na(intensity_dest_loo), !is.nan(intensity_dest_loo),
+         grad_year >= 1983, grad_year <= 2006)
+m_sort_panel <- feols(intensity_dest_loo ~ train_cath_lab | year,
+                      data = sort_data, cluster = ~hrr_med_school)
+sort_cross <- sort_data %>%
+  arrange(npi, year) %>% group_by(npi) %>% slice(1) %>% ungroup()
+m_sort_cross <- feols(intensity_dest_loo ~ train_cath_lab | year,
+                      data = sort_cross, cluster = ~hrr_med_school)
+sort_corr <- cor(sort_data$train_cath_lab, sort_data$intensity_dest_loo)
+
+cat("\n=== Destination-sorting diagnostic ===\n")
+print(summary(m_sort_panel))
+print(summary(m_sort_cross))
+cat("pairwise correlation:", round(sort_corr, 3), "\n")
+
+sp <- sel_row(m_sort_panel, "train_cath_lab")
+sc <- sel_row(m_sort_cross,  "train_cath_lab")
+sorting_out <- tibble(
+  statistic = c("panel_beta", "panel_se", "panel_p", "panel_n", "panel_ncardio",
+                "cross_beta", "cross_se", "cross_p", "cross_n", "correlation"),
+  value = c(sp$est, sp$se, sp$p, nobs(m_sort_panel), n_distinct(sort_data$npi),
+            sc$est, sc$se, sc$p, nobs(m_sort_cross), sort_corr)
+)
+write_csv(sorting_out, "results/tables/destination-sorting.csv")
+
+# National cath-lab share by year (cited in Section 3.1 and appendix A.4).
+# The prose reports the HRR-mean (mean across HRRs of the HRR-level share),
+# which is hrr_mean_cath_share below; national_cath_share (hospital-level
+# mean) is the series used as the cohort-robustness control.
+nat_hrr_mean <- aha_hrr_local %>%
+  group_by(year) %>%
+  summarize(hrr_mean_cath_share = mean(cath_lab_share, na.rm = TRUE),
+            .groups = "drop")
+national_out <- nat_share %>%
+  left_join(nat_hrr_mean, by = "year")
+write_csv(national_out, "results/tables/national-cath-share.csv")
+cat("\nWrote destination-sorting.csv and national-cath-share.csv\n")

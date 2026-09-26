@@ -649,3 +649,17 @@ s_tr <- se(m_within_trend)["train_year"]
 cat(sprintf("within-physician trend: %.4f  (95%% CI [%.4f, %.4f])\n",
             b_tr, b_tr - 1.96 * s_tr, b_tr + 1.96 * s_tr))
 print(summary(m_within_trend))
+
+persistence_out <- tibble(
+  statistic = c("median_years_since_grad", "median_years_in_practice",
+                "within_trend_beta", "within_trend_se",
+                "within_trend_ci_lo", "within_trend_ci_hi",
+                "n_obs", "n_cardio"),
+  value = c(median(persist$years_exp),
+            median(persist$years_exp) - 6,
+            b_tr, s_tr,
+            b_tr - 1.96 * s_tr, b_tr + 1.96 * s_tr,
+            nobs(m_within_trend), n_distinct(persist$npi))
+)
+write_csv(persistence_out, "results/tables/persistence.csv")
+cat("\nWrote results/tables/persistence.csv\n")

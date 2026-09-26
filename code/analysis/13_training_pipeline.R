@@ -16,9 +16,9 @@
 ##                movers (med-school HRR != residency hospital HRR).
 ##
 ##                Outputs:
-##                  results/tables/training-pipeline.tex   (main table)
-##                  results/tables/training-pipeline-robust.tex   (robustness)
-##                  results/tables/training-selection.tex   (selection tests)
+##                  results/tables/training-pipeline.tex            (main table)
+##                  results/tables/training-pipeline-robust.csv     (within-residency-hospital-FE robustness)
+##                  results/tables/training-pipeline-selection.csv  (placement-selection tests)
 
 # 1. Inputs ----------------------------------------------------------------
 
@@ -34,14 +34,11 @@ exposure <- read_csv("data/output/cardiologist_training_exposure.csv",
                      show_col_types = FALSE)
 
 # Med-school cath share at matriculation year (parallel to 7_aha_training.R).
-aha <- fread("data/input/aha_hospital.csv",
-             select = c("HRRCODE", "year", "CCLABHOS"),
-             na.strings = c("", "NA"), showProgress = FALSE)
-setDF(aha)
+aha <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                col_types = cols(HRRCODE = col_integer(), year = col_integer(),
+                                 CCLABHOS = col_character(), .default = col_guess()))
 hrr_year_cath <- aha %>%
-  mutate(year = as.integer(year),
-         HRRCODE = suppressWarnings(as.integer(HRRCODE)),
-         has_cath = as.integer(CCLABHOS == "1")) %>%
+  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
   filter(!is.na(HRRCODE), !is.na(year), year >= 1980, year <= 2003) %>%
   group_by(HRRCODE, year) %>%
   summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
@@ -228,3 +225,32 @@ tbl <- str_replace_all(tbl,
                        "\\\\shortstack[c]{\\1 \\\\\\\\ (\\2)}")
 writeLines(tbl, "results/tables/training-pipeline.tex")
 cat("\nWrote results/tables/training-pipeline.tex\n")
+
+
+# 11. Export console-only specs cited in the paper ------------------------
+
+# The within-residency-hospital-FE robustness (m_r3) and the placement-
+# selection tests were previously console-only but are quoted in Section 3.4,
+# so persist them for numeric provenance.
+robust_out <- est(m_r3) %>%
+  mutate(spec = "within_residency_hospital_fe",
+         n_obs = nobs(m_r3), n_card = n_distinct(d3$npi)) %>%
+  select(spec, term, estimate, std.error, conf.low, conf.high, p.value, n_obs, n_card)
+write_csv(robust_out, "results/tables/training-pipeline-robust.csv")
+
+selection_out <- map_dfr(c("res_own_cath", "res_sys_share_cath",
+                           "fel_own_cath", "fel_sys_share_cath"),
+                         function(rhs) {
+  d <- card %>% filter(!is.na(.data[[rhs]]), !is.na(med_cath_lab))
+  if (nrow(d) < 200) return(NULL)
+  m <- feols(as.formula(paste(rhs, "~ med_cath_lab | hrr_med_school + grad_year")),
+             data = d, cluster = ~hrr_med_school)
+  tibble(outcome   = rhs,
+         estimate  = coef(m)["med_cath_lab"],
+         std.error = se(m)["med_cath_lab"],
+         p.value   = fixest::pvalue(m)["med_cath_lab"],
+         n_obs     = nobs(m),
+         n_card    = n_distinct(d$npi))
+})
+write_csv(selection_out, "results/tables/training-pipeline-selection.csv")
+cat("\nWrote training-pipeline-robust.csv and training-pipeline-selection.csv\n")

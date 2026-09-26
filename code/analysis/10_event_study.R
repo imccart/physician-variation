@@ -163,6 +163,13 @@ m_pooled <- feols(mean_resid_cath ~ delta_dest:post | npi + year,
 cat("\n=== Pooled pre/post ===\n")
 print(summary(m_pooled))
 
+pooled_out <- tidy(m_pooled, conf.int = TRUE) %>%
+  filter(grepl("delta_dest", term)) %>%
+  transmute(term, estimate, std.error, conf.low, conf.high, p.value,
+            n_obs = nobs(m_pooled), n_cardio = n_distinct(es_panel$npi))
+write_csv(pooled_out, "results/tables/event-study-pooled.csv")
+cat("\nWrote results/tables/event-study-pooled.csv\n")
+
 write_csv(es_coef, "results/tables/event-study-coefs.csv")
 cat("\nWrote results/tables/event-study-coefs.csv\n")
 
