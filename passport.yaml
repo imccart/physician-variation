@@ -27,10 +27,11 @@
 #      training-pipeline-selection.csv), the destination-sorting diagnostic and the national
 #      HRR-mean cath share (destination-sorting.csv, national-cath-share.csv), the training
 #      binscatter slope (binscatter-slope.csv) and the raw recent-grad subsample counts
-#      (recent-grad-sample.csv). Table 1, the balance table and the training binscatter
-#      describe the analytical sample (1_descriptive.R restricted 2026-09-26). Still
-#      console-only: the Top-25 panel N (s3-top25-n) and the medical-school crosswalk match
-#      counts (appA-medschools-resolved); the MDE (s3-mde) is a hand calculation. The pooled
+#      (recent-grad-sample.csv), the Top-25 panel N (rank-x-cath-panel-n.csv), the crosswalk
+#      resolution counts (data/crosswalks/med-school-hrr-match-counts.csv) and the appendix A.3
+#      exclusion counts (unmapped-school-composition.csv). Table 1, the balance table and the training binscatter
+#      describe the analytical sample (1_descriptive.R restricted 2026-09-26). The
+#      only number without an artifact is the MDE (s3-mde), a hand calculation. The pooled
 #      beta_dest is still hardcoded as a literal in 9_dynamic.R (a separate flag).
 #   4. permutation-summary.csv lives at results/ (NOT results/tables/).
 #   5. dynamic-path.csv / place-variance-path.csv are a calibration whose two input betas
@@ -860,6 +861,102 @@ claims:
     status: PASS
     explanation: "2_medschool_hrr.R now writes med-school-hrr-match-counts.csv (kept under data/crosswalks/ per the one-way data flow, so local-only): match_lcme = 186 and match_defunct = 1, i.e. the 187 resolving schools the prose reports; 132 MD schools receive no ZIP."
     last_verified: 2026-09-26
+
+  - id: appA-panel-cardiologists
+    claim: "Of the 9,568 cardiologists in the full Medicare panel"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=total_cardiologists,col=value"
+    expected_value: 9568
+    tolerance: 0
+    status: PASS
+    explanation: "Distinct NPIs in analysis_panel.csv before the analytical restriction."
+    last_verified: 2026-09-27
+
+  - id: appA-panel-cardiologist-years
+    claim: "15,928 of 31,235 cardiologist-years"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=total_cardiologist_years,col=value"
+    expected_value: 31235
+    tolerance: 0
+    status: PASS
+    explanation: "Rows of analysis_panel.csv before the analytical restriction."
+    last_verified: 2026-09-27
+
+  - id: appA-unmapped-cardiologists
+    claim: "4,762 (50%) cannot be assigned a medical school HRR and are outside the analytical sample"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=unmapped_cardiologists,col=value"
+    expected_value: 4762
+    tolerance: 0
+    status: PASS
+    explanation: "4,762 / 9,568 = 49.8%, reported as 50%."
+    last_verified: 2026-09-27
+
+  - id: appA-unmapped-cardiologist-years
+    claim: "or 15,928 of 31,235 cardiologist-years"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=unmapped_cardiologist_years,col=value"
+    expected_value: 15928
+    tolerance: 0
+    status: PASS
+    explanation: "Cardiologist-years with no medical-school HRR."
+    last_verified: 2026-09-27
+
+  - id: appA-unmapped-other
+    claim: "3,959 are coded OTHER in Physician Compare"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=physician_compare_other,col=value"
+    expected_value: 3959
+    tolerance: 0
+    status: PASS
+    explanation: "The Physician Compare OTHER placeholder, which carries most foreign-trained physicians."
+    last_verified: 2026-09-27
+
+  - id: appA-unmapped-do
+    claim: "414 attended osteopathic schools"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=osteopathic_school,col=value"
+    expected_value: 414
+    tolerance: 0
+    status: PASS
+    explanation: "Dnonmd == 1 in med-school-xw.csv."
+    last_verified: 2026-09-27
+
+  - id: appA-unmapped-not-placed
+    claim: "318 attended schools that the crosswalk does not place"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=school_not_placed,col=value"
+    expected_value: 318
+    tolerance: 0
+    status: PASS
+    explanation: "317 at U.S. MD schools present in the crosswalk without a ZIP, plus 1 school name absent from the crosswalk."
+    last_verified: 2026-09-27
+
+  - id: appA-unmapped-no-school
+    claim: "71 have no medical school recorded"
+    location: "Appendix A.3, phy-variation-appendix.tex"
+    script: code/analysis/1_descriptive.R
+    artifact: results/tables/unmapped-school-composition.csv
+    artifact_key: "statistic=no_school_recorded,col=value"
+    expected_value: 71
+    tolerance: 0
+    status: PASS
+    explanation: "Cardiologists with a missing med_school in Physician Compare."
+    last_verified: 2026-09-27
 
   - id: appA-do-share
     claim: "only roughly 11% of U.S. medical school graduates are DOs"

@@ -174,7 +174,7 @@ Raw inputs referred to below:
 
 ### `mover` (mover indicator)
 - Paper: the mover-share statistic (~86% in the analytical sample); the mover-vs-full-sample comparison.
-- Chain: `3_movers.R` sets `mover = as.integer(!is.na(hrr_med_school) & !is.na(hrr_practice) & hrr_med_school != hrr_practice)`, written back onto `analysis_panel.csv`. `5_selection.R` and `1_descriptive.R` collapse it to an ever-mover cardiologist-level flag. Distinct from the mid-career mover (>=2 distinct `hrr_practice`) used in `10`, `11`, `12`.
+- Chain: `3_movers.R` sets `mover = as.integer(!is.na(hrr_med_school) & !is.na(hrr_practice) & hrr_med_school != hrr_practice)`, written back onto `analysis_panel.csv`. `5_selection.R` and `1_descriptive.R` collapse it to an ever-mover cardiologist-level flag. Distinct from the mid-career mover (>=2 distinct `hrr_practice`) used in `10`, `11`, `12`. A cardiologist with no medical-school HRR evaluates to 0 (stayer) rather than NA under this expression. That never reaches a reported number, since every analysis first conditions on a mapped school (non-missing `train_cath_lab` or `intensity_med_school`), but a full-panel mover share should not be read off this flag.
 - Level: cardiologist-year 0/1.
 - Files: `3_movers.R`; `1`, `2`, `3`, `5`, `7`.
 
@@ -276,7 +276,7 @@ every reported number has an on-disk artifact. On 2026-09-26 the descriptive fra
 `1_descriptive.R` (`panel_summ`, which feeds `summary-stats.tex`, `balance.tex` and the
 training binscatter) was restricted to the analytical sample, so Table 1 now reports the
 10,736 cardiologist-years and 3,207 cardiologists the prose describes; the same pass added
-`binscatter-slope.csv`, `recent-grad-sample.csv` and `rank-x-cath-panel-n.csv`, and persisted
+`binscatter-slope.csv`, `recent-grad-sample.csv`, `rank-x-cath-panel-n.csv` and `unmapped-school-composition.csv` (the appendix A.3 exclusion counts), and persisted
 the crosswalk resolution counts to `data/crosswalks/med-school-hrr-match-counts.csv`. One
 residual coupling: `9_dynamic.R`
 still hardcodes `beta_train = 0.058` and `beta_dest = 0.350` rather than reading
@@ -284,7 +284,7 @@ still hardcodes `beta_train = 0.058` and `beta_dest = 0.350` rather than reading
 
 | Script | Outputs |
 |---|---|
-| `1_descriptive.R` | `summary-stats.{tex,csv}`, `balance.{tex,csv}`, `origin-dispersion.csv`, `binscatter-slope.csv`; figures `binscatter-training-vs-cath`, `scatter-med-school-vs-practice`, `binscatter-med-school-vs-practice`, `hist-intensity-change`, `panel-size-by-year`, `od-heatmap`, `od-hhi` |
+| `1_descriptive.R` | `summary-stats.{tex,csv}`, `balance.{tex,csv}`, `origin-dispersion.csv`, `binscatter-slope.csv`, `unmapped-school-composition.csv`; figures `binscatter-training-vs-cath`, `scatter-med-school-vs-practice`, `binscatter-med-school-vs-practice`, `hist-intensity-change`, `panel-size-by-year`, `od-heatmap`, `od-hhi` |
 | `2_specifications.R` | `main-regressions.tex`, `movers-vs-full.tex`, `career-stage.tex`, `ysg-interaction.csv`; figure `spline-pred` |
 | `3_robustness.R` | `robust-fe.tex`, `robust-quartiles.tex`, `robust-pos-neg.tex` |
 | `4_hrr_map.R` | figure `hrr-cath-intensity` |

@@ -44,6 +44,36 @@ print(sumstats)
 write_csv(sumstats, "results/tables/summary-stats.csv")
 
 
+# 2a. Cardiologists excluded for an unmappable medical school -------------
+
+# Counts quoted in appendix A.3, measured on the full panel before the
+# analytical restriction. Cardiologists with no medical-school HRR are grouped
+# by why the school could not be placed.
+xw_flags <- read_csv("data/input/med-school-xw.csv", show_col_types = FALSE) %>%
+  rename(med_school = medical_school_name) %>%
+  distinct(med_school, .keep_all = TRUE) %>%
+  select(med_school, Dnonmd, Dforeign)
+
+unmapped <- analysis %>%
+  filter(is.na(hrr_med_school)) %>%
+  distinct(npi, med_school) %>%
+  left_join(xw_flags, by = "med_school") %>%
+  mutate(category = case_when(
+    is.na(med_school)              ~ "no_school_recorded",
+    toupper(med_school) == "OTHER" ~ "physician_compare_other",
+    coalesce(Dforeign == 1, FALSE) ~ "foreign_school",
+    coalesce(Dnonmd  == 1, FALSE)  ~ "osteopathic_school",
+    TRUE                           ~ "school_not_placed"))
+
+unmapped_out <- bind_rows(
+  tibble(statistic = c("total_cardiologists", "total_cardiologist_years",
+                       "unmapped_cardiologists", "unmapped_cardiologist_years"),
+         value = c(n_distinct(analysis$npi), nrow(analysis),
+                   n_distinct(unmapped$npi), sum(is.na(analysis$hrr_med_school)))),
+  unmapped %>% count(category, name = "value") %>% rename(statistic = category))
+write_csv(unmapped_out, "results/tables/unmapped-school-composition.csv")
+
+
 # 2b. Full summary statistics table (cardiologist sample) ----------------
 
 # Bring in the year-matched AHA training-period cath lab share so the
