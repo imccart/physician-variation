@@ -73,7 +73,7 @@ Our analytical panel restricts to allopathic MD graduates because only roughly 1
 
 Cath lab availability is recorded in the AHA Annual Survey CCLABHOS variable from 1994 onward and in the predecessor CCLAB82 variable from 1980--1993. Both are recoded to a binary indicator of direct hospital provision of cardiac catheterization. The HRR-year cath lab share is then computed as the share of AHA-respondent hospitals in each HRR-year for which the binary indicator equals one. The aggregated AHA series exhibits a smooth secular trend across the 1994 questionnaire revision, with the national HRR-mean cath lab share rising from approximately 0.14 in 1980 to approximately 0.39 in 2003. We interpret the smooth trend as evidence that the recoding from CCLAB82 to CCLABHOS does not introduce a measurement break.
 
-For each cardiologist, we match the AHA HRR-year cath lab share at the year the cardiologist began medical school, defined as graduation year minus three (the modal duration of allopathic medical school in the United States). AHA cath lab data are available 1980--2003, so the year-matching produces clean assignments for cardiologists with graduation years 1983 through 2006. We restrict our analytical sample to this graduation-year window.
+For each cardiologist, we match the AHA HRR-year cath lab share at the year the cardiologist began medical school, defined as graduation year minus three, the year after matriculation. AHA cath lab data are available 1980--2003, so the year-matching produces clean assignments for cardiologists with graduation years 1983 through 2006. We restrict our analytical sample to this graduation-year window.
 
 \subsection{Year-Matching and Cohort Variation}
 
@@ -91,7 +91,7 @@ We drop physician-years for which the implied training pipeline is incompatible 
 
 \section{Cross-Sectional Balance, by Subspecialty}\label{sec:app-balance}
 
-Table~\ref{tab:app-balance-spec} reports the training-period cath lab comparison between cross-sectional movers and stayers separately within each cardiology subspecialty. The ordering is similar across subspecialties, with movers in each subspecialty coming from medical school HRRs with lower cath lab share than stayers in that same subspecialty. The differences are statistically significant in general cardiology, interventional cardiology, and electrophysiology. Advanced heart failure has too few stayers (six cardiologists) to support a precise within-subspecialty test.
+Table~\ref{tab:app-balance-spec} reports the training-period cath lab share comparison between cross-sectional movers and stayers separately within each cardiology subspecialty, on the analytical sample of Table~2 in the main paper. The ordering matches Table~2 in every subspecialty, with movers coming from medical school HRRs with higher cath lab share than stayers in the same subspecialty, by 0.05 to 0.06 in general cardiology, interventional cardiology, and electrophysiology. The differences are statistically significant in general and interventional cardiology; electrophysiology and advanced heart failure have too few stayers (19 and 5 cardiologists) for a precise within-subspecialty test.
 
 \begin{table}[htbp]
 \centering
@@ -105,10 +105,10 @@ Table~\ref{tab:app-balance-spec} reports the training-period cath lab comparison
   \cmidrule(lr){2-3} \cmidrule(lr){4-5}
   Subspecialty & N & Train.\ cath & N & Train.\ cath & Diff. & $p$ \\
   \midrule
-  General Cardiology     & 491   & 0.034 & 3{,}075 & 0.021 & $-$0.013 & $<$0.001 \\
-  Interventional         & 136   & 0.042 & 875     & 0.027 & $-$0.015 & $<$0.001 \\
-  Electrophysiology      & 23    & 0.041 & 173     & 0.021 & $-$0.020 & 0.007 \\
-  Adv.\ Heart Failure    & 6     & 0.022 & 26      & 0.023 & 0.001    & 0.974 \\
+  General Cardiology     & 339   & 0.274 & 1{,}974 & 0.323 & 0.048 & $<$0.001 \\
+  Interventional         & 106   & 0.270 & 607     & 0.329 & 0.059 & $<$0.001 \\
+  Electrophysiology      & 19    & 0.287 & 137     & 0.343 & 0.056 & 0.167 \\
+  Adv.\ Heart Failure    & 5     & 0.421 & 20      & 0.438 & 0.017 & 0.875 \\
   \bottomrule
   \end{tabular}
 \end{minipage}
@@ -146,11 +146,19 @@ We read the permutation test as evidence that the pairing of cohorts to training
 \end{minipage}
 \end{figure}
 
-\section{NIH Rank Specifications}\label{sec:app-rank}
+\section{Rank by Training-Period Cath Lab Share}\label{sec:app-rank}
 
-The main paper documents that medical school NIH-funding rank does not predict later catheterization rates, in contrast to the cath lab availability measure, which does. This section reports additional rank specifications that test the robustness of the rank null result.
+The main paper documents that medical school NIH-funding rank does not predict later catheterization rates once training-period cath lab availability is included. Table~\ref{tab:app-rank-cells} splits cardiologists by Top-25 status and by whether their medical school HRR was above or below the median training-period cath lab share, with below-Top-25 schools in low-cath HRRs as the reference cell, and reports the cath rate in each of the other three cells relative to that reference.
 
-The continuous $-\log(\text{rank})$ specification, the binary Top-25 indicator, and the four-tier specification all yield small and statistically insignificant coefficients on the cardiologist-year panel. Restricting to the mover sample produces similar nulls. The interpretation is that whatever channel rank captures, it does not show up in NSTEMI cath rates. The rank-by-cath stratification reported in the main paper further indicates that the cath lab imprint is similar in magnitude within the Top-25 and Below-Top-25 subsamples, confirming that cath lab availability and rank capture nearly orthogonal dimensions of the medical school environment.
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Cath rate by medical school rank and training-period cath lab share\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Cells cross Top-25 NIH rank status with whether the medical school HRR's training-period cath lab share is at or above the sample median. The specification includes practice HRR and year fixed effects, weights by NSTEMI volume, and clusters standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-rank-cells}
+  \centering
+  \input{../results/tables/rank-x-cath-cells.tex}
+\end{minipage}
+\end{table}
 
 \section{Doximity Match Procedure}\label{sec:app-doximity}
 
@@ -178,12 +186,12 @@ For each matched cardiologist, we construct two residency-stage exposure measure
 
 \subsection{Direct-Exposure Test on Recent Graduates}\label{sec:app-recent-grad}
 
-The AHA cath lab indicator is a coarse proxy for procedural exposure during residency. A sharper measure is the residency hospital's realized NSTEMI catheterization rate during the trainee's first three years of post-graduate training, constructed directly from the claims data. We implement this measure for cardiologists with medical-school graduation year 2006 or later, whose first three post-graduate years (PGY1--PGY3) overlap the 2008--2018 claims window. The recent-graduate subsample includes 266 cardiologists and 487 cardiologist-years, with a mean of 2.05 PGY years observed per cardiologist. Table~\ref{tab:training-recent-grad} reports three specifications, progressing from practice-HRR and year fixed effects only (column~1) to the within-origin specification that adds medical-school HRR fixed effects (column~2) and a restriction to the cleaner manual-plus-exact residency-match subsample (column~3). The residency exposure coefficient is statistically indistinguishable from zero in all three columns. Point estimates are mildly negative but imprecisely estimated, and the confidence intervals do not support a positive residency imprint of the magnitude detected for medical school. The direct-exposure test on recent graduates corroborates the headline pipeline finding that residency exposure does not add to the medical school imprint.
+The AHA cath lab indicator is a coarse proxy for procedural exposure during residency. A sharper measure is the residency hospital's realized NSTEMI catheterization rate during the trainee's first three years of post-graduate training, constructed directly from the claims data. We implement this measure for cardiologists with medical-school graduation year 2006 or later, whose first three post-graduate years (PGY1--PGY3) overlap the 2008--2018 claims window. The recent-graduate subsample includes 266 cardiologists and 487 cardiologist-years, with a mean of 2.05 PGY years observed per cardiologist. After dropping singletons within fixed-effect cells, the within-origin column consists of 117 cardiologists. Table~\ref{tab:training-recent-grad} reports three specifications, progressing from practice-HRR and year fixed effects only (column~1) to the within-origin specification that adds medical-school HRR fixed effects (column~2) and a restriction to the cleaner manual-plus-exact residency-match subsample (column~3). The residency exposure coefficient is statistically indistinguishable from zero in all three columns. Point estimates are mildly negative but imprecisely estimated, and the confidence intervals do not support a positive residency imprint of the magnitude detected for medical school. The direct-exposure test on recent graduates corroborates the headline pipeline finding that residency exposure does not add to the medical school imprint.
 
 \begin{table}[htbp]
 \centering
 \begin{minipage}[h]{\textwidth}
-  \caption[]{Residency cath rate and own catheterization, recent-graduate subsample\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. All columns include practice HRR and year fixed effects, with medical school HRR fixed effects added in columns (2) and (3), and weight by NSTEMI volume. Standard errors are clustered at the cardiologist level in column (1) and at the medical school HRR level in columns (2) and (3). *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \caption[]{Residency cath rate and own catheterization, recent-graduate subsample\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. All columns include practice HRR and year fixed effects, with medical school HRR fixed effects added in columns (2) and (3), and weight by NSTEMI volume. Counts of cardiologist-years and cardiologists exclude singletons within fixed-effect cells. Standard errors are clustered at the cardiologist level in column (1) and at the medical school HRR level in columns (2) and (3). *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
   \label{tab:training-recent-grad}
   \centering
   \input{../results/tables/training-recent-grad.tex}
@@ -196,7 +204,7 @@ The main analysis addresses two distinct selection concerns. The first is that m
 
 \subsection{IPW Robustness Using the Peer-Cath Measure}
 
-The main paper reports the IPW-weighted within-origin specification on the AHA training-period cath lab measure. Table~\ref{tab:app-selection-alt} reports a parallel IPW exercise using the leave-one-out peer cath rate in the medical school HRR as a complementary measure of training-environment intensity. The IPW weighting moves the imprint coefficient modestly relative to the within-origin baseline, in the same direction and of comparable magnitude to the shift we observe with the AHA measure in the main paper. Both exercises indicate that observable selection on graduation cohort, gender, subspecialty, and training-period intensity does not drive the imprint we estimate.
+The main paper reports the IPW-weighted within-origin specification on the AHA training-period cath lab measure. Table~\ref{tab:app-selection-alt} reports a parallel IPW exercise using the leave-one-out peer cath rate in the medical school HRR as a complementary measure of training-environment intensity. The IPW weighting moves the imprint coefficient modestly relative to the unweighted baseline in column (1), in the same direction and of comparable magnitude to the shift we observe with the AHA measure in the main paper. Both exercises indicate that observable selection on graduation cohort, gender, subspecialty, and training-period intensity does not drive the imprint we estimate.
 
 \begin{table}[htbp]
 \centering

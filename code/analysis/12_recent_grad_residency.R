@@ -9,7 +9,7 @@
 ##                where data is available) is observable on the VRDC seat. This
 ##                is a tighter analogue to the medical-school AHA cath-share
 ##                imprint than the cross-sectional hospital cath-lab indicator
-##                used in 13_training_pipeline.R.
+##                used in 11_training_pipeline.R.
 ##
 ##                The test exploits within-origin variation: practice HRR FE,
 ##                medical-school HRR FE, and year FE soak up current and
@@ -165,7 +165,7 @@ fmt_coef <- function(m, term) {
           row$estimate, stars, row$std.error)
 }
 n_obs  <- function(m) format(nobs(m), big.mark = ",")
-n_card <- function(d) format(n_distinct(d$npi), big.mark = ",")
+n_card <- function(m, d) format(n_distinct(d$npi[obs(m)]), big.mark = ",")
 
 tbl <- paste0(
   "\\begin{tabular}{lccc}\n",
@@ -180,7 +180,7 @@ tbl <- paste0(
     fmt_coef(m3, "res_cath_rate_pgy"), " \\\\\n",
   "\\midrule\n",
   "Cardiologist-years & ", n_obs(m1), " & ", n_obs(m2), " & ", n_obs(m3), " \\\\\n",
-  "Cardiologists & ", n_card(p), " & ", n_card(p), " & ", n_card(p_clean), " \\\\\n",
+  "Cardiologists & ", n_card(m1, p), " & ", n_card(m2, p), " & ", n_card(m3, p_clean), " \\\\\n",
   "Practice HRR FE & Yes & Yes & Yes \\\\\n",
   "Medical-school HRR FE & No & Yes & Yes \\\\\n",
   "Year FE & Yes & Yes & Yes \\\\\n",

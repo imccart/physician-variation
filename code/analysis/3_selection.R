@@ -3,13 +3,11 @@
 ## Author:        Ian McCarthy
 ## Date Created:  2026-05-06
 ## Description:   Selection diagnostics and IPW-weighted main specs.
-##                The balance table shows movers come from systematically
-##                lower-intensity training environments (0.022 vs 0.035,
-##                p<0.001). This script:
-##                  (1) Reports within-subspecialty balance,
-##                  (2) Reports IPW-weighted main specs (level + change),
-##                  (3) Reports common-support-restricted spec dropping
-##                      origins with extreme mover shares.
+##                  (1) IPW-weighted main specs (level + change),
+##                  (2) Common-support-restricted spec dropping origins
+##                      with extreme mover shares,
+##                  (3) Within-subspecialty mover/stayer balance on the
+##                      AHA training cath-lab share (appendix Table B.1).
 
 # 1. Load -----------------------------------------------------------------
 
@@ -33,48 +31,6 @@ cardio_lvl <- analysis %>%
     hrr_med_school       = first(hrr_med_school),
     .groups = "drop"
   )
-
-
-# 2. Within-subspecialty balance -----------------------------------------
-
-# For each subspecialty, compare origin intensity for movers vs stayers
-within_spec_balance <- cardio_lvl %>%
-  filter(!is.na(intensity_med_school), !is.na(specialty)) %>%
-  group_by(specialty, mover) %>%
-  summarize(n           = n(),
-            train_int   = mean(intensity_med_school, na.rm = TRUE),
-            train_int_sd = sd(intensity_med_school, na.rm = TRUE),
-            .groups = "drop")
-
-# Pivot so movers and stayers are side by side, plus diff and t-test p-value
-within_spec_wide <- within_spec_balance %>%
-  pivot_wider(names_from = mover,
-              values_from = c(n, train_int, train_int_sd),
-              names_glue = "{.value}_{ifelse(mover==1,'mover','stayer')}")
-
-# Recompute t-test per specialty
-ttest_within_spec <- cardio_lvl %>%
-  filter(!is.na(intensity_med_school), !is.na(specialty)) %>%
-  group_by(specialty) %>%
-  summarize(
-    p = tryCatch(
-      t.test(intensity_med_school[mover == 1],
-             intensity_med_school[mover == 0])$p.value,
-      error = function(e) NA_real_),
-    .groups = "drop")
-
-within_spec_out <- within_spec_balance %>%
-  pivot_wider(names_from = mover,
-              values_from = c(n, train_int),
-              names_glue = "{.value}_{ifelse(mover==1,'mover','stayer')}") %>%
-  left_join(ttest_within_spec, by = "specialty") %>%
-  mutate(diff = train_int_mover - train_int_stayer) %>%
-  arrange(desc(n_mover + n_stayer))
-
-cat("\n=== Within-subspecialty balance: origin intensity ===\n")
-print(within_spec_out)
-
-write_csv(within_spec_out, "results/tables/balance-by-specialty.csv")
 
 
 # 3. Propensity score model and IPW ---------------------------------------
@@ -268,6 +224,37 @@ panel_aha <- analysis %>%
   left_join(aha_hrr_local %>% rename(train_cath_lab = cath_lab_share),
             by = c("hrr_med_school" = "hrr",
                    "aha_match_year" = "year"))
+
+# Within-subspecialty balance (appendix Table B.1): the Table 2 mover/stayer
+# comparison of the training cath-lab share, repeated within each
+# subspecialty on the same analytic sample.
+cardio_spec <- panel_aha %>%
+  filter(!is.na(mover), !is.na(train_cath_lab),
+         !is.na(intensity_dest_loo), !is.nan(intensity_dest_loo),
+         grad_year >= 1983, grad_year <= 2006) %>%
+  arrange(npi, year) %>%
+  group_by(npi) %>%
+  summarize(mover          = first(mover),
+            specialty      = first(specialty),
+            train_cath_lab = first(train_cath_lab),
+            .groups = "drop") %>%
+  filter(!is.na(specialty))
+
+within_spec_out <- cardio_spec %>%
+  group_by(specialty) %>%
+  summarize(
+    n_stayer     = sum(mover == 0),
+    n_mover      = sum(mover == 1),
+    train_stayer = mean(train_cath_lab[mover == 0]),
+    train_mover  = mean(train_cath_lab[mover == 1]),
+    p = tryCatch(t.test(train_cath_lab[mover == 1],
+                        train_cath_lab[mover == 0])$p.value,
+                 error = function(e) NA_real_),
+    .groups = "drop") %>%
+  mutate(diff = train_mover - train_stayer) %>%
+  arrange(desc(n_mover + n_stayer))
+
+write_csv(within_spec_out, "results/tables/balance-by-specialty.csv")
 
 # Cardiologist-level frame for propensity scoring on AHA training measure
 cardio_aha <- panel_aha %>%

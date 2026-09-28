@@ -247,59 +247,6 @@ ggsave("results/figures/binscatter-training-vs-cath.png", p_bs,
        width = 7, height = 5, dpi = 300)
 
 
-# 3. Scatterplot: med school intensity vs practice intensity ---------------
-
-scatter_data <- analysis %>%
-  filter(mover == 1, !is.na(intensity_med_school), !is.na(intensity_dest_loo))
-
-p1 <- ggplot(scatter_data, aes(x = intensity_med_school, y = mean_resid_cath)) +
-  geom_point(alpha = 0.1, size = 0.5, color = "gray25") +
-  geom_smooth(method = "lm", color = "gray45", fill = "gray80", se = TRUE) +
-  labs(x = "Medical School HRR Intensity",
-       y = "Cardiologist Residualized Cath Rate") +
-  theme_minimal()
-
-ggsave("results/figures/scatter-med-school-vs-practice.png", p1,
-       width = 8, height = 6, dpi = 300)
-
-
-# 4. Binscatter: med school intensity vs practice intensity ----------------
-
-binscatter_data <- scatter_data %>%
-  mutate(bin = ntile(intensity_med_school, 20)) %>%
-  group_by(bin) %>%
-  summarize(
-    x = mean(intensity_med_school),
-    y = mean(mean_resid_cath),
-    .groups = "drop"
-  )
-
-p2 <- ggplot(binscatter_data, aes(x = x, y = y)) +
-  geom_point(size = 3, color = "gray25") +
-  geom_smooth(method = "lm", se = FALSE, color = "gray45") +
-  labs(x = "Medical School HRR Intensity (ventile means)",
-       y = "Mean Residualized Cath Rate") +
-  theme_minimal()
-
-ggsave("results/figures/binscatter-med-school-vs-practice.png", p2,
-       width = 8, height = 6, dpi = 300)
-
-
-# 5. Distribution of intensity change for movers --------------------------
-
-p3 <- analysis %>%
-  filter(mover == 1, !is.na(intensity_change)) %>%
-  ggplot(aes(x = intensity_change)) +
-  geom_histogram(bins = 50, fill = "gray45", color = "white") +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "gray20") +
-  labs(x = "Change in Intensity (Destination LOO - Med School)",
-       y = "Count") +
-  theme_minimal()
-
-ggsave("results/figures/hist-intensity-change.png", p3,
-       width = 8, height = 6, dpi = 300)
-
-
 # 6. Panel volume over time -----------------------------------------------
 
 p4 <- analysis %>%

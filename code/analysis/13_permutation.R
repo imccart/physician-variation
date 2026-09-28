@@ -15,7 +15,7 @@
 ##                cohorts. We decompose the variance to confirm this.
 ##
 ##                Reconstructs train_cath_lab from source rather than
-##                depending on 7_aha_training.R's in-memory objects.
+##                depending on 5_aha_training.R's in-memory objects.
 ##
 ##                Outputs:
 ##                  results/figures/perm-null.png
@@ -23,7 +23,7 @@
 
 set.seed(20260804)
 
-# 1. Build train_cath_lab (same construction as 7_aha_training.R) ----------
+# 1. Build train_cath_lab (same construction as 5_aha_training.R) ----------
 
 analysis <- read_csv("data/output/analysis_panel.csv",
                      col_types = cols(npi = col_character(),
@@ -59,7 +59,7 @@ panel <- analysis %>%
             by = c("npi", "hrr_med_school"))
 
 # Within-origin estimation sample. Matches the canonical baseline in
-# 5_selection.R (m_aha_base, cohort-robust.tex col 1): grad 1983-2006,
+# 3_selection.R (m_aha_base, cohort-robust.tex col 1): grad 1983-2006,
 # non-missing training exposure, outcome, and destination peer measure, plus
 # non-missing gender/specialty (the IPW join restricts to these). This yields
 # the headline within-origin coefficient of 0.058 on N = 10,729.
@@ -150,7 +150,7 @@ summary_out <- tibble(
             band_lo, band_hi,
             p_two, p_right,
             sqrt(v_within), sqrt(v_between), within_share,
-            n_perm, nrow(clean), n_distinct(clean$npi),
+            n_perm, nobs(m_true), n_distinct(clean$npi),
             n_distinct(clean$hrr_med_school))
 )
 write_csv(summary_out, "results/permutation-summary.csv")
