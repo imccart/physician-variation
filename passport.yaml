@@ -17,9 +17,10 @@
 #   1. No \newcommand macros exist. Every number is hardcoded in the .tex prose, so
 #      table-backed claims are audited against the hand-built bare-tabular .tex (or CSV)
 #      the analysis script writes. artifact_key gives the row label and column.
-#   2. train_cath_lab (and its AHA cousins) is NOT materialized to data/output/. Each
-#      consuming script rebuilds it inline from data/input/aha_hospital.csv with the same
-#      recipe (HRR-year mean(CCLABHOS=="1"), matriculation = grad_year-3 clamped [1980,2003]).
+#   2. train_cath_lab (and its AHA cousins) is not read from data/output/ by any analysis
+#      script. Each consuming script rebuilds it inline from data/input/aha_hospital.csv with
+#      the same recipe (HRR-year mean(CCLABHOS=="1") over hospitals with a response, reading
+#      "", NA and "." as missing; matriculation = grad_year-3 clamped [1980,2003]).
 #   3. Numbers that were previously console-only now have on-disk artifacts (added
 #      2026-09-25/26): the persistence median and within-physician trend (persistence.csv),
 #      the pooled destination response beta_dest (event-study-pooled.csv), the
@@ -35,7 +36,7 @@
 #      beta_dest is still hardcoded as a literal in 7_dynamic.R (a separate flag).
 #   4. permutation-summary.csv lives at results/ (NOT results/tables/).
 #   5. dynamic-path.csv / place-variance-path.csv are a calibration whose two input betas
-#      (0.058, 0.350) are hardcoded in 7_dynamic.R, not read from upstream files.
+#      (0.059, 0.350) are hardcoded in 7_dynamic.R, not read from upstream files.
 
 passport_version: 1
 paper: physician-variation
@@ -45,16 +46,16 @@ claims:
   # === Abstract (draft) ===
 
   - id: abs-imprint-scaled
-    claim: "a 10-percentage-point increase in training-period availability raises later catheterization rates by 0.58 percentage points"
+    claim: "a 10-percentage-point increase in training-period availability raises later catheterization rates by 0.59 percentage points"
     location: "Abstract, phy-variation-draft.tex"
     script: code/analysis/5_aha_training.R
     artifact: results/tables/training-imprint.tex
     artifact_key: "row=Training-HRR cath lab share,col=Panel B (1) Origin+Destination FE"
-    expected_value: 0.058
+    expected_value: 0.059
     tolerance: 0.001
     status: PASS
-    explanation: "Within-origin coefficient (train_cath_lab, model b1). Prose scales it x10 (0.058 -> 0.58 pp per 10 pp)."
-    last_verified: 2026-09-26
+    explanation: "Within-origin coefficient (train_cath_lab, model b1). Prose scales it x10 (0.059 -> 0.59 pp per 10 pp)."
+    last_verified: 2026-09-29
 
   - id: abs-long-run-multiplier
     claim: "implies a long-run multiplier of roughly 1.5 on per-cardiologist cath rates"
@@ -66,7 +67,7 @@ claims:
     tolerance: 0.05
     status: PASS
     explanation: "Derived from beta_dest=0.350: 1/(1-0.350)=1.54, rounded to 'roughly 1.5'. Betas are hardcoded in 7_dynamic.R."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   # === Introduction (draft) ===
 
@@ -92,7 +93,7 @@ claims:
     tolerance: 1
     status: PASS
     explanation: "balance.tex (analytic sample): 2,738 movers / 3,207 = 85.4% cardiologist-level; 86.3% by cardiologist-year. Prose updated 87 -> 86 in the intro, Section 2.4 and Section 3.5."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: intro-cross-sectional-coef
     claim: "cross-sectional mover specification produces an imprint coefficient of 0.035 (SE 0.011)"
@@ -104,7 +105,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "train_cath_lab in model a1 (destination FE only)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: intro-cross-sectional-se
     claim: "imprint coefficient of 0.035 (SE 0.011)"
@@ -116,19 +117,19 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: intro-within-origin-coef
-    claim: "strengthens to 0.058 (SE 0.021) once we add medical school HRR fixed effects"
+    claim: "strengthens to 0.059 (SE 0.021) once we add medical school HRR fixed effects"
     location: "Introduction, phy-variation-draft.tex"
     script: code/analysis/5_aha_training.R
     artifact: results/tables/training-imprint.tex
     artifact_key: "row=Training-HRR cath lab share,col=Panel B (1) Origin+Destination FE"
-    expected_value: 0.058
+    expected_value: 0.059
     tolerance: 0.001
     status: PASS
     explanation: "The headline within-origin imprint (train_cath_lab, model b1)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: intro-within-origin-se
     claim: "0.058 (SE 0.021)"
@@ -140,7 +141,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: intro-ic-imprint
     claim: "the imprint coefficient is 0.058 (SE 0.019) [for interventional cardiologists], compared to 0.013 (SE 0.019) for general cardiologists"
@@ -152,7 +153,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "Interventional baseline (Panel A). SE 0.019 reported in intro but table SE may differ by panel; verify."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: intro-gen-imprint
     claim: "0.013 (SE 0.019) for general cardiologists"
@@ -164,7 +165,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "General cardiology baseline (Panel A)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: intro-adaptation-rate
     claim: "a pooled post-move adaptation rate of roughly 35% of the destination gap"
@@ -176,7 +177,7 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "8_event_study.R now writes event-study-pooled.csv; delta_dest:post = 0.3503."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   # === Setting and Data (draft) ===
 
@@ -226,7 +227,7 @@ claims:
     tolerance: 1
     status: PASS
     explanation: "8,106 / 10,180 unique NPIs = 79.6%. Prose updated from ~75% (stale-vintage denominator ~10,808) to ~80%."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: data-doximity-coverage-residency
     claim: "70% to an identifiable residency hospital"
@@ -238,7 +239,7 @@ claims:
     tolerance: 1
     status: PASS
     explanation: "Derived match rate; console-only."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: data-min-volume
     claim: "at least 11 NSTEMI patients [per cardiologist-year]"
@@ -274,7 +275,7 @@ claims:
     tolerance: 200
     status: PASS
     explanation: "Descriptive sample (grad 1983-2006). Distinct from the within-origin regression N=10,729 (requires non-missing intensity_dest_loo)."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: data-n-unique-cardiologists
     claim: "about 3,200 unique cardiologists"
@@ -286,7 +287,7 @@ claims:
     tolerance: 50
     status: PASS
     explanation: "Unique-cardiologist count; appendix F reports 3,207."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: data-resid-sd
     claim: "standard deviation of roughly 0.15 [residualized cath rate]"
@@ -298,11 +299,11 @@ claims:
     tolerance: 0.005
     status: PASS
     explanation: "Table restricted to the analytic sample 2026-09-26; SD 0.153. Prose updated 0.16 -> 0.15 in Sections 2.4 and 3."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
 
   - id: s1-direct-effect-sd
-    claim: "0.58 percentage point increase in risk-adjusted catheterization rates (or about 0.04 standard deviations)"
+    claim: "0.59 percentage point increase in risk-adjusted catheterization rates (or about 0.04 standard deviations)"
     location: "Section 1, phy-variation-draft.tex (line ~62)"
     script: code/analysis/5_aha_training.R
     artifact: results/tables/summary-stats.tex
@@ -310,8 +311,8 @@ claims:
     expected_value: 0.153
     tolerance: 0.001
     status: EXPLAINED
-    explanation: "Derived: 0.058 (s3-imprint-within) x 10 points = 0.58 pp; 0.58 / 15.3 (this SD, in pp) = 0.038 SD, rounded to 0.04."
-    last_verified: 2026-09-28
+    explanation: "Derived: 0.059 (s3-imprint-within) x 10 points = 0.59 pp; 0.59 / 15.3 (this SD, in pp) = 0.039 SD, rounded to 0.04."
+    last_verified: 2026-09-29
 
   - id: s1-longrun-effect-sd
     claim: "translates into a 0.06 standard deviation increase in risk-adjusted catheterization rates"
@@ -322,8 +323,8 @@ claims:
     expected_value: 0.153
     tolerance: 0.001
     status: EXPLAINED
-    explanation: "Derived: 0.58 pp x 1.54 multiplier (s4-multiplier) = 0.89 pp; 0.89 / 15.3 = 0.058 SD, rounded to 0.06. Was 0.05 until 2026-09-28."
-    last_verified: 2026-09-28
+    explanation: "Derived: 0.59 pp x 1.54 multiplier (s4-multiplier) = 0.91 pp; 0.91 / 15.3 = 0.059 SD, rounded to 0.06."
+    last_verified: 2026-09-29
   - id: data-mean-volume
     claim: "Average NSTEMI volume is 16 patients per cardiologist-year"
     location: "Section 2.4, phy-variation-draft.tex"
@@ -334,7 +335,7 @@ claims:
     tolerance: 0.5
     status: PASS
     explanation:
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: data-ic-share
     claim: "another 22% in interventional cardiology"
@@ -346,7 +347,7 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "Analytic-sample share 0.222; prose reports percent, updated 20 -> 22."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: data-gen-share
     claim: "Roughly 72% of the cardiologists in our sample are general cardiologists"
@@ -358,7 +359,7 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "Analytic-sample share 0.721; prose reports percent (replaced 'roughly three-quarters')."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: data-train-share-sd
     claim: "training-period cath lab availability ranges from 0 to 83% of hospitals, with a standard deviation of 0.17"
@@ -370,7 +371,7 @@ claims:
     tolerance: 0.005
     status: PASS
     explanation: "SD of train_cath_lab; Max 0.83 (col Max) supports the '0 to 83%' range."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: data-binscatter-slope
     claim: "a slope of about 0.006 per unit of training-cath share"
@@ -382,7 +383,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "1_descriptive.R now writes binscatter-slope.csv; slope 0.0055 on the analytic sample."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   # === Section 3: Medical School Environments ===
 
@@ -396,7 +397,7 @@ claims:
     tolerance: 1
     status: PASS
     explanation: "Median across origin HRRs of n_dest_unique (23) and hhi_dest (0.066) in origin-dispersion.csv."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: s3-hhi
     claim: "a destination-share HHI of 0.066"
@@ -408,7 +409,7 @@ claims:
     tolerance: 0.002
     status: PASS
     explanation:
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: s3-national-cath-1980
     claim: "national mean cath lab share rose from roughly 0.14 in 1980"
@@ -420,7 +421,7 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "Prose says 'national HRR-mean' -> hrr_mean_cath_share = 0.136 for 1980 (rounds to 0.14). Hospital-level national_cath_share col = 0.133 is the cohort-robust control, a different quantity."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: s3-national-cath-2003
     claim: "to roughly 0.39 in 2003"
@@ -432,7 +433,7 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "HRR-mean hrr_mean_cath_share = 0.386 for 2003 (rounds to 0.39). Hospital-level national_cath_share col = 0.353."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: s3-panelA-coef
     claim: "the training-imprint coefficient is 0.035 (SE 0.011) and statistically distinguishable from zero at the 1% level"
@@ -444,19 +445,19 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "Same as intro-cross-sectional-coef; restated in the identification subsection."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-panelB-range
-    claim: "Panel B estimate increasing from 0.058 to 0.071 across the three columns"
+    claim: "Panel B estimate increasing from 0.059 to 0.072 across the three columns"
     location: "Section 3.1, phy-variation-draft.tex"
     script: code/analysis/5_aha_training.R
     artifact: results/tables/training-imprint.tex
     artifact_key: "row=Training-HRR cath lab share,col=Panel B (3) +practice"
-    expected_value: 0.071
+    expected_value: 0.072
     tolerance: 0.001
     status: PASS
     explanation: "Upper end of Panel B range (col 3, +practice characteristics)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-rank-continuous
     claim: "continuous rank coefficient in Panel A is small ... (around 0.005 to 0.006 per unit of -log(rank))"
@@ -468,19 +469,19 @@ claims:
     tolerance: 0.002
     status: PASS
     explanation: "Continuous -log(nih_rank) coefficient, Panel A."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-rank-train-range
-    claim: "training cath share ... point estimates between 0.058 and 0.066"
+    claim: "training cath share ... point estimates between 0.059 and 0.067"
     location: "Section 3.2, phy-variation-draft.tex"
     script: code/analysis/4_rank.R
     artifact: results/tables/rank.tex
     artifact_key: "row=Training cath lab share,col=(1)-(3)"
-    expected_value: 0.058
+    expected_value: 0.059
     tolerance: 0.001
     status: PASS
-    explanation: "train_cath_lab holds 0.058-0.066 across rank.tex columns (does not shrink when rank is added)."
-    last_verified: 2026-09-26
+    explanation: "train_cath_lab holds 0.059-0.067 across rank.tex columns (does not shrink when rank is added)."
+    last_verified: 2026-09-29
 
   - id: s3-below25-baseline
     claim: "Below-Top-25 panel produces an imprint of 0.038 at baseline"
@@ -492,7 +493,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "Below Top-25 (Panel B) baseline."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-below25-controls
     claim: "0.033 with ... controls [Below Top 25]"
@@ -504,7 +505,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-top25-n
     claim: "Top-25 panel has only 1,754 cardiologist-year observations"
@@ -516,7 +517,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "6_rank_x_cath.R now writes rank-x-cath-panel-n.csv; Top-25 baseline N = 1,754 (Below-Top-25 = 8,831). The printed stratified table footer still carries only the Below-Top-25 N."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-ep-ahf-n
     claim: "electrophysiology and advanced-heart-failure subsamples are too small (358 and 65 cardiologist-years respectively)"
@@ -540,7 +541,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-ic-panelB
     claim: "0.047 with physician characteristics (Panel B)"
@@ -552,7 +553,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-ic-panelC
     claim: "0.041 with practice characteristics (Panel C)"
@@ -564,7 +565,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-gen-baseline
     claim: "Among general cardiologists, the point estimate is 0.013 at baseline"
@@ -576,7 +577,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-mde
     claim: "minimum detectable effect at 80% power ... is approximately 0.053"
@@ -600,19 +601,19 @@ claims:
     tolerance: 2
     status: PASS
     explanation: "Share of the analytical sample with a matched Doximity residency; derived from the training-pipeline.tex N against the main sample."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-pipeline-medschool-coef
-    claim: "medical school coefficient is 0.105 (SE 0.029) ... at the 1% level"
+    claim: "medical school coefficient is 0.106 (SE 0.029) ... at the 1% level"
     location: "Section 3.4, phy-variation-draft.tex"
     script: code/analysis/11_training_pipeline.R
     artifact: results/tables/training-pipeline.tex
     artifact_key: "row=Medical school cath share,col=Full sample Own hospital"
-    expected_value: 0.105
+    expected_value: 0.106
     tolerance: 0.001
     status: PASS
     explanation: "med_cath_lab in the joint own-hospital spec (m1)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-pipeline-medschool-se
     claim: "medical school coefficient is 0.105 (SE 0.029)"
@@ -624,7 +625,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-pipeline-residency-coef
     claim: "the residency own-hospital coefficient is 0.012 (SE 0.009)"
@@ -636,22 +637,22 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "res_own_cath in the joint own-hospital spec (m1)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-pipeline-medschool-strengthen
-    claim: "medical school coefficient strengthens to 0.130--0.134"
+    claim: "medical school coefficient strengthens to 0.132--0.136"
     location: "Section 3.4, phy-variation-draft.tex"
     script: code/analysis/11_training_pipeline.R
     artifact: results/tables/training-pipeline.tex
     artifact_key: "row=Medical school cath share,col=Manual+exact only (cols 3-4)"
-    expected_value: 0.130
+    expected_value: 0.132
     tolerance: 0.001
     status: PASS
     explanation: "Manual+exact-match-only subsample (m3/m4)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-pipeline-within-res-fe
-    claim: "residency coefficient is -0.004 (SE 0.018) ... the medical school coefficient remains positive at 0.067 (SE 0.034)"
+    claim: "residency coefficient is -0.004 (SE 0.018) ... the medical school coefficient remains positive at 0.069 (SE 0.034)"
     location: "Section 3.4, phy-variation-draft.tex"
     script: code/analysis/11_training_pipeline.R
     artifact: results/tables/training-pipeline-robust.csv
@@ -659,8 +660,8 @@ claims:
     expected_value: -0.004
     tolerance: 0.001
     status: PASS
-    explanation: "11_training_pipeline.R now writes training-pipeline-robust.csv; res_own_cath = -0.0038 (SE 0.018), med_cath_lab = 0.0666 (SE 0.034) in the same within-residency-hospital-FE spec."
-    last_verified: 2026-09-26
+    explanation: "11_training_pipeline.R writes training-pipeline-robust.csv; res_own_cath = -0.0040 (SE 0.018), med_cath_lab = 0.0686 (SE 0.034) in the same within-residency-hospital-FE spec."
+    last_verified: 2026-09-29
 
   - id: s3-pipeline-placement
     claim: "yields a coefficient of 0.14 (SE 0.19), indistinguishable from zero [residency placement]"
@@ -672,55 +673,79 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "11_training_pipeline.R now writes training-pipeline-selection.csv; res_own_cath ~ med_cath_lab = 0.140 (SE 0.189)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-ipw-coef
-    claim: "IPW-weighted training-imprint coefficient is 0.057 (SE 0.021), essentially identical to the baseline of 0.058"
+    claim: "IPW-weighted training-imprint coefficient is 0.058 (SE 0.021), essentially identical to the baseline of 0.059"
     location: "Section 3.5, phy-variation-draft.tex"
     script: code/analysis/3_selection.R
     artifact: results/tables/selection-aha.tex
     artifact_key: "row=Training-HRR cath lab share,col=(2) +IPW"
-    expected_value: 0.057
+    expected_value: 0.058
     tolerance: 0.001
     status: PASS
-    explanation: "m_aha_ipw. Col (1) baseline is the 0.058 within-origin spec."
-    last_verified: 2026-09-28
+    explanation: "m_aha_ipw. Col (1) baseline is the 0.059 within-origin spec."
+    last_verified: 2026-09-29
 
   - id: s3-linear-trend-coef
-    claim: "training coefficient is essentially unchanged, at 0.058 (SE 0.034)"
+    claim: "training coefficient is essentially unchanged, at 0.059 (SE 0.033)"
     location: "Section 3.5, phy-variation-draft.tex"
     script: code/analysis/3_selection.R
     artifact: results/tables/selection-aha.tex
     artifact_key: "row=Training-HRR cath lab share,col=(3) +linear grad-year trend"
-    expected_value: 0.058
+    expected_value: 0.059
     tolerance: 0.001
     status: PASS
-    explanation: "m_aha_lin (SE widens to 0.034 with the cohort trend)."
-    last_verified: 2026-09-28
+    explanation: "m_aha_lin (SE widens to 0.033 with the cohort trend)."
+    last_verified: 2026-09-29
 
   - id: s3-perm-estimate
-    claim: "the actual estimate of 0.058 falling beyond all but one of 1,000 such permutations (two-sided p = 0.005)"
+    claim: "the actual estimate of 0.059 falling beyond all but one of 1,000 such permutations (two-sided p = 0.004)"
     location: "Section 3.5, phy-variation-draft.tex"
     script: code/analysis/13_permutation.R
     artifact: results/permutation-summary.csv
     artifact_key: "statistic=beta_true"
-    expected_value: 0.058
+    expected_value: 0.059
     tolerance: 0.001
     status: PASS
     explanation: "beta_true re-estimated within-origin on the N=10,729 sample."
-    last_verified:
+    last_verified: 2026-09-29
 
   - id: s3-perm-p
-    claim: "two-sided p = 0.005"
+    claim: "two-sided p = 0.004"
     location: "Section 3.5, phy-variation-draft.tex (also appendix C)"
     script: code/analysis/13_permutation.R
     artifact: results/permutation-summary.csv
     artifact_key: "statistic=ri_p_two_sided"
-    expected_value: 0.005
+    expected_value: 0.004
     tolerance: 0.0005
     status: PASS
     explanation:
-    last_verified:
+    last_verified: 2026-09-29
+
+  - id: s3-perm-region-mean
+    claim: "the resulting coefficients are centered on 0.016"
+    location: "Section 3.5, phy-variation-draft.tex (also appendix C)"
+    script: code/analysis/13_permutation.R
+    artifact: results/permutation-summary.csv
+    artifact_key: "statistic=region_placebo_mean"
+    expected_value: 0.016
+    tolerance: 0.001
+    status: PASS
+    explanation: "Mean of 1,000 coefficients with exposure reassigned across medical school HRRs within matriculation year."
+    last_verified: 2026-09-29
+
+  - id: s3-perm-region-exceeds
+    claim: "the actual estimate exceeds all 1,000 of them"
+    location: "Section 3.5, phy-variation-draft.tex (also appendix C)"
+    script: code/analysis/13_permutation.R
+    artifact: results/permutation-summary.csv
+    artifact_key: "statistic=region_ri_p_right_tail"
+    expected_value: 0
+    tolerance: 0.0005
+    status: PASS
+    explanation: "Share of region-permuted draws at or above beta_true."
+    last_verified: 2026-09-29
 
   # === Section 3.6: Persistence across the Career ===
 
@@ -734,7 +759,7 @@ claims:
     tolerance: 1
     status: PASS
     explanation: "5_aha_training.R sec 13 now writes persistence.csv; median years since graduation 21, minus 6 GME = 15 in practice."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-persist-median-since-grad
     claim: "twenty-one years past medical school graduation"
@@ -746,21 +771,21 @@ claims:
     tolerance: 0
     status: PASS
     explanation:
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
   - id: s3-persist-coef-at-horizon
-    claim: "the coefficient remains 0.058 at this horizon"
+    claim: "the coefficient remains 0.059 at this horizon"
     location: "Section 3.6, phy-variation-draft.tex"
     script: code/analysis/5_aha_training.R
     artifact: results/tables/training-imprint.tex
     artifact_key: "row=Training-HRR cath lab share,col=Panel B (1) Origin+Destination FE"
-    expected_value: 0.058
+    expected_value: 0.059
     tolerance: 0.001
     status: PASS
     explanation: "Same within-origin estimate, framed as measured ~15yr into practice."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s3-persist-trend
-    claim: "a within-physician trend of -0.002 per year (95% CI [-0.008, 0.005])"
+    claim: "a within-physician trend of -0.002 per year (95% CI [-0.009, 0.004])"
     location: "Section 3.6, phy-variation-draft.tex"
     script: code/analysis/5_aha_training.R
     artifact: results/tables/persistence.csv
@@ -768,8 +793,8 @@ claims:
     expected_value: -0.002
     tolerance: 0.0005
     status: PASS
-    explanation: "persistence.csv within_trend_beta = -0.0019 (CI [-0.0085, 0.0046]); prose rounds to -0.002 [-0.008, 0.005]."
-    last_verified: 2026-09-26
+    explanation: "persistence.csv within_trend_beta = -0.0021 (CI [-0.0086, 0.0044]); prose rounds to -0.002 [-0.009, 0.004]."
+    last_verified: 2026-09-29
 
   # === Section 4: Amplification via Peer Effects ===
 
@@ -783,7 +808,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "n_cardio in event-study-pooled.csv; all mid-career movers in the panel, no graduation window."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: s4-n-movers-window
     claim: "581 of them fall in the 1983 to 2006 graduation window"
@@ -795,7 +820,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation:
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: s4-ic-mover-share
     claim: "disproportionately interventional cardiologists (29% of movers vs. 22% of non-movers)"
@@ -807,7 +832,7 @@ claims:
     tolerance: 1
     status: PASS
     explanation: "mover-balance.tex; 29 (movers) vs 22 (non-movers)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s4-es-move-year
     claim: "At the move year, beta_0 = 0.443 (95% CI [0.25, 0.63])"
@@ -819,7 +844,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "Move-year (tau=0) event-study coefficient; CI cols lo95/hi95."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s4-es-pooled
     claim: "pooled post-move coefficient at 0.350"
@@ -831,7 +856,7 @@ claims:
     tolerance: 0.005
     status: PASS
     explanation: "event-study-pooled.csv delta_dest:post = 0.3503 (SE 0.077). Still hardcoded as beta_dest in 7_dynamic.R (a separate flag)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s4-molitor-06
     claim: "smaller than the roughly 0.6 reported in Molitor"
@@ -855,19 +880,19 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "Calibration from hardcoded beta_dest=0.350."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: s4-longrun-shift
-    claim: "a long-run shift of roughly 0.89 percentage points ... 0.58 ... direct ... and 0.31 ... spillover"
+    claim: "a long-run shift of roughly 0.91 percentage points ... 0.59 ... direct ... and 0.32 ... spillover"
     location: "Section 4.2, phy-variation-draft.tex"
     script: code/analysis/7_dynamic.R
     artifact: results/tables/dynamic-path.csv
     artifact_key: "steady-state cath_change for a 10pp shock"
-    expected_value: 0.89
+    expected_value: 0.91
     tolerance: 0.02
     status: PASS
-    explanation: "Derived: 0.058*10*1.54 = 0.89 pp; decomposes into 0.58 direct + 0.31 spillover. From the calibrated path."
-    last_verified: 2026-09-26
+    explanation: "Derived: 0.059*10*1.54 = 0.91 pp; decomposes into 0.59 direct + 0.32 spillover. From the calibrated path."
+    last_verified: 2026-09-29
 
   # === Section 5: Conclusion ===
 
@@ -881,8 +906,8 @@ claims:
     expected_value: 15.6
     tolerance: 0.1
     status: EXPLAINED
-    explanation: "Derived: 0.89 pp long-run effect (s4-longrun-shift) x 1,000 = 8.9 caths per 1,000 NSTEMI patients."
-    last_verified: 2026-09-28
+    explanation: "Derived: 0.91 pp long-run effect (s4-longrun-shift) x 1,000 = 9.1 caths per 1,000 NSTEMI patients."
+    last_verified: 2026-09-29
 
   - id: s4-cath-opps-payment
     claim: "2025 Medicare hospital outpatient payment for a diagnostic left heart catheterization with coronary angiography ($3,216)"
@@ -905,11 +930,11 @@ claims:
     expected_value: 15.6
     tolerance: 0.1
     status: EXPLAINED
-    explanation: "Derived: 8.9 caths x $3,216 = $28,622, rounded to $29,000."
-    last_verified: 2026-09-28
+    explanation: "Derived: 9.08 caths x $3,216 = $29,192, rounded to $29,000."
+    last_verified: 2026-09-29
 
   - id: s4-longrun-dollars-per-cardio
-    claim: "roughly $450 per cardiologist per year"
+    claim: "roughly $460 per cardiologist per year"
     location: "Section 4.2, phy-variation-draft.tex"
     script: code/analysis/7_dynamic.R
     artifact: results/tables/summary-stats.tex
@@ -917,19 +942,19 @@ claims:
     expected_value: 15.6
     tolerance: 0.1
     status: EXPLAINED
-    explanation: "Derived: 0.0089 x 15.6 NSTEMI patients (this row) = 0.139 caths per cardiologist-year x $3,216 = $446, rounded to $450."
-    last_verified: 2026-09-28
+    explanation: "Derived: 0.00908 x 15.6 NSTEMI patients (this row) = 0.142 caths per cardiologist-year x $3,216 = $455, rounded to $460."
+    last_verified: 2026-09-29
   - id: concl-within-origin
-    claim: "within-origin coefficient of 0.058 (SE 0.021)"
+    claim: "within-origin coefficient of 0.059 (SE 0.021)"
     location: "Section 5 Conclusion, phy-variation-draft.tex"
     script: code/analysis/5_aha_training.R
     artifact: results/tables/training-imprint.tex
     artifact_key: "row=Training-HRR cath lab share,col=Panel B (1) Origin+Destination FE"
-    expected_value: 0.058
+    expected_value: 0.059
     tolerance: 0.001
     status: PASS
     explanation: "Headline restated in the conclusion."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: concl-dest-response
     claim: "destination-response estimate is roughly 0.35"
@@ -941,7 +966,7 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "event-study-pooled.csv delta_dest:post = 0.3503."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   # === Appendix A: Sample Construction Details ===
 
@@ -955,7 +980,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "2_medschool_hrr.R now writes med-school-hrr-match-counts.csv (kept under data/crosswalks/ per the one-way data flow, so local-only): match_lcme = 186 and match_defunct = 1, i.e. the 187 resolving schools the prose reports; 132 MD schools receive no ZIP."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appA-panel-cardiologists
     claim: "Of the 9,568 cardiologists in the full Medicare panel"
@@ -967,7 +992,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Distinct NPIs in analysis_panel.csv before the analytical restriction."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-panel-cardiologist-years
     claim: "15,928 of 31,235 cardiologist-years"
@@ -979,7 +1004,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Rows of analysis_panel.csv before the analytical restriction."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-unmapped-cardiologists
     claim: "4,762 (50%) cannot be assigned a medical school HRR and are outside the analytical sample"
@@ -991,7 +1016,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "4,762 / 9,568 = 49.8%, reported as 50%."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-unmapped-cardiologist-years
     claim: "or 15,928 of 31,235 cardiologist-years"
@@ -1003,7 +1028,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Cardiologist-years with no medical-school HRR."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-unmapped-other
     claim: "3,959 are coded OTHER in Physician Compare"
@@ -1015,7 +1040,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "The Physician Compare OTHER placeholder, which carries most foreign-trained physicians."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-unmapped-do
     claim: "414 attended osteopathic schools"
@@ -1027,7 +1052,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Dnonmd == 1 in med-school-xw.csv."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-unmapped-not-placed
     claim: "318 attended schools that the crosswalk does not place"
@@ -1039,7 +1064,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "317 at U.S. MD schools present in the crosswalk without a ZIP, plus 1 school name absent from the crosswalk."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-unmapped-no-school
     claim: "71 have no medical school recorded"
@@ -1051,7 +1076,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Cardiologists with a missing med_school in Physician Compare."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appA-do-share
     claim: "only roughly 11% of U.S. medical school graduates are DOs"
@@ -1113,7 +1138,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Table B.1 is a hardcoded inline tabular; its cells trace to balance-by-specialty.csv. Verify the .tex against the CSV."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appB-gen-mover-n
     claim: "General Cardiology: Movers N 1,974"
@@ -1125,7 +1150,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation:
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appB-gen-diff
     claim: "General Cardiology: Diff 0.048, p <0.001"
@@ -1137,7 +1162,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "diff = mover-stayer AHA training cath-lab share, analytic sample (rebuilt 2026-09-28; previously used the med-school peer cath rate)."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appB-ic-diff
     claim: "Interventional: Diff 0.059, p <0.001"
@@ -1149,19 +1174,19 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appB-ep-diff
-    claim: "Electrophysiology: Diff 0.056, p 0.167"
+    claim: "Electrophysiology: Diff 0.057, p 0.161"
     location: "Appendix B, Table B.1 (inline), phy-variation-appendix.tex"
     script: code/analysis/3_selection.R
     artifact: results/tables/balance-by-specialty.csv
     artifact_key: "specialty=Clinical Cardiac Electrophysiology,col=diff"
-    expected_value: 0.056
+    expected_value: 0.057
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appB-ahf-diff
     claim: "Adv. Heart Failure: Diff 0.017, p 0.875"
@@ -1173,12 +1198,12 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "Electrophysiology and advanced heart failure differences are insignificant (19 and 5 stayers)."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   # === Appendix C: Cohort-Trend Robustness and Permutation ===
 
   - id: appC-cohort-range
-    claim: "point estimate is stable across all four columns, between 0.052 and 0.060"
+    claim: "point estimate is stable across all four columns, between 0.052 and 0.061"
     location: "Appendix C, phy-variation-appendix.tex"
     script: code/analysis/3_selection.R
     artifact: results/tables/cohort-robust.tex
@@ -1186,20 +1211,20 @@ claims:
     expected_value: 0.052
     tolerance: 0.001
     status: PASS
-    explanation: "train_cath_lab across baseline/linear/quadratic/national-share columns; range 0.052-0.060."
-    last_verified: 2026-09-28
+    explanation: "train_cath_lab across baseline/linear/quadratic/national-share columns; range 0.052-0.061."
+    last_verified: 2026-09-29
 
   - id: appC-within-share
-    claim: "roughly 41% is within medical school HRR across cohorts"
+    claim: "roughly 40% is within medical school HRR across cohorts"
     location: "Appendix C, phy-variation-appendix.tex"
     script: code/analysis/13_permutation.R
     artifact: results/permutation-summary.csv
     artifact_key: "statistic=within_share"
-    expected_value: 0.41
+    expected_value: 0.40
     tolerance: 0.01
     status: PASS
     explanation: "Within-HRR share of train_cath_lab variance; prose reports percent."
-    last_verified:
+    last_verified: 2026-09-29
 
   - id: appC-within-sd
     claim: "a within-HRR standard deviation of 0.11"
@@ -1211,7 +1236,7 @@ claims:
     tolerance: 0.005
     status: PASS
     explanation:
-    last_verified:
+    last_verified: 2026-09-29
 
   - id: appC-between-sd
     claim: "against a between-HRR standard deviation of 0.13"
@@ -1223,7 +1248,7 @@ claims:
     tolerance: 0.005
     status: PASS
     explanation:
-    last_verified:
+    last_verified: 2026-09-29
 
   - id: appC-n-perm
     claim: "Repeating this 1,000 times"
@@ -1235,22 +1260,22 @@ claims:
     tolerance: 0
     status: PASS
     explanation:
-    last_verified:
+    last_verified: 2026-09-29
 
   - id: appC-band-lo
-    claim: "95% of draws falling between -0.044 and 0.040"
+    claim: "95% of draws falling between -0.043 and 0.040"
     location: "Appendix C, phy-variation-appendix.tex"
     script: code/analysis/13_permutation.R
     artifact: results/permutation-summary.csv
     artifact_key: "statistic=placebo_p025"
-    expected_value: -0.044
+    expected_value: -0.043
     tolerance: 0.002
     status: PASS
     explanation: "2.5th percentile of the placebo distribution."
-    last_verified:
+    last_verified: 2026-09-29
 
   - id: appC-band-hi
-    claim: "between -0.044 and 0.040"
+    claim: "between -0.043 and 0.040"
     location: "Appendix C, phy-variation-appendix.tex"
     script: code/analysis/13_permutation.R
     artifact: results/permutation-summary.csv
@@ -1259,7 +1284,7 @@ claims:
     tolerance: 0.002
     status: PASS
     explanation: "97.5th percentile of the placebo distribution."
-    last_verified:
+    last_verified: 2026-09-29
 
   - id: appC-clustered-p
     claim: "close to the clustered-SE p-value of 0.007"
@@ -1270,8 +1295,44 @@ claims:
     expected_value: 0.007
     tolerance: 0.001
     status: UNVERIFIED
-    explanation: "Clustered-SE p-value implied by 0.058/0.021; compared against the RI p=0.005."
-    last_verified:
+    explanation: "Clustered-SE p-value implied by 0.059/0.021; compared against the RI p=0.004."
+    last_verified: 2026-09-29
+
+  - id: appC-region-band-lo
+    claim: "95% of draws falling between -0.008 and 0.039"
+    location: "Appendix C, phy-variation-appendix.tex"
+    script: code/analysis/13_permutation.R
+    artifact: results/permutation-summary.csv
+    artifact_key: "statistic=region_placebo_p025"
+    expected_value: -0.008
+    tolerance: 0.001
+    status: PASS
+    explanation: "2.5th percentile of the region-permuted distribution."
+    last_verified: 2026-09-29
+
+  - id: appC-region-band-hi
+    claim: "between -0.008 and 0.039"
+    location: "Appendix C, phy-variation-appendix.tex"
+    script: code/analysis/13_permutation.R
+    artifact: results/permutation-summary.csv
+    artifact_key: "statistic=region_placebo_p975"
+    expected_value: 0.039
+    tolerance: 0.001
+    status: PASS
+    explanation: "97.5th percentile of the region-permuted distribution."
+    last_verified: 2026-09-29
+
+  - id: appC-region-max
+    claim: "the largest of which is 0.053"
+    location: "Appendix C, phy-variation-appendix.tex"
+    script: code/analysis/13_permutation.R
+    artifact: results/permutation-summary.csv
+    artifact_key: "statistic=region_placebo_max"
+    expected_value: 0.053
+    tolerance: 0.001
+    status: PASS
+    explanation: "Largest of the 1,000 region-permuted coefficients."
+    last_verified: 2026-09-29
 
   - id: appC-n-obs
     claim: "N = 10,729 [within-origin permutation sample]"
@@ -1283,45 +1344,45 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Cardiologist-years in the within-origin estimation sample."
-    last_verified:
+    last_verified: 2026-09-29
 
   # === Appendix D: Rank by Training-Period Cath Lab Share (Table D.1) ===
 
   - id: appD-cell-below-high
-    claim: "Below Top 25 / High cath: 0.008* (0.005)"
+    claim: "Below Top 25 / High cath: 0.009* (0.005)"
     location: "Appendix D, Table D.1 (rank-x-cath-cells.tex), phy-variation-appendix.tex"
     script: code/analysis/6_rank_x_cath.R
     artifact: results/tables/rank-x-cath-cells.tex
     artifact_key: "regex:Below Top 25 / High cath & (-?[0-9.]+)"
-    expected_value: 0.008
+    expected_value: 0.009
     tolerance: 0.001
     status: PASS
     explanation: "Reference cell is Below Top 25 / Low cath; practice HRR + year FE; N = 10,609."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appD-cell-top-low
-    claim: "Top 25 / Low cath: -0.003 (0.006)"
+    claim: "Top 25 / Low cath: -0.005 (0.005)"
     location: "Appendix D, Table D.1 (rank-x-cath-cells.tex), phy-variation-appendix.tex"
     script: code/analysis/6_rank_x_cath.R
     artifact: results/tables/rank-x-cath-cells.tex
     artifact_key: "regex:Top 25 / Low cath & (-?[0-9.]+)"
-    expected_value: -0.003
+    expected_value: -0.005
     tolerance: 0.001
     status: PASS
     explanation: ""
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appD-cell-top-high
-    claim: "Top 25 / High cath: 0.014* (0.008)"
+    claim: "Top 25 / High cath: 0.015* (0.008)"
     location: "Appendix D, Table D.1 (rank-x-cath-cells.tex), phy-variation-appendix.tex"
     script: code/analysis/6_rank_x_cath.R
     artifact: results/tables/rank-x-cath-cells.tex
     artifact_key: "regex:Top 25 / High cath & (-?[0-9.]+)"
-    expected_value: 0.014
+    expected_value: 0.015
     tolerance: 0.001
     status: PASS
     explanation: ""
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appD-cell-n
     claim: "Observations 10,609"
@@ -1333,7 +1394,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Same sample as Table 4 (non-missing NIH rank and training cath share)."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   # === Appendix E: Doximity Match and Recent-Grad Exposure ===
 
@@ -1347,7 +1408,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Matched-profile count; console/derived."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appE-gender-agreement
     claim: "99.2% gender agreement"
@@ -1395,7 +1456,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Raw recent-grad subsample nrow = 487 (12_recent_grad_residency.R now writes recent-grad-sample.csv); the table's 442 is the regression N after fixed-effect singleton drops."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appE-recent-grad-pgy
     claim: "a mean of 2.05 PGY years observed per cardiologist"
@@ -1407,7 +1468,7 @@ claims:
     tolerance: 0.02
     status: PASS
     explanation: "12_recent_grad_residency.R now writes recent-grad-sample.csv; mean_pgy_years_obs = 2.045."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   # === Appendix F: Selection Diagnostics ===
 
@@ -1421,7 +1482,7 @@ claims:
     tolerance: 0
     status: PASS
     explanation: "Counted over observations retained by fixest (singletons dropped), column (2)."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
   - id: appF-destchoice-full-coef
     claim: "full cardiologist-year panel (10,736 observations from 3,207 cardiologists ...), the coefficient ... is -0.012 (SE 0.016)"
     location: "Appendix F.2, phy-variation-appendix.tex (also draft 3.1 footnote)"
@@ -1432,7 +1493,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "3_selection.R now writes destination-sorting.csv; intensity_dest_loo ~ train_cath_lab | year, cluster hrr_med_school. panel_beta = -0.0117 (SE 0.0162), n=10,736, 3,207 cardiologists. Reproduces the paper exactly."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appF-destchoice-cardio-coef
     claim: "similarly small estimate: -0.023 (SE 0.018), n = 3,207"
@@ -1444,7 +1505,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "destination-sorting.csv cross_beta = -0.0230 (SE 0.0177), n=3,207 (earliest-obs cross-section). Prose updated from a stale-vintage -0.027; no spec/seed toggle reproduced the old value."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   - id: appF-destchoice-corr
     claim: "The pairwise correlation between training-period cath lab share and current peer cath rate is -0.02"
@@ -1456,7 +1517,7 @@ claims:
     tolerance: 0.005
     status: PASS
     explanation: "destination-sorting.csv correlation = -0.0245 (panel level, 10,736 obs). Prose updated from a stale-vintage -0.03."
-    last_verified: 2026-09-28
+    last_verified: 2026-09-29
 
   # === Appendix G: Event-Study Details (Table G.1, inline tabular; backs event-study.png) ===
 
@@ -1470,7 +1531,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "Table G.1 is a hardcoded inline tabular; its rows trace to event-study-coefs.csv (estimate/std.error/lo95/hi95/p.value by event_time)."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appG-tau0-se
     claim: "tau = 0 ... SE 0.097"
@@ -1482,7 +1543,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appG-tau1
     claim: "tau=1: Est 0.312"
@@ -1494,7 +1555,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appG-tau4
     claim: "tau=4: Est 0.375"
@@ -1506,7 +1567,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appG-tau5
     claim: "tau=5: Est 0.376"
@@ -1518,7 +1579,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation:
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appG-pretrend-tau-3
     claim: "tau=-3: Est 0.063 ... p 0.645 [pre-trend]"
@@ -1530,7 +1591,7 @@ claims:
     tolerance: 0.001
     status: PASS
     explanation: "Pre-period coefficient (insignificant), supports the parallel-trends read."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appG-pooled
     claim: "post-move pooled coefficient (constraining beta_tau = beta for tau >= 0) is 0.350"
@@ -1542,7 +1603,7 @@ claims:
     tolerance: 0.005
     status: PASS
     explanation: "event-study-pooled.csv delta_dest:post = 0.3503."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   # === Appendix H: Cohort-Transition Simulation ===
 
@@ -1556,7 +1617,7 @@ claims:
     tolerance: 0.01
     status: PASS
     explanation: "Calibration inputs beta_train=0.058, beta_dest=0.350 are hardcoded in 7_dynamic.R."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appH-half-life
     claim: "Roughly half of the long-run effect is realized within ten years ... reaches 95% of steady state by year 20"
@@ -1568,7 +1629,7 @@ claims:
     tolerance: 0.05
     status: PASS
     explanation: "progress = cath_change / steady-state; ~0.5 at year 10, ~0.95 at year 20."
-    last_verified: 2026-09-26
+    last_verified: 2026-09-29
 
   - id: appH-replacement-rate
     claim: "cohort-replacement rate at 5% per year (corresponding to a 20-year career length)"

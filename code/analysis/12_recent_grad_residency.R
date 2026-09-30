@@ -37,6 +37,7 @@ hosp_cath <- read_csv("data/input/hospital_year_cath.csv",
                       show_col_types = FALSE)
 
 aha_bridge <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                       na = c("", "NA", "."),
                        col_types = cols(ID = col_character(), year = col_integer(),
                                         MCRNUM = col_character(), .default = col_guess())) %>%
   filter(!is.na(MCRNUM), !is.na(year)) %>%

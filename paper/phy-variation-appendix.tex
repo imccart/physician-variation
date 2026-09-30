@@ -105,9 +105,9 @@ Table~\ref{tab:app-balance-spec} reports the training-period cath lab share comp
   \cmidrule(lr){2-3} \cmidrule(lr){4-5}
   Subspecialty & N & Train.\ cath & N & Train.\ cath & Diff. & $p$ \\
   \midrule
-  General Cardiology     & 339   & 0.274 & 1{,}974 & 0.323 & 0.048 & $<$0.001 \\
-  Interventional         & 106   & 0.270 & 607     & 0.329 & 0.059 & $<$0.001 \\
-  Electrophysiology      & 19    & 0.287 & 137     & 0.343 & 0.056 & 0.167 \\
+  General Cardiology     & 339   & 0.275 & 1{,}974 & 0.323 & 0.048 & $<$0.001 \\
+  Interventional         & 106   & 0.270 & 607     & 0.330 & 0.059 & $<$0.001 \\
+  Electrophysiology      & 19    & 0.287 & 137     & 0.344 & 0.057 & 0.161 \\
   Adv.\ Heart Failure    & 5     & 0.421 & 20      & 0.438 & 0.017 & 0.875 \\
   \bottomrule
   \end{tabular}
@@ -116,7 +116,7 @@ Table~\ref{tab:app-balance-spec} reports the training-period cath lab share comp
 
 \section{Cohort-Trend Robustness}\label{sec:app-cohort}
 
-The main text reports a linear graduation-year trend as the cohort-robustness check. Table~\ref{tab:app-cohort} reports the training imprint under the full set of cohort controls we consider, on the same within-origin sample. Columns (1) through (3) are the within-origin baseline and the baseline augmented with a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the cardiologist's matriculation year, a measured national trend, so that the imprint is identified from how a region's cath lab availability deviates from the national rollout rather than from the rollout itself. The point estimate is stable across all four columns, between 0.052 and 0.060. Precision declines relative to the baseline because cath lab availability varies across both region and cohort, so any control for the cohort dimension absorbs part of the variation that identifies the imprint. We do not saturate the cohort dimension with graduation-year fixed effects, since doing so removes most of the within-HRR variation that identifies the training effect.
+The main text reports a linear graduation-year trend as the cohort-robustness check. Table~\ref{tab:app-cohort} reports the training imprint under the full set of cohort controls we consider, on the same within-origin sample. Columns (1) through (3) are the within-origin baseline and the baseline augmented with a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the cardiologist's matriculation year, a measured national trend, so that the imprint is identified from how a region's cath lab availability deviates from the national rollout rather than from the rollout itself. The point estimate is stable across all four columns, between 0.052 and 0.061. Precision declines relative to the baseline because cath lab availability varies across both region and cohort, so any control for the cohort dimension absorbs part of the variation that identifies the imprint. We do not saturate the cohort dimension with graduation-year fixed effects, since doing so removes most of the within-HRR variation that identifies the training effect.
 
 \begin{table}[htbp]
 \centering
@@ -130,18 +130,24 @@ The main text reports a linear graduation-year trend as the cohort-robustness ch
 
 \subsection{Permutation Inference}
 
-The within-origin estimate is identified from variation in training-period cath lab availability across graduation cohorts within a medical school HRR. A permutation test asks whether the actual pairing of cohorts to training environments predicts later catheterization better than a random pairing within the same region. The test has leverage only if training exposure genuinely varies within HRR across cohorts. It does. Of the total variance in training-period cath lab share across cardiologists, roughly 41\% is within medical school HRR across cohorts, a within-HRR standard deviation of 0.11 against a between-HRR standard deviation of 0.13, so reshuffling cohorts within a region moves the exposure measure over a wide range.
+The within-origin estimate is identified from variation in training-period cath lab availability across graduation cohorts within a medical school HRR. We use two permutation tests to ask whether the actual pairing of cardiologists to training environments predicts later catheterization better than a random pairing. The first reshuffles cohorts within a region, and it has leverage only if training exposure genuinely varies within HRR across cohorts. It does. Of the total variance in training-period cath lab share across cardiologists, roughly 40\% is within medical school HRR across cohorts, a within-HRR standard deviation of 0.11 against a between-HRR standard deviation of 0.13, so reshuffling cohorts within a region moves the exposure measure over a wide range.
 
-We reassign each cardiologist the training-period cath lab share that a different graduation cohort from the same medical school HRR actually faced, holding the outcome, the fixed effects, and the NSTEMI weights unchanged, and re-estimate the within-origin specification. Repeating this 1{,}000 times traces the distribution of the training coefficient under randomized cohort assignment. Figure~\ref{fig:perm-null} plots the result. The permuted coefficient centers on zero, with 95\% of draws falling between $-0.044$ and 0.040. The actual estimate of 0.058 lies in the upper tail beyond all but one of the 1{,}000 permuted draws, for a two-sided randomization-inference $p$-value of 0.005. This is close to the clustered-SE $p$-value of 0.007 from the same specification, so the result does not rest on the cluster-robust asymptotics.
+We reassign each cardiologist the training-period cath lab share that a different graduation cohort from the same medical school HRR actually faced, holding the outcome, the fixed effects, and the NSTEMI weights unchanged, and re-estimate the within-origin specification. Repeating this 1{,}000 times traces the distribution of the training coefficient under randomized cohort assignment. Panel (a) of Figure~\ref{fig:perm-null} plots the result. The permuted coefficient centers on zero, with 95\% of draws falling between $-0.043$ and 0.040. The actual estimate of 0.059 lies in the upper tail beyond all but one of the 1{,}000 permuted draws, for a two-sided randomization-inference $p$-value of 0.004. This is close to the clustered-SE $p$-value of 0.007 from the same specification, so the result does not rest on the cluster-robust asymptotics.
 
-We read the permutation test as evidence that the pairing of cohorts to training environments is informative rather than an artifact of the limited within-region variation. It does not by itself establish that the operative feature is cath lab availability as opposed to another regional attribute moving on the same cohort schedule, a distinction we take up through the subspecialty and rank results in the main text.
+The second test holds each cardiologist's cohort fixed and reassigns the training-period cath lab share of a different medical school HRR in the same matriculation year, again holding the outcome, the fixed effects, and the NSTEMI weights unchanged. Panel (b) of Figure~\ref{fig:perm-null} plots the 1{,}000 permuted coefficients. Since the cath lab share rises across cohorts in every region, the permuted exposure retains the common cohort profile, and the permuted coefficients are centered on 0.016, with 95\% of draws falling between $-0.008$ and 0.039. The actual estimate of 0.059 exceeds all 1{,}000 draws, the largest of which is 0.053. The first test therefore indicates that the year of training matters within a region, and the second that the region of training matters within a year.
+
+We read the permutation tests as evidence that the pairing of cardiologists to training environments is informative rather than an artifact of the limited within-region variation. They do not by themselves establish that the operative feature is cath lab availability as opposed to another regional attribute moving on the same cohort schedule, a distinction we take up through the subspecialty and rank results in the main text.
 
 \begin{figure}[htbp]
 \centering
 \begin{minipage}[h]{\textwidth}
   \centering
-  \includegraphics[width=0.85\textwidth]{perm-null.png}
-  \caption[]{Permutation test for the within-origin training imprint\footnote{The histogram plots the training-period cath lab coefficient from 1{,}000 re-estimations of the within-origin specification, each reassigning cardiologists the training-period cath lab share of a different graduation cohort from the same medical school HRR. The dashed line marks zero and the solid line marks the actual estimate of 0.058. The outcome, fixed effects, and NSTEMI weights are held fixed across permutations.}}
+  \caption[]{Permutation tests for the within-origin training imprint\footnote{Each histogram plots the training-period cath lab coefficient from 1{,}000 re-estimations of the within-origin specification. Panel (a) reassigns cardiologists the training-period cath lab share of a different graduation cohort from the same medical school HRR. Panel (b) reassigns cardiologists the share of a different medical school HRR in the same matriculation year. The dashed line marks zero and the solid line marks the actual estimate of 0.059. The outcome, fixed effects, and NSTEMI weights are held fixed across permutations.}}
+  \begin{tabular}{cc}
+  \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null.png} &
+  \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null-region.png} \\
+  (a) Cohorts reassigned within region & (b) Regions reassigned within cohort
+  \end{tabular}
   \label{fig:perm-null}
 \end{minipage}
 \end{figure}
@@ -258,7 +264,7 @@ Pre-trends are formally tested by the joint $F$-statistic on $\hat\beta_{-3}$ an
 
 \section{Cohort-Transition Simulation}\label{sec:app-var}
 
-The main paper combines $\hat\beta_{\text{train}} = 0.058$ and $\hat\beta_{\text{dest}} = 0.350$ into a steady-state multiplier of approximately 1.54. This section reports the derivation of the multiplier and the cohort-transition path implied by gradual cohort replacement.
+The main paper combines $\hat\beta_{\text{train}} = 0.059$ and $\hat\beta_{\text{dest}} = 0.350$ into a steady-state multiplier of approximately 1.54. This section reports the derivation of the multiplier and the cohort-transition path implied by gradual cohort replacement.
 
 \subsection{Derivation of the Long-Run Multiplier}
 

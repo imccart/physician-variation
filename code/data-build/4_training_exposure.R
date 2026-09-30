@@ -29,15 +29,15 @@ cw <- read_csv("data/output/cardiologist_doximity.csv",
                col_types = cols(npi = col_character(),
                                 .default = col_guess()),
                show_col_types = FALSE)
-aha <- fread("data/input/aha_hospital.csv",
-             select = c("ID", "SYSID", "MNAME", "MSTATE", "HRRCODE", "year",
-                        "CCLABHOS"),
-             na.strings = c("", "NA"), showProgress = FALSE)
-setDF(aha)
-aha <- aha %>%
-  mutate(year = as.integer(year),
-         ID = as.character(ID),
-         SYSID = as.character(SYSID),
+# SYSID carries no leading zeros, so "0" marks a hospital outside any system.
+aha <- read_csv("data/input/aha_hospital.csv",
+                na = c("", "NA", "."),
+                col_types = cols_only(ID = col_character(), SYSID = col_character(),
+                                      MNAME = col_character(), MSTATE = col_character(),
+                                      HRRCODE = col_character(), year = col_integer(),
+                                      CCLABHOS = col_character()),
+                show_col_types = FALSE) %>%
+  mutate(SYSID = as.character(as.integer(SYSID)),
          HRRCODE = suppressWarnings(as.integer(HRRCODE)),
          hosp_cath = as.integer(CCLABHOS == "1"))
 

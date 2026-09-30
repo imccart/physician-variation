@@ -35,6 +35,7 @@ exposure <- read_csv("data/output/cardiologist_training_exposure.csv",
 
 # Med-school cath share at matriculation year (parallel to 5_aha_training.R).
 aha <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                na = c("", "NA", "."),
                 col_types = cols(HRRCODE = col_integer(), year = col_integer(),
                                  CCLABHOS = col_character(), .default = col_guess()))
 hrr_year_cath <- aha %>%

@@ -28,6 +28,7 @@ analysis <- read_csv("data/output/analysis_panel.csv",
 # We aggregate to HRR-year here rather than as a separate output, since
 # the aggregation is specific to this project's training-environment proxy.
 aha_hosp <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                     na = c("", "NA", "."),
                      col_types = cols(
                        HRRCODE = col_integer(), year = col_integer(),
                        CCLABHOS = col_character(), OHSRGHOS = col_character(),

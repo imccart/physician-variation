@@ -10,6 +10,12 @@
 ##                coefficient 1,000 times. If the design is informative, the
 ##                true cohort-to-exposure assignment should beat the reshuffle.
 ##
+##                A second test holds each cardiologist's cohort fixed and
+##                reassigns the cath lab share that a DIFFERENT medical school
+##                HRR had in that same matriculation year, so the first test
+##                asks whether the right year matters within a region and the
+##                second whether the right region matters within a year.
+##
 ##                Precondition (reported below): the reshuffle only has
 ##                leverage if training exposure varies within HRR across
 ##                cohorts. We decompose the variance to confirm this.
@@ -19,6 +25,7 @@
 ##
 ##                Outputs:
 ##                  results/figures/perm-null.png
+##                  results/figures/perm-null-region.png
 ##                  results/permutation-summary.csv
 
 set.seed(20260804)
@@ -31,6 +38,7 @@ analysis <- read_csv("data/output/analysis_panel.csv",
                                       .default = col_guess()))
 
 aha_hosp <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                     na = c("", "NA", "."),
                      col_types = cols(HRRCODE = col_integer(), year = col_integer(),
                                       CCLABHOS = col_character(),
                                       .default = col_guess()))
@@ -103,7 +111,7 @@ cat("\n=== True within-origin beta_train ===\n")
 print(summary(m_true))
 
 
-# 4. Permutation loop -----------------------------------------------------
+# 4. Cohort permutation within region ------------------------------------
 
 phys_key <- clean %>% distinct(npi, hrr_med_school, train_cath_lab)
 
@@ -138,20 +146,65 @@ cat("RI p (two-sided):     ", sprintf("%.4f", p_two), "\n")
 cat("RI p (right tail):    ", sprintf("%.4f", p_right), "\n")
 
 
-# 5. Outputs --------------------------------------------------------------
+# 5. Region permutation within cohort -------------------------------------
+
+match_year <- clean %>%
+  distinct(npi, grad_year) %>%
+  mutate(aha_match_year = pmin(pmax(grad_year - 3, 1980L), 2003L)) %>%
+  select(npi, aha_match_year)
+
+clean_region <- clean %>%
+  left_join(match_year, by = "npi")
+
+share_grid <- aha_hrr %>%
+  filter(hrr %in% clean$hrr_med_school, year >= 1980, year <= 2003) %>%
+  select(hrr, year, cath_lab_share)
+
+betas_region <- numeric(n_perm)
+
+for (b in seq_len(n_perm)) {
+  shuffled <- share_grid %>%
+    group_by(year) %>%
+    mutate(train_perm = sample(cath_lab_share)) %>%
+    ungroup() %>%
+    select(hrr, year, train_perm)
+
+  d <- clean_region %>%
+    left_join(shuffled, by = c("hrr_med_school" = "hrr", "aha_match_year" = "year"))
+  m <- feols(mean_resid_cath ~ train_perm |
+               hrr_med_school + hrr_practice + year,
+             data = d, weights = ~n_nstemi)
+  betas_region[b] <- unname(coef(m)["train_perm"])
+}
+
+p_two_region   <- mean(abs(betas_region) >= abs(beta_true))
+p_right_region <- mean(betas_region >= beta_true)
+band_lo_region <- unname(quantile(betas_region, 0.025))
+band_hi_region <- unname(quantile(betas_region, 0.975))
+
+
+# 6. Outputs --------------------------------------------------------------
 
 summary_out <- tibble(
   statistic = c("beta_true", "placebo_mean", "placebo_sd",
                 "placebo_p025", "placebo_p975",
                 "ri_p_two_sided", "ri_p_right_tail",
                 "within_hrr_sd", "between_hrr_sd", "within_share",
-                "n_perm", "n_obs", "n_cardio", "n_hrr"),
+                "n_perm", "n_obs", "n_cardio", "n_hrr",
+                "region_placebo_mean", "region_placebo_sd",
+                "region_placebo_p025", "region_placebo_p975",
+                "region_placebo_max",
+                "region_ri_p_two_sided", "region_ri_p_right_tail"),
   value = c(beta_true, mean(betas), sd(betas),
             band_lo, band_hi,
             p_two, p_right,
             sqrt(v_within), sqrt(v_between), within_share,
             n_perm, nobs(m_true), n_distinct(clean$npi),
-            n_distinct(clean$hrr_med_school))
+            n_distinct(clean$hrr_med_school),
+            mean(betas_region), sd(betas_region),
+            band_lo_region, band_hi_region,
+            max(betas_region),
+            p_two_region, p_right_region)
 )
 write_csv(summary_out, "results/permutation-summary.csv")
 
@@ -170,5 +223,19 @@ p <- ggplot(perm_df, aes(x = beta)) +
   theme(panel.grid.minor = element_blank())
 
 ggsave("results/figures/perm-null.png", p, width = 6.5, height = 4, dpi = 300)
+
+p_region <- ggplot(tibble(beta = betas_region), aes(x = beta)) +
+  geom_histogram(bins = 40, fill = "grey70", color = "white", boundary = 0) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "grey40") +
+  geom_vline(xintercept = beta_true, color = "firebrick", linewidth = 1) +
+  annotate("text", x = beta_true, y = Inf,
+           label = sprintf("Actual estimate = %.3f", beta_true),
+           hjust = 1.05, vjust = 1.8, color = "firebrick", size = 4) +
+  labs(x = "Training coefficient under permuted region assignment",
+       y = "Count") +
+  theme_minimal(base_size = 13) +
+  theme(panel.grid.minor = element_blank())
+
+ggsave("results/figures/perm-null-region.png", p_region, width = 6.5, height = 4, dpi = 300)
 
 cat("\nWrote results/figures/perm-null.png and results/permutation-summary.csv\n")

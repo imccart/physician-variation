@@ -87,6 +87,7 @@ print(ranked %>% filter(!is.na(nih_tier)) %>% count(nih_tier))
 # Replicates the AHA matching from 5_aha_training.R so that the rank table
 # can include a horse race against the training cath lab share.
 aha_hosp <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                     na = c("", "NA", "."),
                      col_types = cols(HRRCODE = col_integer(),
                                       year = col_integer(),
                                       CCLABHOS = col_character(),

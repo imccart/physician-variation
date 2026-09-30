@@ -1,3 +1,3 @@
 spec,term,estimate,std.error,conf.low,conf.high,p.value,n_obs,n_card
-within_residency_hospital_fe,med_cath_lab,0.0666,0.0336,-2e-4,0.1335,0.05061552871874603,4908,1451
-within_residency_hospital_fe,res_own_cath,-0.0038,0.0181,-0.0398,0.0321,0.8318130675703156,4908,1451
+within_residency_hospital_fe,med_cath_lab,0.0686,0.0339,0.0013,0.1358,0.045863430019847815,4908,1451
+within_residency_hospital_fe,res_own_cath,-0.004,0.0181,-0.0399,0.0319,0.8249639032586873,4908,1451

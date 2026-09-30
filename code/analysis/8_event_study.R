@@ -279,6 +279,7 @@ cat("\nWrote results/figures/event-study-by-direction.png\n")
 # crosswalk used in 5_aha_training.R.
 
 aha_hosp_for_dev  <- read_csv("data/input/aha_hospital.csv",
+                              na = c("", "NA", "."),
                               show_col_types = FALSE,
                               col_types = cols(HRRCODE = col_integer(),
                                                year = col_integer(),

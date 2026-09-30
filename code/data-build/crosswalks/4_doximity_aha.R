@@ -26,11 +26,10 @@ cw <- read_csv("data/output/cardiologist_doximity.csv",
 
 # AHA roster: one row per hospital ID with name + state (modal). We restrict
 # to 1980-2003 since that's the matching window for our cardiologists.
-aha_hosp_raw <- fread("data/input/aha_hospital.csv",
-                      select = c("ID", "MNAME", "MSTATE", "year"),
-                      na.strings = c("", "NA"),
-                      showProgress = FALSE)
-setDF(aha_hosp_raw)
+aha_hosp_raw <- read_csv("data/input/aha_hospital.csv",
+                         col_types = cols_only(ID = col_character(), MNAME = col_character(),
+                                               MSTATE = col_character(), year = col_integer()),
+                         show_col_types = FALSE)
 
 norm_hosp <- function(x) {
   x %>%

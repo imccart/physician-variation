@@ -18,6 +18,7 @@ analysis  <- read_csv("data/output/analysis_panel.csv",
                                        year = col_integer(),
                                        .default = col_guess()))
 aha_hosp  <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
+                      na = c("", "NA", "."),
                       col_types = cols(HRRCODE = col_integer(),
                                        year = col_integer(),
                                        CCLABHOS = col_character(),

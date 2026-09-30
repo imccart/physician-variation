@@ -18,9 +18,11 @@ cardiologist-year file plus a hospital-year cath-rate file. The R build
 driven by `_analysis.R`) read the panel and produce `results/`.
 
 Two structural facts recur below. First, `train_cath_lab` and its AHA cousins
-are never materialized to `data/output/`; each analysis script that needs them
-rebuilds them inline from `data/input/aha_hospital.csv` with the same recipe, so
-ten scripts carry their own copy. Second, two matriculation conventions coexist:
+are not read from `data/output/` by any analysis script; each analysis script that
+needs them rebuilds them inline from `data/input/aha_hospital.csv` with the same
+recipe, so ten scripts carry their own copy. The one copy on disk is
+`data/output/cardiologist_exposure.csv`, written by `5_exposure_upload.R` for
+upload to the VRDC. Second, two matriculation conventions coexist:
 the medical-school imprint uses `grad_year - 3` (start of medical school), while
 the residency and fellowship exposures in `4_training_exposure.R` use `grad_year`
 and `grad_year + 3` (start of residency and fellowship).
@@ -46,7 +48,7 @@ Raw inputs referred to below:
 ### `BENE_ID` (patient key, VRDC-internal)
 - Paper: none directly; the episode key behind the residualized outcome.
 - Raw: `BENE_ID` on `INPATIENT_CLAIMS_*`, `BCARRIER_LINE_*`, `MBSF_ABCD_*`.
-- Chain: `1_nstemi_episodes.sas` keeps the first NSTEMI admission per `BENE_ID` (`FIRST.BENE_ID` after sorting by `BENE_ID CLM_ADMSN_DT`). Joined through `2_cath_procedures.sas`, `3_beneficiary.sas`, `4_carrier_cardiologist.sas`, `5_residualize.sas`; collapsed away in `6_aggregate_export.sas`.
+- Chain: `1_nstemi_episodes.sas` keeps the first NSTEMI admission per `BENE_ID` (`FIRST.BENE_ID` after sorting by `BENE_ID CLM_ADMSN_DT`). `3_beneficiary.sas` keeps the episode if the beneficiary had no HMO months and Part B in every month alive in the admission year (all 12, or through the month of death). Joined through `2_cath_procedures.sas`, `4_carrier_cardiologist.sas`, `5_residualize.sas`; collapsed away in `6_aggregate_export.sas`.
 - Level: patient (episode); never leaves the VRDC, in no exported CSV.
 - Files: `1_nstemi_episodes.sas`, `2_cath_procedures.sas`, `3_beneficiary.sas`, `4_carrier_cardiologist.sas`, `5_residualize.sas`, `6_aggregate_export.sas`, `7_hospital_cath_rate.sas`.
 
@@ -123,9 +125,9 @@ Raw inputs referred to below:
 ### `train_cath_lab` (training-period cath-lab availability, the headline imprint regressor)
 - Paper: the imprint coefficient throughout (0.058 within-origin in training-imprint.tex); summary-stats.tex "Training-HRR cath lab share"; the binscatter, subspecialty, rank horse-race, cohort-robustness and permutation results.
 - Raw: `aha_hospital.csv` fields `CCLABHOS` (cath lab, service code "1"), `HRRCODE`, `year`; plus `grad_year` and `hrr_med_school`.
-- Chain (canonical, `5_aha_training.R`): `has_cath_lab = as.integer(CCLABHOS == "1")`, then `cath_lab_share = mean(has_cath_lab)` by `(HRRCODE, year)`; infer matriculation `med_school_start = grad_year - 3`, clamp `aha_match_year = pmin(pmax(., 1980), 2003)`; join the HRR-year share onto each cardiologist by `(hrr_med_school, aha_match_year)`. Not materialized to disk; each consuming script rebuilds it with the identical recipe.
+- Chain (canonical, `5_aha_training.R`): the AHA file is read with `""`, `NA` and `.` as missing (1981 codes a missing response as `.`), so hospitals with no response are left out of the share; `has_cath_lab = as.integer(CCLABHOS == "1")`, then `cath_lab_share = mean(has_cath_lab)` by `(HRRCODE, year)`; infer matriculation `med_school_start = grad_year - 3`, clamp `aha_match_year = pmin(pmax(., 1980), 2003)`; join the HRR-year share onto each cardiologist by `(hrr_med_school, aha_match_year)`. Not materialized to disk; each consuming script rebuilds it with the identical recipe.
 - Level: cardiologist (fixed given med-school HRR and cohort); share of hospitals in the medical-school HRR with a cath lab in the matriculation year, in [0,1].
-- Files: built in `5_aha_training.R`; reconstructed inline in `1_descriptive.R`, `3_selection.R`, `4_rank.R`, `6_rank_x_cath.R`, `8_event_study.R`, `9_heterogeneity.R`, `10_mover_balance.R`, `13_permutation.R`; named `med_cath_lab` in `11_training_pipeline.R`.
+- Files: built in `5_aha_training.R`; reconstructed inline in `1_descriptive.R`, `3_selection.R`, `4_rank.R`, `6_rank_x_cath.R`, `8_event_study.R`, `9_heterogeneity.R`, `10_mover_balance.R`, `13_permutation.R`; named `med_cath_lab` in `11_training_pipeline.R`; written to `data/output/cardiologist_exposure.csv` by `code/data-build/5_exposure_upload.R`.
 - Note: no single source of truth. Any change to the recipe must be made in all ten scripts.
 
 ### `train_open_heart` (`OHSRGHOS`), `train_cardiac_icu` (`CICHOS`)
@@ -257,15 +259,36 @@ Raw inputs referred to below:
 ## 7. The permutation
 
 ### `train_perm` (reshuffled training exposure, randomization-inference falsification)
-- Paper: the permutation null in appendix C and the Section 3.5 pointer (perm-null.png, permutation-summary.csv); the true 0.058 beyond all but one of 1,000 placebo draws (two-sided p=0.005).
+- Paper: the permutation null in appendix C and the Section 3.5 pointer (perm-null.png, permutation-summary.csv); the true 0.059 beyond all but one of 1,000 cohort-permuted draws (two-sided p=0.004), and above all 1,000 region-permuted draws (perm-null-region.png).
 - Raw: identical inputs to `train_cath_lab` (`aha_hospital.csv` `CCLABHOS`/`HRRCODE`/`year`, `grad_year`, `hrr_med_school`).
-- Chain (`13_permutation.R`, self-contained): rebuild `train_cath_lab` from source exactly as in Section 3; fix the estimation sample (grad 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`, `gender`, `specialty`, the N=10,729 within-origin sample); within each `hrr_med_school`, `train_perm = sample(train_cath_lab)` across cardiologists (reassigning each NPI a same-origin different-cohort value), rejoin by `npi`, and re-estimate `mean_resid_cath ~ train_perm | hrr_med_school + hrr_practice + year`, weighted by `n_nstemi`, 1,000 times (`set.seed(20260804)`).
+- Chain (`13_permutation.R`, self-contained): rebuild `train_cath_lab` from source exactly as in Section 3; fix the estimation sample (grad 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`, `gender`, `specialty`, the N=10,729 within-origin sample); within each `hrr_med_school`, `train_perm = sample(train_cath_lab)` across cardiologists (reassigning each NPI a same-origin different-cohort value), rejoin by `npi`, and re-estimate `mean_resid_cath ~ train_perm | hrr_med_school + hrr_practice + year`, weighted by `n_nstemi`, 1,000 times (`set.seed(20260804)`). A second loop holds the cohort fixed instead: within each matriculation year (`aha_match_year`), `train_perm = sample(cath_lab_share)` across the 92 origin HRRs, joined by `(hrr_med_school, aha_match_year)`, same specification, 1,000 draws; its summary rows carry the `region_` prefix.
 - Level: cardiologist (mapped to cardiologist-years by the join); same units as `train_cath_lab`. Output is the null distribution of the imprint coefficient, not a panel column.
 - Files: `13_permutation.R`.
 
 ---
 
-## 8. What each analysis script writes
+## 8. Threshold analysis (patient level, VRDC)
+
+### `Pred_Death_365`, `Risk_Q5` (baseline mortality risk and its quintile)
+- Paper: not yet; the benefit index for the threshold test in `notes/plans/2026-09-29_threshold-and-con.md`.
+- Raw: `BENE_DEATH_DT` from `MBSF_ABCD_*`; the LPM covariates of `5_residualize.sas`.
+- Chain (`8_patient_threshold.sas`): death date is the earliest non-missing `BENE_DEATH_DT` across the beneficiary-summary years; `D_Death_30` / `D_Death_365` flag death within 30 / 365 days of `CLM_ADMSN_DT`; `FU_365` marks admissions through the year before the last MBSF year, where a full year of follow-up is observable. `PROC LOGISTIC` fits `D_Death_365` on age, sex, race, dual status, and the 31 Elixhauser flags (no year terms, no cath variables) over `FU_365 = 1` rows and scores every episode; `PROC RANK GROUPS=5` cuts the score into `Risk_Q5` (1 = lowest risk).
+- Level: episode; never leaves the VRDC.
+- Files: `8_patient_threshold.sas`; consumed by `vrdc/1_threshold.R`.
+
+### `D_Cath_D2_DxOnly`, `D_Cath_D2_Revasc`, `D_Revasc_D90`
+- Chain (`8_patient_threshold.sas`): re-reads the inpatient claims within 90 days of the index admission for PCI, stent, and CABG codes (the `icd9_pci/stent/cabg` and `icd10_pci/cabg` lists in `0_config.sas`); `D_Revasc_D90` is any such procedure within 90 days; `D_Cath_D2_DxOnly = D_Cath_D2 * (1 - D_Revasc_D90)` and `D_Cath_D2_Revasc = D_Cath_D2 * D_Revasc_D90` split the paper's outcome into diagnostic-only and revascularized caths.
+- Level: episode.
+- Files: `8_patient_threshold.sas`, `vrdc/1_threshold.R`.
+
+### `cardiologist_exposure.csv` (the upload that carries the exposure into the VRDC)
+- Chain (`code/data-build/5_exposure_upload.R`): the cardiologist-years of the analytic sample (graduation 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`) with `npi`, `year`, `hrr_practice`, `hrr_med_school`, `grad_year`, `gender`, `specialty`, `n_nstemi`, `mover`, `train_cath_lab`, `intensity_dest_loo`. `vrdc/1_threshold.R` inner-joins it to the episode file by `(npi, year)`, which applies the paper's sample restriction at the patient level, then estimates the within-origin imprint with patient controls, by `Risk_Q5`, for each cath component and for mortality.
+- Level: cardiologist-year; 10,736 rows.
+- Files: `5_exposure_upload.R`, `vrdc/1_threshold.R`.
+
+---
+
+## 9. What each analysis script writes
 
 Descriptive numbers in the paper trace to these outputs. All `.tex` are bare
 `tabular`; coefficient cells are `%.3f` with significance stars and a
@@ -279,7 +302,7 @@ training binscatter) was restricted to the analytical sample, so Table 1 now rep
 `binscatter-slope.csv`, `recent-grad-sample.csv`, `rank-x-cath-panel-n.csv` and `unmapped-school-composition.csv` (the appendix A.3 exclusion counts), and persisted
 the crosswalk resolution counts to `data/crosswalks/med-school-hrr-match-counts.csv`. One
 residual coupling: `7_dynamic.R`
-still hardcodes `beta_train = 0.058` and `beta_dest = 0.350` rather than reading
+still hardcodes `beta_train = 0.059` and `beta_dest = 0.350` rather than reading
 `training-imprint.tex` and `event-study-pooled.csv`.
 
 | Script | Outputs |
@@ -288,7 +311,7 @@ still hardcodes `beta_train = 0.058` and `beta_dest = 0.350` rather than reading
 | `2_hrr_map.R` | figure `hrr-cath-intensity` |
 | `3_selection.R` | `balance-by-specialty.csv`, `selection.tex`, `selection-aha.tex`, `cohort-robust.tex`, `destination-sorting.csv`, `national-cath-share.csv` |
 | `4_rank.R` | `rank.tex` |
-| `5_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `training-imprint.tex` (headline 0.058 within-origin), `aha-mechanism-teaching.tex`, `persistence.csv` |
+| `5_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `training-imprint.tex` (headline 0.059 within-origin), `aha-mechanism-teaching.tex`, `persistence.csv` |
 | `6_rank_x_cath.R` | `rank-x-cath-stratified.tex`, `rank-x-cath-cells.tex`, `rank-x-cath-panel-n.csv` |
 | `7_dynamic.R` | `dynamic-path.csv`, `place-variance-path.csv`; figures `dynamic-calibration`, `place-variance-path` (betas hardcoded) |
 | `8_event_study.R` | `event-study-coefs.csv`, `event-study-pooled.csv`, `event-study-coefs-by-direction.csv`; figures `event-study`, `event-study-by-direction`, `two-peer-deviation` |
@@ -296,7 +319,8 @@ still hardcodes `beta_train = 0.058` and `beta_dest = 0.350` rather than reading
 | `10_mover_balance.R` | `mover-balance.{tex,csv}`; figure `mover-selection` |
 | `11_training_pipeline.R` | `training-pipeline.tex`, `training-pipeline-robust.csv`, `training-pipeline-selection.csv` |
 | `12_recent_grad_residency.R` | `training-recent-grad.tex`, `recent-grad-sample.csv` |
-| `13_permutation.R` | `permutation-summary.csv` (at `results/`, not `results/tables/`); figure `perm-null` |
+| `13_permutation.R` | `permutation-summary.csv` (at `results/`, not `results/tables/`); figures `perm-null`, `perm-null-region` |
+| `vrdc/1_threshold.R` (runs inside the VRDC R container) | `threshold-coefs.csv`, `threshold-quintiles.csv` in the container's `results/`, for export |
 
 Removed 2026-09-25 as stale and unused: `fgw-decomp-*.{csv,tex}` in
 `results/tables/` (a decomposition step no current script produces) and Shirley's

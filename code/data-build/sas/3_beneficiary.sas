@@ -37,8 +37,12 @@
             BENE_SMI_CVRAGE_TOT_MONS,
             BENE_HMO_CVRAGE_TOT_MONS
         FROM MBSF.MBSF_ABCD_&year
-        WHERE BENE_SMI_CVRAGE_TOT_MONS = 12  /* Full year Part B */
-          AND BENE_HMO_CVRAGE_TOT_MONS = 0;  /* No HMO (FFS only) */
+        WHERE BENE_HMO_CVRAGE_TOT_MONS = 0   /* No HMO (FFS only) */
+          /* Part B in every month alive: all 12, or through the month of death */
+          AND (BENE_SMI_CVRAGE_TOT_MONS = 12
+               OR (BENE_DEATH_DT IS NOT NULL
+                   AND YEAR(BENE_DEATH_DT) = &year
+                   AND BENE_SMI_CVRAGE_TOT_MONS = MONTH(BENE_DEATH_DT)));
     QUIT;
 %MEND read_beneficiary;
 

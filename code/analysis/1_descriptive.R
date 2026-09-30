@@ -81,6 +81,7 @@ write_csv(unmapped_out, "results/tables/unmapped-school-composition.csv")
 # main analysis (rather than the LOO peer-cath measure constructed
 # inline in script 2 of the data-build).
 aha_hosp_summ <- read_csv("data/input/aha_hospital.csv",
+                          na = c("", "NA", "."),
                           show_col_types = FALSE,
                           col_types = cols(HRRCODE = col_integer(),
                                            year = col_integer(),
