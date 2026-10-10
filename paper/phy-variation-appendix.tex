@@ -53,7 +53,7 @@ This section provides additional detail on the construction of our cardiologist-
 
 \subsection{Cardiologist Assignment and Volume Restriction}
 
-For each NSTEMI episode, we assign a single attending cardiologist following the procedure of \textcite{molitor2018}. The hierarchy prioritizes the first cardiologist who delivers a consultation (CPT codes 99251--99255 prior to their elimination by CMS in January 2010, with the hierarchy collapsing to first cardiologist of record for inpatient care for episodes thereafter), the first cardiologist of record on the inpatient stay, and the first cardiologist seen by the patient in carrier-line claims within 90 days of the index admission. We exclude episodes for which no cardiologist could be assigned and patient-years for which Medicare fee-for-service coverage was not present for the entire year. Cardiologists are identified in MD-PPAS using primary-specialty fields for cardiology, interventional cardiology, clinical cardiac electrophysiology, and advanced heart failure and transplant cardiology.
+For each NSTEMI episode, we assign a single attending cardiologist following the procedure of \textcite{molitor2018}. The hierarchy prioritizes the first cardiologist who delivers a consultation (CPT codes 99251--99255 prior to their elimination by CMS in January 2010, with the hierarchy collapsing to first cardiologist of record for inpatient care for episodes thereafter), the first cardiologist of record on the inpatient stay, and the first cardiologist seen by the patient in carrier-line claims within 90 days of the index admission. We exclude episodes for which no cardiologist could be assigned and patient-years without Medicare fee-for-service coverage in every month of the admission year (or, for beneficiaries who die during the year, in every month through the month of death). Cardiologists are identified in MD-PPAS using primary-specialty fields for cardiology, interventional cardiology, clinical cardiac electrophysiology, and advanced heart failure and transplant cardiology.
 
 We restrict to cardiologist-years with at least 11 NSTEMI patients. The threshold provides stable per-physician estimates of catheterization rates and aligns with the CMS cell-size threshold for public-use files. A trade-off of the volume restriction is that established, higher-volume cardiologists are over-represented in our analytical sample relative to the broader cardiologist population.
 
@@ -61,11 +61,11 @@ We restrict to cardiologist-years with at least 11 NSTEMI patients. The threshol
 
 Our outcome is the volume-weighted mean residualized cath-within-two-days indicator at the cardiologist-year level. At the patient level, we estimate a linear probability model regressing the cath-within-two-days indicator on the 31 Elixhauser comorbidity flags and year fixed effects, retaining the residual as the patient-level outcome. We then aggregate to the cardiologist-year by taking the volume-weighted mean residual. The residualization removes mechanical variation across cardiologists that would arise from differences in patient comorbidity mix.
 
-Elixhauser comorbidities are constructed from a lookup table of approximately 2,600 ICD-9 and ICD-10 diagnosis codes mapped to 31 categories, drawn from the cardiologist's NSTEMI-episode and 12-month-look-back claims. A given diagnosis code may map to multiple Elixhauser categories, so the lookup is implemented as a join rather than a categorical recoding.
+We construct the Elixhauser comorbidities by matching the diagnosis codes on the NSTEMI admission claim, by leading substring, to a lookup that maps ICD-9 and ICD-10 code prefixes to the 31 Elixhauser categories. A given diagnosis code may map to multiple Elixhauser categories, so the lookup is implemented as a join rather than a categorical recoding.
 
 \subsection{Medical School-to-HRR Crosswalk}
 
-The medical school HRR is constructed in three stages. First, we obtain each cardiologist's medical school name and graduation year from the CMS Physician Compare National Downloadable File. Second, we map medical school names to ZIP codes using a hand-curated crosswalk restricted to LCME-accredited U.S. allopathic medical schools, validated against the LCME accreditation directory. Of 187 medical schools in our crosswalk, 186 resolve via the LCME accreditation join, and one historically defunct school resolves via a separate fallback ZIP. Schools coded in Physician Compare as ``OTHER'' are excluded; the OTHER category captures most foreign-trained physicians and a small number of unmatched U.S. schools. Of the 9{,}568 cardiologists in the full Medicare panel, 4{,}762 (50\%, or 15{,}928 of 31{,}235 cardiologist-years) cannot be assigned a medical school HRR and are outside the analytical sample. Of these, 3{,}959 are coded OTHER in Physician Compare, 414 attended osteopathic schools, 318 attended schools that the crosswalk does not place, and 71 have no medical school recorded. Third, we map ZIP codes to hospital referral regions using the Dartmouth Atlas ZIP-to-HRR crosswalk (vintage 2015).
+The medical school HRR is constructed in three stages. First, we obtain each cardiologist's medical school name and graduation year from the CMS Physician Compare National Downloadable File. Second, we map medical school names to ZIP codes using a hand-curated crosswalk restricted to LCME-accredited U.S. allopathic medical schools, validated against the LCME accreditation directory. Of 187 medical schools in our crosswalk, 186 resolve via the LCME accreditation join, and one historically defunct school resolves via a separate fallback ZIP. Schools coded in Physician Compare as ``OTHER'' are excluded; the OTHER category captures most foreign-trained physicians and a small number of unmatched U.S. schools. Of the 11{,}942 cardiologists in the full Medicare panel, 5{,}847 (49\%, or 21{,}967 of 43{,}536 cardiologist-years) cannot be assigned a medical school HRR and are outside the analytical sample. Of these, 4{,}820 are coded OTHER in Physician Compare, 537 attended osteopathic schools, 389 attended schools that the crosswalk does not place, and 101 have no medical school recorded. Third, we map ZIP codes to hospital referral regions using the Dartmouth Atlas ZIP-to-HRR crosswalk (vintage 2015).
 
 Our analytical panel restricts to allopathic MD graduates because only roughly 11\% of U.S. medical school graduates are osteopathic (DO), with an even smaller share among cardiologists (AAMC, U.S.\ Physician Workforce Data Dashboard).
 
@@ -81,7 +81,7 @@ Our preferred specification identifies $\beta_{\text{train}}$ off variation in c
 
 \subsection{NIH ExPORTER Ranking Panel}
 
-To distinguish procedural exposure from medical school prestige, we construct a year-matched panel of medical school NIH research funding from the NIH ExPORTER bulk files. We aggregate annual project-level award totals (1985--2025) to the medical school level using the institution-name field, with consolidation of name variants (abbreviations, mergers, renamings) by hand. Each medical school then receives a within-year rank in total NIH funding. The constructed series is validated against the published Blue Ridge Institute for Medical Research rankings, with a Pearson correlation across overlapping years above 0.99.
+To distinguish procedural exposure from medical school prestige, we build a year-matched panel of NIH research funding by medical school from the bulk files of the NIH ExPORTER database. We aggregate annual project-level award totals (1985--2025) to the medical school level using the institution-name field, with consolidation of name variants (abbreviations, mergers, renamings) by hand. Each medical school then receives a within-year rank in total NIH funding. The constructed series is validated against the published Blue Ridge Institute for Medical Research rankings, with a Pearson correlation across overlapping years above 0.99.
 
 For each cardiologist, we match the medical school NIH rank in the year of medical school start (graduation year minus three), parallel to the AHA cath lab matching procedure. We use both continuous $-\log(\text{rank})$ and tier indicators (Top 10, Top 11--25, Top 26--50, Top 51--100, with unranked schools as the reference) in our specifications.
 
@@ -105,10 +105,10 @@ Table~\ref{tab:app-balance-spec} reports the training-period cath lab share comp
   \cmidrule(lr){2-3} \cmidrule(lr){4-5}
   Subspecialty & N & Train.\ cath & N & Train.\ cath & Diff. & $p$ \\
   \midrule
-  General Cardiology     & 339   & 0.275 & 1{,}974 & 0.323 & 0.048 & $<$0.001 \\
-  Interventional         & 106   & 0.270 & 607     & 0.330 & 0.059 & $<$0.001 \\
-  Electrophysiology      & 19    & 0.287 & 137     & 0.344 & 0.057 & 0.161 \\
-  Adv.\ Heart Failure    & 5     & 0.421 & 20      & 0.438 & 0.017 & 0.875 \\
+  General Cardiology     & 443   & 0.279 & 2{,}495 & 0.324 & 0.045 & $<$0.001 \\
+  Interventional         & 117   & 0.274 & 715     & 0.333 & 0.060 & $<$0.001 \\
+  Electrophysiology      & 33    & 0.291 & 185     & 0.357 & 0.065 & 0.046 \\
+  Adv.\ Heart Failure    & 7     & 0.408 & 38      & 0.391 & $-$0.017 & 0.846 \\
   \bottomrule
   \end{tabular}
 \end{minipage}
@@ -116,7 +116,7 @@ Table~\ref{tab:app-balance-spec} reports the training-period cath lab share comp
 
 \section{Cohort-Trend Robustness}\label{sec:app-cohort}
 
-The main text reports a linear graduation-year trend as the cohort-robustness check. Table~\ref{tab:app-cohort} reports the training imprint under the full set of cohort controls we consider, on the same within-origin sample. Columns (1) through (3) are the within-origin baseline and the baseline augmented with a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the cardiologist's matriculation year, a measured national trend, so that the imprint is identified from how a region's cath lab availability deviates from the national rollout rather than from the rollout itself. The point estimate is stable across all four columns, between 0.052 and 0.061. Precision declines relative to the baseline because cath lab availability varies across both region and cohort, so any control for the cohort dimension absorbs part of the variation that identifies the imprint. We do not saturate the cohort dimension with graduation-year fixed effects, since doing so removes most of the within-HRR variation that identifies the training effect.
+The main text reports a linear graduation-year trend as the cohort-robustness check. Table~\ref{tab:app-cohort} reports the training imprint under the full set of cohort controls we consider, on the same within-origin sample. Columns (1) through (3) are the within-origin baseline and the baseline augmented with a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the cardiologist's matriculation year, a measured national trend, so that the imprint is identified from how a region's cath lab availability deviates from the national rollout rather than from the rollout itself. The point estimate ranges between 0.053 and 0.066 across the four columns. Precision declines relative to the baseline because cath lab availability varies across both region and cohort, so any control for the cohort dimension absorbs part of the variation that identifies the imprint. We do not saturate the cohort dimension with graduation-year fixed effects, since doing so removes most of the within-HRR variation that identifies the training effect.
 
 \begin{table}[htbp]
 \centering
@@ -132,9 +132,9 @@ The main text reports a linear graduation-year trend as the cohort-robustness ch
 
 The within-origin estimate is identified from variation in training-period cath lab availability across graduation cohorts within a medical school HRR. We use two permutation tests to ask whether the actual pairing of cardiologists to training environments predicts later catheterization better than a random pairing. The first reshuffles cohorts within a region, and it has leverage only if training exposure genuinely varies within HRR across cohorts. It does. Of the total variance in training-period cath lab share across cardiologists, roughly 40\% is within medical school HRR across cohorts, a within-HRR standard deviation of 0.11 against a between-HRR standard deviation of 0.13, so reshuffling cohorts within a region moves the exposure measure over a wide range.
 
-We reassign each cardiologist the training-period cath lab share that a different graduation cohort from the same medical school HRR actually faced, holding the outcome, the fixed effects, and the NSTEMI weights unchanged, and re-estimate the within-origin specification. Repeating this 1{,}000 times traces the distribution of the training coefficient under randomized cohort assignment. Panel (a) of Figure~\ref{fig:perm-null} plots the result. The permuted coefficient centers on zero, with 95\% of draws falling between $-0.043$ and 0.040. The actual estimate of 0.059 lies in the upper tail beyond all but one of the 1{,}000 permuted draws, for a two-sided randomization-inference $p$-value of 0.004. This is close to the clustered-SE $p$-value of 0.007 from the same specification, so the result does not rest on the cluster-robust asymptotics.
+We reassign each cardiologist the training-period cath lab share that a different graduation cohort from the same medical school HRR actually faced, holding the outcome, the fixed effects, and the NSTEMI weights unchanged, and re-estimate the within-origin specification. Repeating this 1{,}000 times traces the distribution of the training coefficient under randomized cohort assignment. Panel (a) of Figure~\ref{fig:perm-null} plots the result. The permuted coefficient centers on zero, with 95\% of draws falling between $-0.039$ and 0.034. The actual estimate of 0.058 lies in the upper tail beyond all 1{,}000 permuted draws, for a two-sided randomization-inference $p$-value of 0.001. This is close to the clustered-SE $p$-value of 0.006 from the same specification, so the result does not rest on the cluster-robust asymptotics.
 
-The second test holds each cardiologist's cohort fixed and reassigns the training-period cath lab share of a different medical school HRR in the same matriculation year, again holding the outcome, the fixed effects, and the NSTEMI weights unchanged. Panel (b) of Figure~\ref{fig:perm-null} plots the 1{,}000 permuted coefficients. Since the cath lab share rises across cohorts in every region, the permuted exposure retains the common cohort profile, and the permuted coefficients are centered on 0.016, with 95\% of draws falling between $-0.008$ and 0.039. The actual estimate of 0.059 exceeds all 1{,}000 draws, the largest of which is 0.053. The first test therefore indicates that the year of training matters within a region, and the second that the region of training matters within a year.
+The second test holds each cardiologist's cohort fixed and reassigns the training-period cath lab share of a different medical school HRR in the same matriculation year, again holding the outcome, the fixed effects, and the NSTEMI weights unchanged. Panel (b) of Figure~\ref{fig:perm-null} plots the 1{,}000 permuted coefficients. Since the cath lab share rises across cohorts in every region, the permuted exposure retains the common cohort profile, and the permuted coefficients are centered on 0.015, with 95\% of draws falling between $-0.007$ and 0.036. The actual estimate of 0.058 exceeds all 1{,}000 draws, the largest of which is 0.054. The first test therefore indicates that the year of training matters within a region, and the second that the region of training matters within a year.
 
 We read the permutation tests as evidence that the pairing of cardiologists to training environments is informative rather than an artifact of the limited within-region variation. They do not by themselves establish that the operative feature is cath lab availability as opposed to another regional attribute moving on the same cohort schedule, a distinction we take up through the subspecialty and rank results in the main text.
 
@@ -142,7 +142,7 @@ We read the permutation tests as evidence that the pairing of cardiologists to t
 \centering
 \begin{minipage}[h]{\textwidth}
   \centering
-  \caption[]{Permutation tests for the within-origin training imprint\footnote{Each histogram plots the training-period cath lab coefficient from 1{,}000 re-estimations of the within-origin specification. Panel (a) reassigns cardiologists the training-period cath lab share of a different graduation cohort from the same medical school HRR. Panel (b) reassigns cardiologists the share of a different medical school HRR in the same matriculation year. The dashed line marks zero and the solid line marks the actual estimate of 0.059. The outcome, fixed effects, and NSTEMI weights are held fixed across permutations.}}
+  \caption[]{Permutation tests for the within-origin training imprint\footnote{Each histogram plots the training-period cath lab coefficient from 1{,}000 re-estimations of the within-origin specification. Panel (a) reassigns cardiologists the training-period cath lab share of a different graduation cohort from the same medical school HRR. Panel (b) reassigns cardiologists the share of a different medical school HRR in the same matriculation year. The dashed line marks zero and the solid line marks the actual estimate of 0.058. The outcome, fixed effects, and NSTEMI weights are held fixed across permutations.}}
   \begin{tabular}{cc}
   \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null.png} &
   \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null-region.png} \\
@@ -180,7 +180,7 @@ The Doximity profiles do not include the National Provider Identifier, so we lin
 
 Stage 1 retains pairs that are uniquely matched on normalized name from both sides. These represent the cleanest evidence of a real match. Stage 2 disambiguates pairs in which one cardiologist matches multiple Doximity profiles by name alone, using exact graduation-year agreement first, then state agreement, then exact medical-school string agreement. Stage 3 expands the candidate set for cardiologists not matched in Stage 1 or 2 using a small nickname canonicalization table (mapping common variants like Bob $\rightarrow$ Robert) and a first-initial fallback that requires exact graduation year and state agreement. Each downstream match must produce a one-to-one bipartite pairing.
 
-Across all stages, the procedure matches 8,106 cardiologists from our Medicare panel, or roughly 80\% of cardiologists with non-missing name and graduation year in Physician Compare. The Stage-1 unique-name matches form the validation set for the linkage. Stage 1 used only first and last name and did not condition on graduation year, state, gender, or medical school. Across this validation set, we observe 99.2\% gender agreement, 86.5\% graduation-year agreement (with most disagreements within one year), 34.5\% practice-state agreement (consistent with Doximity profiles reflecting current practice in 2025--2026 while Physician Compare reflects practice locations in 2013--2018), and 29.1\% exact medical-school string agreement (with most disagreements reflecting formatting differences between sources rather than substantive disagreement). The strong gender and graduation-year agreement on orthogonal fields supports the validity of the name-based block.
+Across all stages, the procedure matches 10,047 cardiologists from our Medicare panel, or roughly 80\% of cardiologists with non-missing name and graduation year in Physician Compare. The Stage-1 unique-name matches form the validation set for the linkage. Stage 1 used only first and last name and did not condition on graduation year, state, gender, or medical school. Across this validation set, we observe 99.2\% gender agreement, 86.5\% graduation-year agreement (with most disagreements within one year), 34.5\% practice-state agreement (consistent with Doximity profiles reflecting current practice in 2025--2026 while Physician Compare reflects practice locations in 2013--2018), and 29.1\% exact medical-school string agreement (with most disagreements reflecting formatting differences between sources rather than substantive disagreement). The strong gender and graduation-year agreement on orthogonal fields supports the validity of the name-based block.
 
 \subsection{Doximity-to-AHA Hospital Mapping}
 
@@ -192,7 +192,7 @@ For each matched cardiologist, we construct two residency-stage exposure measure
 
 \subsection{Direct-Exposure Test on Recent Graduates}\label{sec:app-recent-grad}
 
-The AHA cath lab indicator is a coarse proxy for procedural exposure during residency. A sharper measure is the residency hospital's realized NSTEMI catheterization rate during the trainee's first three years of post-graduate training, constructed directly from the claims data. We implement this measure for cardiologists with medical-school graduation year 2006 or later, whose first three post-graduate years (PGY1--PGY3) overlap the 2008--2018 claims window. The recent-graduate subsample includes 266 cardiologists and 487 cardiologist-years, with a mean of 2.05 PGY years observed per cardiologist. After dropping singletons within fixed-effect cells, the within-origin column consists of 117 cardiologists. Table~\ref{tab:training-recent-grad} reports three specifications, progressing from practice-HRR and year fixed effects only (column~1) to the within-origin specification that adds medical-school HRR fixed effects (column~2) and a restriction to the cleaner manual-plus-exact residency-match subsample (column~3). The residency exposure coefficient is statistically indistinguishable from zero in all three columns. Point estimates are mildly negative but imprecisely estimated, and the confidence intervals do not support a positive residency imprint of the magnitude detected for medical school. The direct-exposure test on recent graduates corroborates the headline pipeline finding that residency exposure does not add to the medical school imprint.
+The AHA cath lab indicator is a coarse proxy for procedural exposure during residency. A sharper measure is the residency hospital's realized NSTEMI catheterization rate during the trainee's first three years of post-graduate training, constructed directly from the claims data. We implement this measure for cardiologists with medical-school graduation year 2006 or later, whose first three post-graduate years (PGY1--PGY3) overlap the 2008--2018 claims window. The recent-graduate subsample includes 351 cardiologists and 671 cardiologist-years, with a mean of 2.09 PGY years observed per cardiologist. After dropping singletons within fixed-effect cells, the within-origin column consists of 174 cardiologists. Table~\ref{tab:training-recent-grad} reports three specifications, progressing from practice-HRR and year fixed effects only (column~1) to the within-origin specification that adds medical-school HRR fixed effects (column~2) and a restriction to the cleaner manual-plus-exact residency-match subsample (column~3). The residency exposure coefficient is statistically indistinguishable from zero in all three columns. Point estimates are mildly negative but imprecisely estimated, and the confidence intervals do not support a positive residency imprint of the magnitude detected for medical school. The direct-exposure test on recent graduates corroborates the headline pipeline finding that the medical school imprint is not absorbed by residency exposure.
 
 \begin{table}[htbp]
 \centering
@@ -226,7 +226,7 @@ The main paper reports the IPW-weighted within-origin specification on the AHA t
 
 A separate identification concern is that cardiologists from cath-rich training environments may end up in cath-rich current peer environments. If so, the training imprint we estimate in the main paper could partly reflect destination-type sorting on the training measure rather than a causal effect of training. To assess this directly, we regress each cardiologist's current peer cath rate (the leave-one-out residualized cath rate of other cardiologists in the same HRR-year) on their training-period cath lab share, with year fixed effects and clustering at the medical school HRR level.
 
-On the full cardiologist-year panel (10{,}736 observations from 3{,}207 cardiologists with non-missing training-period and current-peer data), the coefficient on training-period cath lab share is $-$0.012 (SE 0.016), statistically indistinguishable from zero. Restricting to each cardiologist's earliest panel observation as a cross-section produces a similarly small estimate: $-$0.023 (SE 0.018), $n = 3{,}207$. The pairwise correlation between training-period cath lab share and current peer cath rate is $-$0.02.
+On the full cardiologist-year panel (15{,}084 observations from 4{,}033 cardiologists with non-missing training-period and current-peer data), the coefficient on training-period cath lab share is $-$0.024 (SE 0.017), statistically indistinguishable from zero. Restricting to each cardiologist's earliest panel observation as a cross-section produces a similarly small estimate: $-$0.028 (SE 0.018), $n = 4{,}033$. The pairwise correlation between training-period cath lab share and current peer cath rate is $-$0.05.
 
 Training-period cath lab availability does not predict the current peer cath rate in our sample. Cardiologists from cath-rich training environments are not systematically located in cath-rich destinations, and the destination-type-sorting concern does not appear to drive our cross-sectional imprint estimate. We caution that our cardiologist-level cross-section uses the earliest panel observation rather than the first practice location after training, so this is a contemporaneous diagnostic rather than a direct test of training-induced sorting at first placement.
 
@@ -234,7 +234,7 @@ Training-period cath lab availability does not predict the current peer cath rat
 
 This section reports the full coefficient table for the within-physician event study around mid-career moves.
 
-Table~\ref{tab:app-es-coefs} reports point estimates, standard errors, and 95\% confidence intervals for each event-time coefficient $\hat\beta_\tau$ in the within-physician event study, with $\tau \in [-3, 5]$ and $\tau = -1$ omitted as the reference period. The pre-move coefficients ($\tau \in \{-3, -2\}$) are statistically indistinguishable from zero, consistent with the parallel-trends assumption. Adaptation jumps at $\tau = 0$ to 0.443 (SE 0.097, 95\% CI [0.25, 0.63]) and persists through $\tau = 5$. The $\tau \in \{2, 3\}$ coefficients are smaller and noisier than the $\tau = 0, 1, 4, 5$ coefficients, but the post-move trajectory is broadly stable rather than fading.
+Table~\ref{tab:app-es-coefs} reports point estimates, standard errors, and 95\% confidence intervals for each event-time coefficient $\hat\beta_\tau$ in the within-physician event study, with $\tau \in [-3, 5]$ and $\tau = -1$ omitted as the reference period. The pre-move coefficients ($\tau \in \{-3, -2\}$) are statistically indistinguishable from zero, consistent with the parallel-trends assumption. Adaptation jumps at $\tau = 0$ to 0.496 (SE 0.078, 95\% CI [0.34, 0.65]). The post-move coefficients decline gradually from 0.325 at $\tau = 1$ to 0.214 at $\tau = 5$, and the $\tau = 5$ coefficient is not statistically distinguishable from zero ($p = 0.10$), but the confidence intervals from $\tau = 1$ onward all contain the pooled post-move coefficient, so the path is consistent with a flat post-move level.
 
 \begin{table}[htbp]
 \centering
@@ -246,25 +246,25 @@ Table~\ref{tab:app-es-coefs} reports point estimates, standard errors, and 95\% 
   \toprule
   Event time $\tau$ & Estimate & SE & 95\% CI lo & 95\% CI hi & $p$-value \\
   \midrule
-  $-3$ & 0.063  & 0.136 & $-$0.20 & 0.33 & 0.645 \\
-  $-2$ & $-$0.031 & 0.113 & $-$0.25 & 0.19 & 0.785 \\
+  $-3$ & $-$0.100 & 0.107 & $-$0.31 & 0.11 & 0.352 \\
+  $-2$ & 0.034  & 0.091 & $-$0.14 & 0.21 & 0.704 \\
   $-1$ & 0       &       &         &      & ref.  \\
-  $0$  & 0.443  & 0.097 & 0.25    & 0.63 & $<$0.001 \\
-  $1$  & 0.312  & 0.114 & 0.09    & 0.54 & 0.006 \\
-  $2$  & 0.184  & 0.129 & $-$0.07 & 0.44 & 0.154 \\
-  $3$  & 0.202  & 0.128 & $-$0.05 & 0.45 & 0.116 \\
-  $4$  & 0.375  & 0.139 & 0.10    & 0.65 & 0.007 \\
-  $5$  & 0.376  & 0.163 & 0.06    & 0.69 & 0.021 \\
+  $0$  & 0.496  & 0.078 & 0.34    & 0.65 & $<$0.001 \\
+  $1$  & 0.325  & 0.086 & 0.16    & 0.49 & $<$0.001 \\
+  $2$  & 0.325  & 0.103 & 0.12    & 0.53 & 0.002 \\
+  $3$  & 0.305  & 0.104 & 0.10    & 0.51 & 0.004 \\
+  $4$  & 0.288  & 0.113 & 0.07    & 0.51 & 0.011 \\
+  $5$  & 0.214  & 0.131 & $-$0.04 & 0.47 & 0.102 \\
   \bottomrule
   \end{tabular}
 \end{minipage}
 \end{table}
 
-Pre-trends are formally tested by the joint $F$-statistic on $\hat\beta_{-3}$ and $\hat\beta_{-2}$, which fails to reject the null of zero pre-trends at conventional levels. The post-move pooled coefficient (constraining $\beta_\tau = \beta$ for $\tau \geq 0$) is 0.350, which we use in the cohort-transition calibration in the main paper.
+Pre-trends are formally tested by the joint $F$-statistic on $\hat\beta_{-3}$ and $\hat\beta_{-2}$, which fails to reject the null of zero pre-trends at conventional levels. The post-move pooled coefficient (constraining $\beta_\tau = \beta$ for $\tau \geq 0$) is 0.403, which we use in the cohort-transition calibration in the main paper.
 
 \section{Cohort-Transition Simulation}\label{sec:app-var}
 
-The main paper combines $\hat\beta_{\text{train}} = 0.059$ and $\hat\beta_{\text{dest}} = 0.350$ into a steady-state multiplier of approximately 1.54. This section reports the derivation of the multiplier and the cohort-transition path implied by gradual cohort replacement.
+The main paper combines $\hat\beta_{\text{train}} = 0.058$ and $\hat\beta_{\text{dest}} = 0.403$ into a steady-state multiplier of approximately 1.68. This section reports the derivation of the multiplier and the cohort-transition path implied by gradual cohort replacement.
 
 \subsection{Derivation of the Long-Run Multiplier}
 
@@ -284,7 +284,7 @@ We trace the per-cardiologist response to a uniform 10-percentage-point increase
 \begin{equation*}
 y_t = \beta_{\text{train}} \cdot \Delta\tau \cdot \text{share}_t + \beta_{\text{dest}} \cdot y_{t-1},
 \end{equation*}
-with the direct training effect compounding through the destination feedback loop. The path approaches the long-run multiplier $1/(1 - \beta_{\text{dest}}) = 1.54$ asymptotically under our within-physician estimate of $\beta_{\text{dest}} = 0.35$. Roughly half of the long-run effect is realized within ten years of the shock, and the system reaches 95\% of steady state by year 20.
+with the direct training effect compounding through the destination feedback loop. The path approaches the long-run multiplier $1/(1 - \beta_{\text{dest}}) = 1.68$ asymptotically under our within-physician estimate of $\beta_{\text{dest}} = 0.40$. Roughly half of the long-run effect is realized within ten years of the shock, and the system reaches about 92\% of steady state by year 20.
 
 \clearpage
 

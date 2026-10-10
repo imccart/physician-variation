@@ -1,9 +1,9 @@
 statistic,value
-total_cardiologists,9568
-total_cardiologist_years,31235
-unmapped_cardiologists,4762
-unmapped_cardiologist_years,15928
-no_school_recorded,71
-osteopathic_school,414
-physician_compare_other,3959
-school_not_placed,318
+total_cardiologists,11942
+total_cardiologist_years,43536
+unmapped_cardiologists,5847
+unmapped_cardiologist_years,21967
+no_school_recorded,101
+osteopathic_school,537
+physician_compare_other,4820
+school_not_placed,389

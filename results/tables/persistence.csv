@@ -1,9 +1,9 @@
 statistic,value
-median_years_since_grad,21
-median_years_in_practice,15
-within_trend_beta,-0.0020738834279070356
-within_trend_se,0.0033175582566850248
-within_trend_ci_lo,-0.008576297611009684
-within_trend_ci_hi,0.004428530755195613
-n_obs,9700
-n_cardio,3207
+median_years_since_grad,20
+median_years_in_practice,14
+within_trend_beta,-0.002229813151770526
+within_trend_se,0.003012172075381132
+within_trend_ci_lo,-0.008133670419517545
+within_trend_ci_hi,0.0036740441159764923
+n_obs,13974
+n_cardio,4033

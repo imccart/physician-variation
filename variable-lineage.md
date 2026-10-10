@@ -107,7 +107,7 @@ Raw inputs referred to below:
 ### The 31 Elixhauser comorbidities
 - Paper: none directly; risk adjusters absorbed into `mean_resid_cath`.
 - Raw: inpatient `ICD_DGNS_CD1-25`.
-- Chain: `elix_lookup.sas` builds the ICD-version-by-code lookup to 31 categories (a code may map to several). `1_nstemi_episodes.sas` reshapes the 25 diagnosis codes long, joins on `(ICD_Code, ICD_Version)` with version chosen by admit date, and pivots to 31 0/1 columns. `3_beneficiary.sas` merges them; `5_residualize.sas` uses all 31 as LPM regressors.
+- Chain: `elix_lookup.sas` holds the Quan et al. (2005) Elixhauser ICD-9 and ICD-10 code prefixes for the 31 categories (a prefix may map to several). `1_nstemi_episodes.sas` takes the 25 diagnosis codes on the index NSTEMI admission (no lookback), expands each to its leading substrings of three or more characters, joins on `(ICD_Code, ICD_Version)` with version chosen by admit date, and pivots to 31 0/1 columns. `3_beneficiary.sas` merges them; `5_residualize.sas` uses all 31 as LPM regressors.
 - Level: patient 0/1; enter the outcome only through the residualization.
 - Files: `elix_lookup.sas`, `1_nstemi_episodes.sas`, `3_beneficiary.sas`, `5_residualize.sas`, `6_aggregate_export.sas`.
 

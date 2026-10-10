@@ -45,7 +45,10 @@ d <- thr %>%
                       train_cath_lab, intensity_dest_loo),
              by = c("npi", "year")) %>%
   mutate(risk_q5 = factor(risk_q5),
-         pred_death_c = pred_death_365 - mean(pred_death_365))
+         pred_death_c = pred_death_365 - mean(pred_death_365),
+         # age in decades; the raw square runs into the thousands and leaves the
+         # clustered VCOV ill-conditioned
+         age = age / 10, age_sq = age_sq / 100)
 
 setFixest_fml(..ctrl = ~ age + age_sq + d_female + d_black + d_hisp + d_asian +
                 d_race_missing + d_sex_missing + d_dual + dual_elgbl_mons +

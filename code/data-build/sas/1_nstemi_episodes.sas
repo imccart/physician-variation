@@ -118,29 +118,30 @@ TITLE;
 
 
 /* ============================================================ */
-/* Step 1c: Flag Elixhauser comorbidities from secondary dx      */
+/* Step 1c: Claim codes to prefixes, one row per prefix          */
 /* ============================================================ */
 
-/* Pivot diagnosis codes to long format, then flag comorbidities */
-/* using both ICD-9 and ICD-10 code sets.                        */
-/* Comorbidity categories follow Elixhauser et al. as used in    */
-/* Shirley's lookup file (elixhauser-icd10cm.csv).               */
+/* Flag the 31 Elixhauser categories from the diagnosis codes on */
+/* the NSTEMI admission claim. Lookup entries are code prefixes, */
+/* so each claim code is expanded to its leading substrings of   */
+/* three or more characters and joined exactly; a category is    */
+/* flagged when any substring matches an entry of the same ICD   */
+/* version.                                                      */
 
-/* First, reshape to long: one row per bene x diagnosis code     */
-DATA WORK.DxLong (KEEP = BENE_ID CLM_ADMSN_DT ICD_Code);
-    SET WORK.NSTEMI_New;
+DATA WORK.DxLong (KEEP = BENE_ID ICD_Version ICD_Code);
+    SET WORK.NSTEMI_New (KEEP = BENE_ID CLM_ADMSN_DT ICD_DGNS_CD1-ICD_DGNS_CD25);
+    LENGTH ICD_Code $10 Full $10;
     ARRAY DxCodes{25} ICD_DGNS_CD1-ICD_DGNS_CD25;
+    IF CLM_ADMSN_DT < &icd10_start_date THEN ICD_Version = 9;
+    ELSE ICD_Version = 10;
     DO i = 1 TO 25;
-        IF DxCodes{i} NE '' THEN DO;
-            ICD_Code = DxCodes{i};
+        Full = STRIP(DxCodes{i});
+        IF Full NE '' THEN DO L = 3 TO LENGTH(Full);
+            ICD_Code = SUBSTR(Full, 1, L);
             OUTPUT;
         END;
     END;
 RUN;
-
-/* Flag comorbidities by joining to Elix_Lookup dataset.          */
-/* A code can map to multiple categories (one row per match).     */
-/* 31 categories, ~2,600 exact codes. See elix_lookup.sas.        */
 
 PROC SQL;
     CREATE TABLE WORK.DxFlagged AS
@@ -150,14 +151,14 @@ PROC SQL;
     FROM WORK.DxLong AS a
     INNER JOIN WORK.Elix_Lookup AS b
         ON a.ICD_Code = b.ICD_Code
-        AND b.ICD_Version = CASE
-            WHEN a.CLM_ADMSN_DT < &icd10_start_date THEN 9
-            ELSE 10
-        END
-    WHERE b.Comorbidity NE '';
+        AND a.ICD_Version = b.ICD_Version;
 QUIT;
 
-/* Pivot to wide: one row per bene, one 0/1 column per category  */
+
+/* ============================================================ */
+/* Step 1d: Pivot to wide, one 0/1 column per category           */
+/* ============================================================ */
+
 PROC SQL;
     CREATE TABLE PL027710.NSTEMI_Comorbidities AS
     SELECT
@@ -214,6 +215,8 @@ PROC SQL;
     FROM WORK.NSTEMI_New;
 QUIT;
 
+
+
 /* Diagnostic: total episodes and comorbidity prevalence */
 TITLE "NSTEMI episode count";
 PROC SQL;
@@ -224,7 +227,7 @@ QUIT;
 TITLE;
 
 TITLE "Comorbidity prevalence";
-PROC MEANS DATA=PL027710.NSTEMI_Comorbidities MEAN;
+PROC MEANS DATA=PL027710.NSTEMI_Comorbidities MEAN MAXDEC=3;
     VAR chf car val pcd pvd htn_uncx htn_cx par neu cpd
         diab_uncx diab_cx thy_hypo renal_fl liver pud aids lymph mets tumor
         rheu coag obese wgt_loss fluid anemia_blood anemia_def
