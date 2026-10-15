@@ -426,6 +426,14 @@ tbl <- paste0(
 writeLines(tbl, "results/tables/training-imprint.tex")
 cat("\n=== Wrote results/tables/training-imprint.tex ===\n")
 
+# The headline coefficient (Panel B column 1) as a file, read by the
+# calibration in 7_dynamic.R.
+write_csv(tidy(b1, conf.int = TRUE) %>%
+            filter(term == "train_cath_lab") %>%
+            mutate(n_obs = nobs(b1),
+                   n_cardio = n_distinct(fixest_data(b1, sample = "estimation")$npi)),
+          "results/tables/training-imprint-coefs.csv")
+
 
 # 12. Mechanism: teaching-hospital cath-lab vs all-hospital cath-lab ----
 

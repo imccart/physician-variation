@@ -9,14 +9,23 @@
 ##                from destination feedback and traces the transition path
 ##                of a one-time training-cath shock through cohort turnover.
 ##
-##                Coefficients come from 5_aha_training.R section 10
-##                (tightened identification specs).
+##                Inputs:
+##                  results/tables/training-imprint-coefs.csv (5_aha_training.R,
+##                    the within-origin imprint, Table 3 Panel B col 1)
+##                  results/tables/event-study-pooled.csv (8_event_study.R,
+##                    the pooled post-move adaptation rate)
 
 
-# 1. Coefficients from the tightened-ID specs ---------------------------
+# 1. Coefficients from the estimated specs --------------------------------
 
-beta_train <- 0.058   # from origin-FE + destination-FE + year-FE spec
-beta_dest  <- 0.403   # pooled pre/post from event study (8_event_study.R)
+beta_train <- read_csv("results/tables/training-imprint-coefs.csv",
+                       show_col_types = FALSE) %>%
+  filter(term == "train_cath_lab") %>%
+  pull(estimate)
+beta_dest  <- read_csv("results/tables/event-study-pooled.csv",
+                       show_col_types = FALSE) %>%
+  filter(term == "delta_dest:post") %>%
+  pull(estimate)
 amp        <- 1 / (1 - beta_dest)
 long_run   <- beta_train * amp
 

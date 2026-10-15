@@ -306,10 +306,9 @@ every reported number has an on-disk artifact. On 2026-09-26 the descriptive fra
 training binscatter) was restricted to the analytical sample, so Table 1 now reports the
 10,736 cardiologist-years and 3,207 cardiologists the prose describes; the same pass added
 `binscatter-slope.csv`, `recent-grad-sample.csv`, `rank-x-cath-panel-n.csv` and `unmapped-school-composition.csv` (the appendix A.3 exclusion counts), and persisted
-the crosswalk resolution counts to `data/crosswalks/med-school-hrr-match-counts.csv`. One
-residual coupling: `7_dynamic.R`
-still hardcodes `beta_train = 0.059` and `beta_dest = 0.350` rather than reading
-`training-imprint.tex` and `event-study-pooled.csv`.
+the crosswalk resolution counts to `data/crosswalks/med-school-hrr-match-counts.csv`. Since
+2026-10-15 `7_dynamic.R` reads `beta_train` from `training-imprint-coefs.csv` and `beta_dest`
+from `event-study-pooled.csv` rather than carrying them as literals.
 
 | Script | Outputs |
 |---|---|
@@ -317,9 +316,9 @@ still hardcodes `beta_train = 0.059` and `beta_dest = 0.350` rather than reading
 | `2_hrr_map.R` | figure `hrr-cath-intensity` |
 | `3_selection.R` | `balance-by-specialty.csv`, `selection.tex`, `selection-aha.tex`, `cohort-robust.tex`, `destination-sorting.csv`, `national-cath-share.csv` |
 | `4_rank.R` | `rank.tex` |
-| `5_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `training-imprint.tex` (headline 0.059 within-origin), `aha-mechanism-teaching.tex`, `persistence.csv` |
+| `5_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `training-imprint.tex` (headline 0.058 within-origin), `training-imprint-coefs.csv` (the same coefficient as a file), `aha-mechanism-teaching.tex`, `persistence.csv` |
 | `6_rank_x_cath.R` | `rank-x-cath-stratified.tex`, `rank-x-cath-cells.tex`, `rank-x-cath-panel-n.csv` |
-| `7_dynamic.R` | `dynamic-path.csv`; figure `dynamic-calibration` (betas hardcoded) |
+| `7_dynamic.R` | `dynamic-path.csv`; figure `dynamic-calibration` (betas read from `training-imprint-coefs.csv` and `event-study-pooled.csv`) |
 | `8_event_study.R` | `event-study-coefs.csv`, `event-study-pooled.csv`, `event-study-coefs-by-direction.csv`; figures `event-study`, `event-study-by-direction`, `two-peer-deviation` |
 | `9_heterogeneity.R` | `heterogeneity-train-x-dest.tex` |
 | `10_mover_balance.R` | `mover-balance.{tex,csv}`; figure `mover-selection` |
