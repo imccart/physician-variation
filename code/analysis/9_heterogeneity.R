@@ -27,33 +27,13 @@ analysis  <- read_csv("data/output/analysis_panel.csv",
                       col_types = cols(npi = col_character(),
                                        year = col_integer(),
                                        .default = col_guess()))
-aha_hosp  <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
-                      na = c("", "NA", "."),
-                      col_types = cols(HRRCODE = col_integer(),
-                                       year = col_integer(),
-                                       CCLABHOS = col_character(),
-                                       .default = col_guess()))
 cardio_xw <- read_csv("data/input/cardio-school-to-nih.csv",
                       show_col_types = FALSE,
                       col_types = cols(.default = col_character()))
 
-aha_hrr <- aha_hosp %>%
-  filter(!is.na(HRRCODE), !is.na(year)) %>%
-  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
-  rename(hrr = HRRCODE) %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_,
-                                  cath_lab_share))
-
 panel <- analysis %>%
   left_join(cardio_xw %>% select(cardio_name, canonical_school),
-            by = c("med_school" = "cardio_name")) %>%
-  mutate(med_school_start = grad_year - 3L,
-         aha_match_year   = pmin(pmax(med_school_start, 1980L), 2003L)) %>%
-  left_join(aha_hrr %>% rename(train_cath_lab = cath_lab_share),
-            by = c("hrr_med_school" = "hrr",
-                   "aha_match_year"  = "year"))
+            by = c("med_school" = "cardio_name"))
 
 clean <- panel %>%
   filter(!is.na(train_cath_lab),

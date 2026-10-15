@@ -82,38 +82,7 @@ cat("\nDistribution of NIH tier among matched cardiologist-years:\n")
 print(ranked %>% filter(!is.na(nih_tier)) %>% count(nih_tier))
 
 
-# 2. Join training-period AHA cath lab share onto the panel ---------------
-
-# Replicates the AHA matching from 5_aha_training.R so that the rank table
-# can include a horse race against the training cath lab share.
-aha_hosp <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
-                     na = c("", "NA", "."),
-                     col_types = cols(HRRCODE = col_integer(),
-                                      year = col_integer(),
-                                      CCLABHOS = col_character(),
-                                      .default = col_guess()))
-aha_hrr <- aha_hosp %>%
-  filter(!is.na(HRRCODE), !is.na(year)) %>%
-  mutate(has_cath_lab = as.integer(CCLABHOS == "1")) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath_lab, na.rm = TRUE),
-            .groups = "drop") %>%
-  rename(hrr = HRRCODE) %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share),
-                                  NA_real_, cath_lab_share))
-
-phys_train <- ranked %>%
-  filter(!is.na(grad_year), !is.na(hrr_med_school)) %>%
-  distinct(npi, hrr_med_school, grad_year) %>%
-  mutate(aha_match_year = pmin(pmax(grad_year - 3L, 1980L), 2003L)) %>%
-  left_join(aha_hrr, by = c("hrr_med_school" = "hrr",
-                            "aha_match_year"  = "year")) %>%
-  select(npi, hrr_med_school, train_cath_lab = cath_lab_share)
-
-ranked <- ranked %>% left_join(phys_train, by = c("npi", "hrr_med_school"))
-
-
-# 3. Main rank-gradient regressions ---------------------------------------
+# 2. Main rank-gradient regressions ---------------------------------------
 
 # Drop "OTHER" (non-US / unknown) schools and rows with no NIH match.
 # Set the reference category for tier indicators to "05_unranked" (below

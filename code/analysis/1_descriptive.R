@@ -76,35 +76,11 @@ write_csv(unmapped_out, "results/tables/unmapped-school-composition.csv")
 
 # 2b. Full summary statistics table (cardiologist sample) ----------------
 
-# Bring in the year-matched AHA training-period cath lab share so the
-# summary statistics reflect the actual training measure used in the
-# main analysis (rather than the LOO peer-cath measure constructed
-# inline in script 2 of the data-build).
-aha_hosp_summ <- read_csv("data/input/aha_hospital.csv",
-                          na = c("", "NA", "."),
-                          show_col_types = FALSE,
-                          col_types = cols(HRRCODE = col_integer(),
-                                           year = col_integer(),
-                                           CCLABHOS = col_character(),
-                                           .default = col_guess()))
-aha_hrr_summ <- aha_hosp_summ %>%
-  filter(!is.na(HRRCODE), !is.na(year)) %>%
-  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
-  rename(hrr = HRRCODE) %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_,
-                                  cath_lab_share))
-
 # Restrict the descriptive frame to the analytical panel used for the
 # within-origin estimates: graduation years whose matriculation falls inside
 # AHA cath-lab coverage, with an observed training-period cath lab share and
 # an observed current peer environment.
 panel_summ <- analysis %>%
-  mutate(aha_match_year = pmin(pmax(grad_year - 3L, 1980L), 2003L)) %>%
-  left_join(aha_hrr_summ %>% rename(train_cath_lab = cath_lab_share),
-            by = c("hrr_med_school" = "hrr",
-                   "aha_match_year"  = "year")) %>%
   filter(grad_year >= 1983, grad_year <= 2006,
          !is.na(train_cath_lab),
          !is.na(intensity_dest_loo), !is.nan(intensity_dest_loo)) %>%

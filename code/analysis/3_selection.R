@@ -204,27 +204,7 @@ cat("\n=== Wrote results/tables/selection.tex ===\n")
 # selection-robustness statement in the main paper rests on the same
 # specification that produces the headline coefficient.
 
-aha_hosp <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
-                     na = c("", "NA", "."),
-                     col_types = cols(HRRCODE = col_integer(),
-                                      year = col_integer(),
-                                      CCLABHOS = col_character(),
-                                      .default = col_guess()))
-aha_hrr_local <- aha_hosp %>%
-  filter(!is.na(HRRCODE), !is.na(year)) %>%
-  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
-  rename(hrr = HRRCODE) %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_,
-                                  cath_lab_share))
-
-panel_aha <- analysis %>%
-  mutate(med_school_start = grad_year - 3L,
-         aha_match_year   = pmin(pmax(med_school_start, 1980L), 2003L)) %>%
-  left_join(aha_hrr_local %>% rename(train_cath_lab = cath_lab_share),
-            by = c("hrr_med_school" = "hrr",
-                   "aha_match_year" = "year"))
+panel_aha <- analysis
 
 # Within-subspecialty balance (appendix Table B.1): the Table 2 mover/stayer
 # comparison of the training cath-lab share, repeated within each
@@ -301,14 +281,13 @@ clean_aha <- panel_aha_ipw %>%
 # trend used in the cohort-robustness checks. A region-by-cohort treatment
 # (cath lab availability) is partly the national rollout, so we want to
 # confirm the imprint survives controlling for that national level.
-nat_share <- aha_hosp %>%
-  filter(!is.na(year)) %>%
-  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
-  group_by(year) %>%
-  summarize(national_cath_share = mean(has_cath, na.rm = TRUE), .groups = "drop")
+nat_share <- read_csv("data/output/aha_national_year.csv",
+                      col_types = cols(year = col_integer(), .default = col_double()),
+                      show_col_types = FALSE)
 
 clean_aha <- clean_aha %>%
-  left_join(nat_share, by = c("aha_match_year" = "year")) %>%
+  left_join(nat_share %>% select(year, national_cath_share),
+            by = c("aha_match_year" = "year"), relationship = "many-to-one") %>%
   mutate(grad_c = grad_year - 1995)   # centered for the cohort trend
 
 # Main selection-aha table (cols 1-3):
@@ -466,13 +445,8 @@ write_csv(sorting_out, "results/tables/destination-sorting.csv")
 
 # National cath-lab share by year (cited in Section 3.1 and appendix A.4).
 # The prose reports the HRR-mean (mean across HRRs of the HRR-level share),
-# which is hrr_mean_cath_share below; national_cath_share (hospital-level
-# mean) is the series used as the cohort-robustness control.
-nat_hrr_mean <- aha_hrr_local %>%
-  group_by(year) %>%
-  summarize(hrr_mean_cath_share = mean(cath_lab_share, na.rm = TRUE),
-            .groups = "drop")
-national_out <- nat_share %>%
-  left_join(nat_hrr_mean, by = "year")
-write_csv(national_out, "results/tables/national-cath-share.csv")
+# hrr_mean_cath_share; national_cath_share (hospital-level mean) is the
+# series used as the cohort-robustness control. Both come from
+# code/data-build/4_training_share.R.
+write_csv(nat_share, "results/tables/national-cath-share.csv")
 cat("\nWrote destination-sorting.csv and national-cath-share.csv\n")

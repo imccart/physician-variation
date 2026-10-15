@@ -23,12 +23,6 @@ analysis <- read_csv("data/output/analysis_panel.csv",
                                       year = col_integer(),
                                       .default = col_guess()))
 
-aha_hosp  <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
-                      na = c("", "NA", "."),
-                      col_types = cols(HRRCODE = col_integer(),
-                                       year = col_integer(),
-                                       CCLABHOS = col_character(),
-                                       .default = col_guess()))
 nih_panel <- read_csv("data/input/med-school-nih.csv", show_col_types = FALSE,
                       col_types = cols(med_school = col_character(),
                                        fiscal_year = col_integer(),
@@ -37,28 +31,14 @@ cardio_xw <- read_csv("data/input/cardio-school-to-nih.csv",
                       show_col_types = FALSE,
                       col_types = cols(.default = col_character()))
 
-# AHA HRR-year cath lab share (replicates the build inside 5_aha_training.R)
-aha_hrr <- aha_hosp %>%
-  filter(!is.na(HRRCODE), !is.na(year)) %>%
-  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
-  rename(hrr = HRRCODE) %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_,
-                                  cath_lab_share))
 
 
-# 2. Year-match training-period cath share + rank to each cardiologist ----
+# 2. Year-match rank to each cardiologist ---------------------------------
 
 panel <- analysis %>%
   left_join(cardio_xw %>% select(cardio_name, canonical_school),
             by = c("med_school" = "cardio_name")) %>%
-  mutate(med_school_start = grad_year - 3L,
-         aha_match_year = pmin(pmax(med_school_start, 1980L), 2003L),
-         nih_match_year = pmin(pmax(med_school_start, 1985L), 2025L)) %>%
-  left_join(aha_hrr %>% rename(train_cath_lab = cath_lab_share),
-            by = c("hrr_med_school" = "hrr",
-                   "aha_match_year"  = "year")) %>%
+  mutate(nih_match_year = pmin(pmax(med_school_start, 1985L), 2025L)) %>%
   left_join(nih_panel %>% select(canonical_school = med_school,
                                  nih_match_year   = fiscal_year,
                                  nih_rank         = rank,

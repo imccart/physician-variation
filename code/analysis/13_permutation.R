@@ -37,34 +37,14 @@ analysis <- read_csv("data/output/analysis_panel.csv",
                                       year = col_integer(),
                                       .default = col_guess()))
 
-aha_hosp <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
-                     na = c("", "NA", "."),
-                     col_types = cols(HRRCODE = col_integer(), year = col_integer(),
-                                      CCLABHOS = col_character(),
-                                      .default = col_guess()))
+# HRR-year cath-lab shares for the region permutation; the panel's
+# train_cath_lab comes from the same file via 4_training_share.R.
+aha_hrr <- read_csv("data/output/aha_hrr_year.csv",
+                    col_types = cols(hrr = col_integer(), year = col_integer(),
+                                     .default = col_double()),
+                    show_col_types = FALSE)
 
-aha_hrr <- aha_hosp %>%
-  filter(!is.na(HRRCODE), !is.na(year)) %>%
-  mutate(has_cath_lab = as.integer(CCLABHOS == "1")) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath_lab, na.rm = TRUE), .groups = "drop") %>%
-  rename(hrr = HRRCODE) %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_, cath_lab_share))
-
-phys_train <- analysis %>%
-  filter(!is.na(grad_year), !is.na(hrr_med_school)) %>%
-  distinct(npi, hrr_med_school, grad_year) %>%
-  mutate(med_school_start = grad_year - 3,
-         aha_match_year   = pmin(pmax(med_school_start, 1980L), 2003L))
-
-training_intensity <- phys_train %>%
-  left_join(aha_hrr %>% select(hrr, year, cath_lab_share),
-            by = c("hrr_med_school" = "hrr", "aha_match_year" = "year"))
-
-panel <- analysis %>%
-  left_join(training_intensity %>%
-              select(npi, hrr_med_school, train_cath_lab = cath_lab_share),
-            by = c("npi", "hrr_med_school"))
+panel <- analysis
 
 # Within-origin estimation sample. Matches the canonical baseline in
 # 3_selection.R (m_aha_base, cohort-robust.tex col 1): grad 1983-2006,
@@ -148,13 +128,7 @@ cat("RI p (right tail):    ", sprintf("%.4f", p_right), "\n")
 
 # 5. Region permutation within cohort -------------------------------------
 
-match_year <- clean %>%
-  distinct(npi, grad_year) %>%
-  mutate(aha_match_year = pmin(pmax(grad_year - 3, 1980L), 2003L)) %>%
-  select(npi, aha_match_year)
-
-clean_region <- clean %>%
-  left_join(match_year, by = "npi")
+clean_region <- clean
 
 share_grid <- aha_hrr %>%
   filter(hrr %in% clean$hrr_med_school, year >= 1980, year <= 2003) %>%

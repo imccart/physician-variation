@@ -275,32 +275,8 @@ cat("\nWrote results/figures/event-study-by-direction.png\n")
 # adapt to current peers, the deviation should be ~0 regardless of
 # training.
 #
-# We need each mover's training cath share. Bring in via the same
-# crosswalk used in 5_aha_training.R.
-
-aha_hosp_for_dev  <- read_csv("data/input/aha_hospital.csv",
-                              na = c("", "NA", "."),
-                              show_col_types = FALSE,
-                              col_types = cols(HRRCODE = col_integer(),
-                                               year = col_integer(),
-                                               CCLABHOS = col_character(),
-                                               .default = col_guess()))
-aha_hrr_for_dev <- aha_hosp_for_dev %>%
-  filter(!is.na(HRRCODE), !is.na(year)) %>%
-  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
-  rename(hrr = HRRCODE) %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_,
-                                  cath_lab_share))
-
-# Bring training cath share onto each mover-year, year-matched as before
-es_panel_dev <- es_panel %>%
-  mutate(med_school_start = grad_year - 3L,
-         aha_match_year   = pmin(pmax(med_school_start, 1980L), 2003L)) %>%
-  left_join(aha_hrr_for_dev %>% rename(train_cath_lab = cath_lab_share),
-            by = c("hrr_med_school" = "hrr",
-                   "aha_match_year"  = "year"))
+# Each mover's training cath share (train_cath_lab) is on the panel.
+es_panel_dev <- es_panel
 
 # Compute per-physician origin and destination averages
 phase_panel <- es_panel_dev %>%

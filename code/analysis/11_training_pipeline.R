@@ -33,27 +33,12 @@ exposure <- read_csv("data/output/cardiologist_training_exposure.csv",
                                       .default = col_guess()),
                      show_col_types = FALSE)
 
-# Med-school cath share at matriculation year (parallel to 5_aha_training.R).
-aha <- read_csv("data/input/aha_hospital.csv", show_col_types = FALSE,
-                na = c("", "NA", "."),
-                col_types = cols(HRRCODE = col_integer(), year = col_integer(),
-                                 CCLABHOS = col_character(), .default = col_guess()))
-hrr_year_cath <- aha %>%
-  mutate(has_cath = as.integer(CCLABHOS == "1")) %>%
-  filter(!is.na(HRRCODE), !is.na(year), year >= 1980, year <= 2003) %>%
-  group_by(HRRCODE, year) %>%
-  summarize(cath_lab_share = mean(has_cath, na.rm = TRUE), .groups = "drop") %>%
-  mutate(cath_lab_share = if_else(is.nan(cath_lab_share), NA_real_, cath_lab_share)) %>%
-  rename(hrr = HRRCODE)
 
 
 # 2. Build the analysis panel ----------------------------------------------
 
 p <- panel %>%
   left_join(exposure, by = "npi") %>%
-  mutate(aha_match_year_med = pmin(pmax(grad_year - 3L, 1980L), 2003L)) %>%
-  left_join(hrr_year_cath %>% rename(med_cath_lab = cath_lab_share),
-            by = c("hrr_med_school" = "hrr", "aha_match_year_med" = "year")) %>%
   filter(grad_year >= 1983, grad_year <= 2003)
 
 
@@ -74,7 +59,7 @@ run_within_origin <- function(df, lhs = "mean_resid_cath", rhs, cluster = "hrr_m
 }
 
 run_joint <- function(df, rhs, cluster = "hrr_med_school") {
-  feols(as.formula(paste("mean_resid_cath ~ med_cath_lab +", rhs,
+  feols(as.formula(paste("mean_resid_cath ~ train_cath_lab +", rhs,
                          "| hrr_med_school + hrr_practice + year")),
         data = df, weights = ~n_nstemi,
         cluster = as.formula(paste0("~", cluster)))
@@ -86,7 +71,7 @@ run_joint <- function(df, rhs, cluster = "hrr_med_school") {
 cat("\n=== Residency exposure: standalone + joint with medical school ===\n")
 res_measures <- c("res_own_cath", "res_sys_any_cath", "res_sys_share_cath")
 for (m in res_measures) {
-  d <- p %>% filter(!is.na(.data[[m]]), !is.na(med_cath_lab))
+  d <- p %>% filter(!is.na(.data[[m]]), !is.na(train_cath_lab))
   cat(sprintf("\n%-22s  n_obs = %d  n_card = %d\n", m, nrow(d), n_distinct(d$npi)))
   cat("Standalone within-origin:\n"); print(est(run_within_origin(d, rhs = m)))
   cat("Joint with med school:\n");    print(est(run_joint(d, rhs = m)))
@@ -99,7 +84,7 @@ cat("\n=== R1: drop fuzzy-tier residency matches ===\n")
 p_clean <- p %>% filter(res_match_kind %in% c("manual", "exact"))
 cat(sprintf("Sample: %d rows; %d cardiologists\n", nrow(p_clean), n_distinct(p_clean$npi)))
 for (m in res_measures) {
-  d <- p_clean %>% filter(!is.na(.data[[m]]), !is.na(med_cath_lab))
+  d <- p_clean %>% filter(!is.na(.data[[m]]), !is.na(train_cath_lab))
   cat(sprintf("\n%-22s  n_obs = %d  n_card = %d\n", m, nrow(d), n_distinct(d$npi)))
   cat("Joint with med school:\n"); print(est(run_joint(d, rhs = m)))
 }
@@ -112,7 +97,7 @@ p_mov <- p %>% filter(!is.na(res_hosp_hrr), !is.na(hrr_med_school),
                        res_hosp_hrr != hrr_med_school)
 cat(sprintf("Sample: %d rows; %d cardiologists\n", nrow(p_mov), n_distinct(p_mov$npi)))
 for (m in res_measures) {
-  d <- p_mov %>% filter(!is.na(.data[[m]]), !is.na(med_cath_lab))
+  d <- p_mov %>% filter(!is.na(.data[[m]]), !is.na(train_cath_lab))
   cat(sprintf("\n%-22s  n_obs = %d  n_card = %d\n", m, nrow(d), n_distinct(d$npi)))
   cat("Joint with med school:\n"); print(est(run_joint(d, rhs = m)))
 }
@@ -121,10 +106,10 @@ for (m in res_measures) {
 # 7. Robustness 3: within-residency-hospital cohort FE --------------------
 
 cat("\n=== R3: within-residency-hospital cohort FE ===\n")
-d3 <- p %>% filter(!is.na(res_own_cath), !is.na(med_cath_lab))
+d3 <- p %>% filter(!is.na(res_own_cath), !is.na(train_cath_lab))
 cat(sprintf("Sample: %d rows; %d cardiologists; %d residency hospitals\n",
             nrow(d3), n_distinct(d3$npi), n_distinct(d3$ahaid_residency)))
-m_r3 <- feols(mean_resid_cath ~ med_cath_lab + res_own_cath |
+m_r3 <- feols(mean_resid_cath ~ train_cath_lab + res_own_cath |
                 hrr_med_school + ahaid_residency + hrr_practice + year,
               data = d3, weights = ~n_nstemi,
               cluster = ~hrr_med_school)
@@ -138,14 +123,14 @@ card <- p %>%
   arrange(npi, year) %>% group_by(npi) %>% slice(1) %>% ungroup()
 for (rhs in c("res_own_cath", "res_sys_share_cath",
               "fel_own_cath", "fel_sys_share_cath")) {
-  d <- card %>% filter(!is.na(.data[[rhs]]), !is.na(med_cath_lab))
+  d <- card %>% filter(!is.na(.data[[rhs]]), !is.na(train_cath_lab))
   if (nrow(d) < 200) next
-  m <- feols(as.formula(paste(rhs, "~ med_cath_lab | hrr_med_school + grad_year")),
+  m <- feols(as.formula(paste(rhs, "~ train_cath_lab | hrr_med_school + grad_year")),
              data = d, cluster = ~hrr_med_school)
   cat(sprintf("  %-22s  n=%5d  beta=%7.4f  SE=%6.4f  p=%5.3f\n",
               rhs, nrow(d),
-              coef(m)["med_cath_lab"], se(m)["med_cath_lab"],
-              fixest::pvalue(m)["med_cath_lab"]))
+              coef(m)["train_cath_lab"], se(m)["train_cath_lab"],
+              fixest::pvalue(m)["train_cath_lab"]))
 }
 
 
@@ -153,7 +138,7 @@ for (rhs in c("res_own_cath", "res_sys_share_cath",
 
 cat("\n=== Fellowship exposure: standalone + joint ===\n")
 for (m in c("fel_own_cath", "fel_sys_share_cath")) {
-  d <- p %>% filter(!is.na(.data[[m]]), !is.na(med_cath_lab))
+  d <- p %>% filter(!is.na(.data[[m]]), !is.na(train_cath_lab))
   cat(sprintf("\n%-22s  n_obs = %d  n_card = %d\n", m, nrow(d), n_distinct(d$npi)))
   cat("Standalone within-origin:\n"); print(est(run_within_origin(d, rhs = m)))
   cat("Joint with med school:\n");    print(est(run_joint(d, rhs = m)))
@@ -165,10 +150,10 @@ for (m in c("fel_own_cath", "fel_sys_share_cath")) {
 # Headline: medical school + residency own-hospital, with a second column
 # showing the same-HRR-system share. Three rows: medical school coefficient,
 # residency coefficient, joint vs standalone label.
-m1 <- run_joint(p %>% filter(!is.na(res_own_cath),       !is.na(med_cath_lab)), "res_own_cath")
-m2 <- run_joint(p %>% filter(!is.na(res_sys_share_cath), !is.na(med_cath_lab)), "res_sys_share_cath")
-m3 <- run_joint(p_clean %>% filter(!is.na(res_own_cath), !is.na(med_cath_lab)), "res_own_cath")
-m4 <- run_joint(p_clean %>% filter(!is.na(res_sys_share_cath), !is.na(med_cath_lab)), "res_sys_share_cath")
+m1 <- run_joint(p %>% filter(!is.na(res_own_cath),       !is.na(train_cath_lab)), "res_own_cath")
+m2 <- run_joint(p %>% filter(!is.na(res_sys_share_cath), !is.na(train_cath_lab)), "res_sys_share_cath")
+m3 <- run_joint(p_clean %>% filter(!is.na(res_own_cath), !is.na(train_cath_lab)), "res_own_cath")
+m4 <- run_joint(p_clean %>% filter(!is.na(res_sys_share_cath), !is.na(train_cath_lab)), "res_sys_share_cath")
 
 fmt_coef <- function(m, term) {
   td <- tidy(m)
@@ -182,7 +167,7 @@ fmt_coef <- function(m, term) {
 
 cell <- function(m, term) fmt_coef(m, term)
 n_obs  <- function(m) format(nobs(m), big.mark = ",")
-n_card <- function(d, m) format(n_distinct(d$npi[!is.na(d[[m]]) & !is.na(d$med_cath_lab)]), big.mark = ",")
+n_card <- function(d, m) format(n_distinct(d$npi[!is.na(d[[m]]) & !is.na(d$train_cath_lab)]), big.mark = ",")
 
 # Build a simple 2-panel table (full sample vs clean-only subsample),
 # 2 columns each (own-hospital, system-share).
@@ -195,10 +180,10 @@ tbl <- paste0(
   " & hospital & share & hospital & share \\\\\n",
   "\\midrule\n",
   "Medical school cath share & ",
-    cell(m1, "med_cath_lab"), " & ",
-    cell(m2, "med_cath_lab"), " & ",
-    cell(m3, "med_cath_lab"), " & ",
-    cell(m4, "med_cath_lab"), " \\\\\n",
+    cell(m1, "train_cath_lab"), " & ",
+    cell(m2, "train_cath_lab"), " & ",
+    cell(m3, "train_cath_lab"), " & ",
+    cell(m4, "train_cath_lab"), " \\\\\n",
   "Residency exposure & ",
     cell(m1, "res_own_cath"), " & ",
     cell(m2, "res_sys_share_cath"), " & ",
@@ -242,14 +227,14 @@ write_csv(robust_out, "results/tables/training-pipeline-robust.csv")
 selection_out <- map_dfr(c("res_own_cath", "res_sys_share_cath",
                            "fel_own_cath", "fel_sys_share_cath"),
                          function(rhs) {
-  d <- card %>% filter(!is.na(.data[[rhs]]), !is.na(med_cath_lab))
+  d <- card %>% filter(!is.na(.data[[rhs]]), !is.na(train_cath_lab))
   if (nrow(d) < 200) return(NULL)
-  m <- feols(as.formula(paste(rhs, "~ med_cath_lab | hrr_med_school + grad_year")),
+  m <- feols(as.formula(paste(rhs, "~ train_cath_lab | hrr_med_school + grad_year")),
              data = d, cluster = ~hrr_med_school)
   tibble(outcome   = rhs,
-         estimate  = coef(m)["med_cath_lab"],
-         std.error = se(m)["med_cath_lab"],
-         p.value   = fixest::pvalue(m)["med_cath_lab"],
+         estimate  = coef(m)["train_cath_lab"],
+         std.error = se(m)["train_cath_lab"],
+         p.value   = fixest::pvalue(m)["train_cath_lab"],
          n_obs     = nobs(m),
          n_card    = n_distinct(d$npi))
 })
