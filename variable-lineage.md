@@ -319,7 +319,7 @@ still hardcodes `beta_train = 0.059` and `beta_dest = 0.350` rather than reading
 | `4_rank.R` | `rank.tex` |
 | `5_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `training-imprint.tex` (headline 0.059 within-origin), `aha-mechanism-teaching.tex`, `persistence.csv` |
 | `6_rank_x_cath.R` | `rank-x-cath-stratified.tex`, `rank-x-cath-cells.tex`, `rank-x-cath-panel-n.csv` |
-| `7_dynamic.R` | `dynamic-path.csv`, `place-variance-path.csv`; figures `dynamic-calibration`, `place-variance-path` (betas hardcoded) |
+| `7_dynamic.R` | `dynamic-path.csv`; figure `dynamic-calibration` (betas hardcoded) |
 | `8_event_study.R` | `event-study-coefs.csv`, `event-study-pooled.csv`, `event-study-coefs-by-direction.csv`; figures `event-study`, `event-study-by-direction`, `two-peer-deviation` |
 | `9_heterogeneity.R` | `heterogeneity-train-x-dest.tex` |
 | `10_mover_balance.R` | `mover-balance.{tex,csv}`; figure `mover-selection` |
