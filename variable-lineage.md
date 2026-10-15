@@ -281,6 +281,11 @@ Raw inputs referred to below:
 - Level: episode.
 - Files: `8_patient_threshold.sas`, `vrdc/1_threshold.R`.
 
+### `Days_To_Death`, `d_death_d2`
+- Chain (`9_death_dates.sas`): for the beneficiaries in `NSTEMI_Threshold`, the earliest non-missing `BENE_DEATH_DT` across the MBSF years (the step 8 rule), minus `CLM_ADMSN_DT`; missing when no death is recorded. Saved as `PL027710.NSTEMI_Death` and exported to the container as `nstemi_death.csv`. `vrdc/1_threshold.R` left-joins it by `bene_id` (one-to-one) and sets `d_death_d2 = 1` for death within 2 days of admission, the cath window; the early-death robustness models drop those patients.
+- Level: episode.
+- Files: `9_death_dates.sas`, `vrdc/1_threshold.R`.
+
 ### `cardiologist_exposure.csv` (the upload that carries the exposure into the VRDC)
 - Chain (`code/data-build/5_exposure_upload.R`): the cardiologist-years of the analytic sample (graduation 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`) with `npi`, `year`, `hrr_practice`, `hrr_med_school`, `grad_year`, `gender`, `specialty`, `n_nstemi`, `mover`, `train_cath_lab`, `intensity_dest_loo`. `vrdc/1_threshold.R` inner-joins it to the episode file by `(npi, year)`, which applies the paper's sample restriction at the patient level, then estimates the within-origin imprint with patient controls, by `Risk_Q5`, for each cath component and for mortality.
 - Level: cardiologist-year; 10,736 rows.
@@ -320,7 +325,7 @@ still hardcodes `beta_train = 0.059` and `beta_dest = 0.350` rather than reading
 | `11_training_pipeline.R` | `training-pipeline.tex`, `training-pipeline-robust.csv`, `training-pipeline-selection.csv` |
 | `12_recent_grad_residency.R` | `training-recent-grad.tex`, `recent-grad-sample.csv` |
 | `13_permutation.R` | `permutation-summary.csv` (at `results/`, not `results/tables/`); figures `perm-null`, `perm-null-region` |
-| `vrdc/1_threshold.R` (runs inside the VRDC R container) | `threshold-coefs.csv`, `threshold-quintiles.csv` in the container's `results/`, for export |
+| `vrdc/1_threshold.R` (runs inside the VRDC R container) | `threshold-coefs.csv`, `threshold-quintiles.csv`, `threshold-tests.csv` in the container's `results/`, for export; local copies of exported files at `results/` |
 
 Removed 2026-09-25 as stale and unused: `fgw-decomp-*.{csv,tex}` in
 `results/tables/` (a decomposition step no current script produces) and Shirley's
