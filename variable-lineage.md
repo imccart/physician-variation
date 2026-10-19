@@ -282,13 +282,19 @@ Raw inputs referred to below:
 - Level: episode.
 - Files: `8_patient_threshold.sas`, `vrdc/1_threshold.R`.
 
-### `Days_To_Death`, `d_death_d2`
-- Chain (`9_death_dates.sas`): for the beneficiaries in `NSTEMI_Threshold`, the earliest non-missing `BENE_DEATH_DT` across the MBSF years (the step 8 rule), minus `CLM_ADMSN_DT`; missing when no death is recorded. Saved as `PL027710.NSTEMI_Death` and exported to the container as `nstemi_death.csv`. `vrdc/1_threshold.R` left-joins it by `bene_id` (one-to-one) and sets `d_death_d2 = 1` for death within 2 days of admission, the cath window; the early-death robustness models drop those patients.
+### `Days_To_Death`, `FU_30`, `d_death_d2`
+- Chain (`9_death_dates.sas`): for the beneficiaries in `NSTEMI_Threshold`, the earliest non-missing `BENE_DEATH_DT` across the MBSF years (the step 8 rule), minus `CLM_ADMSN_DT`; missing when no death is recorded. `FU_30 = (CLM_ADMSN_DT <= MDY(12, 1, 2018))` marks admissions with 30 days of follow-up inside the data, the 30-day analogue of step 8's `FU_365`. Saved as `PL027710.NSTEMI_Death` and exported to the container as `nstemi_death.csv`. `vrdc/1_threshold.R` left-joins it by `bene_id` (one-to-one), fits the 30-day mortality models and the quintile 30-day death rate on `fu_30 = 1` rows, and sets `d_death_d2 = 1` for death within 2 days of admission, the cath window; the early-death robustness models drop those patients.
 - Level: episode.
 - Files: `9_death_dates.sas`, `vrdc/1_threshold.R`.
 
+### `Prior_FFS_Full`, `Prior_IP_Stays`, `Prior_IP_Days`, `Prior_IP_Pmt`, `Prior_Carrier_Clms`, `Prior_Carrier_Pmt`, `prior_any_ip`
+- Raw: inpatient RIF `CLM_ADMSN_DT`, `NCH_BENE_DSCHRG_DT`, `CLM_PMT_AMT`; carrier line `CLM_ID`, `CLM_THRU_DT`, `LINE_NCH_PMT_AMT`; MBSF `BENE_HMO_CVRAGE_TOT_MONS`, `BENE_SMI_CVRAGE_TOT_MONS`.
+- Chain (`10_prior_utilization.sas`): for the beneficiaries in `NSTEMI_Threshold`, inpatient stays with a discharge date in the 365 days before the index `CLM_ADMSN_DT` (count, discharge minus admission summed as days, `CLM_PMT_AMT` summed) and carrier claims with `CLM_THRU_DT` in the same window (distinct `CLM_ID` count, `LINE_NCH_PMT_AMT` summed), each aggregated by year or month and then by beneficiary; zero when none. `Prior_FFS_Full` applies the step 3 coverage rule (12 Part B months, 0 HMO months) to the MBSF year before `AMI_Year`, and is 0 for 2008 admissions. Saved as `PL027710.NSTEMI_Prior`, exported to the container as `nstemi_prior.csv`. `vrdc/1_threshold.R` left-joins it by `bene_id` (one-to-one), adds `prior_any_ip = (prior_ip_stays > 0)`, and regresses each measure on exposure over `prior_ffs_full = 1` rows as a placebo for the mortality models.
+- Level: episode.
+- Files: `10_prior_utilization.sas`, `vrdc/1_threshold.R`.
+
 ### `cardiologist_exposure.csv` (the upload that carries the exposure into the VRDC)
-- Chain (`code/data-build/6_exposure_upload.R`): the cardiologist-years of the analytic sample (graduation 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`) with `npi`, `year`, `hrr_practice`, `hrr_med_school`, `grad_year`, `gender`, `specialty`, `n_nstemi`, `mover`, `train_cath_lab`, `intensity_dest_loo`. `vrdc/1_threshold.R` inner-joins it to the episode file by `(npi, year)`, which applies the paper's sample restriction at the patient level, then estimates the within-origin imprint with patient controls, by `Risk_Q5`, for each cath component and for mortality.
+- Chain (`code/data-build/6_exposure_upload.R`): the cardiologist-years of the analytic sample (graduation 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`) with `npi`, `year`, `hrr_practice`, `hrr_med_school`, `grad_year`, `gender`, `specialty`, `n_nstemi`, `mover`, `train_cath_lab`, `intensity_dest_loo`. `vrdc/1_threshold.R` inner-joins it to the episode file by `(npi, year)`, which applies the paper's sample restriction at the patient level, then estimates the within-origin imprint pooled (patient controls) and by `Risk_Q5` (risk-quintile fixed effects in place of the controls) for each cath component, and 30- and 365-day mortality pooled, by quintile, within cath status, and by 2SLS with exposure instrumenting the cath.
 - Level: cardiologist-year; 15,084 rows.
 - Files: `6_exposure_upload.R`, `vrdc/1_threshold.R`.
 
@@ -326,6 +332,7 @@ from `event-study-pooled.csv` rather than carrying them as literals.
 | `12_recent_grad_residency.R` | `training-recent-grad.tex`, `recent-grad-sample.csv` |
 | `13_permutation.R` | `permutation-summary.csv` (at `results/`, not `results/tables/`); figures `perm-null`, `perm-null-region` |
 | `vrdc/1_threshold.R` (runs inside the VRDC R container) | `threshold-coefs.csv`, `threshold-quintiles.csv`, `threshold-tests.csv` in the container's `results/`, for export; local copies of exported files at `results/` |
+| `14_patient_risk.R` | `patient-risk.tex`, `patient-risk-quintiles.csv`; figure `patient-risk-quintiles` (all from the three exported `results/threshold-*.csv` files) |
 
 Removed 2026-09-25 as stale and unused: `fgw-decomp-*.{csv,tex}` in
 `results/tables/` (a decomposition step no current script produces) and Shirley's

@@ -15,8 +15,10 @@
 /* index admission to death (missing if no death is recorded). The     */
 /* death date follows the rule in 8_patient_threshold.sas, the earliest */
 /* non-missing BENE_DEATH_DT across the MBSF years, so the days line up */
-/* with D_Death_30 and D_Death_365. Joined to the episode file by        */
-/* BENE_ID in code/analysis/vrdc/1_threshold.R.                          */
+/* with D_Death_30 and D_Death_365. FU_30 marks admissions through      */
+/* December 1 of the last MBSF year, where 30 days of follow-up are     */
+/* observable (the 30-day analogue of FU_365 in step 8). Joined to the  */
+/* episode file by BENE_ID in code/analysis/vrdc/1_threshold.R.          */
 
 %include "0_config.sas";
 
@@ -60,13 +62,14 @@ QUIT;
 
 
 /* ============================================================ */
-/* Step 9b: Days to death and save                               */
+/* Step 9b: Days to death, 30-day follow-up flag, and save       */
 /* ============================================================ */
 
 PROC SQL;
     CREATE TABLE PL027710.NSTEMI_Death AS
     SELECT t.BENE_ID,
-           d.Death_Dt - t.CLM_ADMSN_DT AS Days_To_Death
+           d.Death_Dt - t.CLM_ADMSN_DT AS Days_To_Death,
+           (t.CLM_ADMSN_DT <= MDY(12, 1, &year_end)) AS FU_30
     FROM PL027710.NSTEMI_Threshold AS t
     LEFT JOIN WORK.Death AS d
         ON t.BENE_ID = d.BENE_ID;
@@ -77,11 +80,12 @@ QUIT;
 /* Diagnostics                                                   */
 /* ============================================================ */
 
-TITLE "Deaths by days from admission (0-2 days, and agreement with step 8 flags)";
+TITLE "Deaths by days from admission (0-2 days, 30-day follow-up, agreement with step 8 flags)";
 PROC SQL;
     SELECT COUNT(*) AS N_Episodes,
            COUNT(DISTINCT n.BENE_ID) AS N_Benes,
            SUM(n.Days_To_Death NE . AND n.Days_To_Death <= 2) AS N_Death_D2,
+           SUM(n.FU_30 = 0) AS N_No_FU_30,
            SUM((n.Days_To_Death NE . AND n.Days_To_Death <= 30) NE t.D_Death_30)
                AS N_Disagree_Death_30
     FROM PL027710.NSTEMI_Death AS n
