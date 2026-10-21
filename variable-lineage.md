@@ -294,7 +294,7 @@ Raw inputs referred to below:
 - Files: `10_prior_utilization.sas`, `vrdc/1_threshold.R`.
 
 ### `cardiologist_exposure.csv` (the upload that carries the exposure into the VRDC)
-- Chain (`code/data-build/6_exposure_upload.R`): the cardiologist-years of the analytic sample (graduation 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`) with `npi`, `year`, `hrr_practice`, `hrr_med_school`, `grad_year`, `gender`, `specialty`, `n_nstemi`, `mover`, `train_cath_lab`, `intensity_dest_loo`. `vrdc/1_threshold.R` inner-joins it to the episode file by `(npi, year)`, which applies the paper's sample restriction at the patient level, then estimates the within-origin imprint pooled (patient controls) and by `Risk_Q5` (risk-quintile fixed effects in place of the controls) for each cath component, and 30- and 365-day mortality pooled, by quintile, within cath status, and by 2SLS with exposure instrumenting the cath.
+- Chain (`code/data-build/6_exposure_upload.R`): the cardiologist-years of the analytic sample (graduation 1983-2006, non-missing `train_cath_lab`, `mean_resid_cath`, `intensity_dest_loo`) with `npi`, `year`, `hrr_practice`, `hrr_med_school`, `grad_year`, `gender`, `specialty`, `n_nstemi`, `mover`, `train_cath_lab`, `intensity_dest_loo`. `vrdc/1_threshold.R` inner-joins it to the episode file by `(npi, year)`, which applies the paper's sample restriction at the patient level, then estimates the within-origin effect on cath within 2 days as an average (patient controls) and by `Risk_Q5` (risk-quintile fixed effects in place of the controls), 30- and 365-day mortality the same two ways, each also with admitting-hospital fixed effects, the pre-admission placebo, and the cath and mortality models refit on the prior-FFS sample without and with the six prior-year utilization measures as controls (`_priorsample` and `_prior` rows).
 - Level: cardiologist-year; 15,084 rows.
 - Files: `6_exposure_upload.R`, `vrdc/1_threshold.R`.
 
@@ -332,7 +332,7 @@ from `event-study-pooled.csv` rather than carrying them as literals.
 | `12_recent_grad_residency.R` | `training-recent-grad.tex`, `recent-grad-sample.csv` |
 | `13_permutation.R` | `permutation-summary.csv` (at `results/`, not `results/tables/`); figures `perm-null`, `perm-null-region` |
 | `vrdc/1_threshold.R` (runs inside the VRDC R container) | `threshold-coefs.csv`, `threshold-quintiles.csv`, `threshold-tests.csv` in the container's `results/`, for export; local copies of exported files at `results/` |
-| `14_patient_risk.R` | `patient-risk.tex`, `patient-risk-quintiles.csv`; figure `patient-risk-quintiles` (all from the three exported `results/threshold-*.csv` files) |
+| `14_patient_risk.R` | `patient-risk.tex`, `patient-mortality.tex`, `patient-risk-quintiles.tex`, `patient-risk-quintiles.csv`; figure `patient-risk-quintiles` (all from the three exported `results/threshold-*.csv` files) |
 
 Removed 2026-09-25 as stale and unused: `fgw-decomp-*.{csv,tex}` in
 `results/tables/` (a decomposition step no current script produces) and Shirley's
