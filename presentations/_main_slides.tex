@@ -7,7 +7,7 @@
 \usepackage{amsmath}
 \usepackage{bbm}
 \usepackage[style=apa]{biblatex}
-\addbibresource{bib/20251117.bib}
+\addbibresource{paper/BibTeX_Library.bib}
 
 \usepackage{booktabs}
 \newcommand{\tabitem}{~~\llap{\textbullet}~~}
@@ -24,6 +24,7 @@
 \usepackage{fdsymbol}
 \usepackage{multirow}
 \usepackage{longtable}
+\usepackage{dsfont}
 
 \usepackage[export]{adjustbox}
 \tikzset{ffgcaption/.style={%
@@ -120,13 +121,13 @@
   {\multicitedelim} 
   {\usebibmacro{postnote}} 
 
-
 \usepackage{xspace}
 \newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
 
-\title{To Operate or Not to Operate}
-\subtitle{The Effects of Medical School on Current Treatment Intensity}
-\author{Shirley Cai}
+\graphicspath{{./presentations/image/}} 
+
+\title{Medical School Environments and Physician Treatment Styles}
+\author{Shirley Cai and Ian McCarthy}
 \date{\today}
 \institute{Emory University\\Department of Economics}
 % \titlegraphic{\hfill\includegraphics[height=1.5cm]{logo.pdf}}
@@ -141,225 +142,169 @@
 
 \maketitle
 
-\begin{frame}{Physician agency problem}
-    TODO: Getting a second opinion graphic 
+% Framing: Fundamental gap in our understanding of how treatment styles develop
+\begin{frame}{}
+
 \end{frame}
 
-\begin{frame}{Physician agency problem}
-    \metroset{block = fill}
-    \textbf{Physician treatment decisions encapsulate a principal-agent problem.}
-    
-    \begin{figure}
-        \centering
-        \includegraphics[width=1\linewidth]{image/gap-factors.png}
-    \end{figure}
+\begin{frame}{Research question}
 
-    $\to$ The actual treatment chosen may be very different from the patient's optimal treatment.
 \end{frame}
 
-\begin{frame}{Surgeon training pipeline}
-    \begin{figure}
-        \centering
-        \includegraphics[width=\linewidth]{image/train-pipe-surg.png}
-    \end{figure}
-\end{frame}
-
-\begin{frame}{Research question} \label{rq}
-    \metroset{block = fill}
-    How does the average treatment intensity around a physician's medical school impact their current practice intensity post-training?
-
-    \vspace{5mm}
-    \begin{block}{Treatment intensity}
-        For a given year, 
-            \begin{equation*}
-                (\text{intensity}) = \frac{\text{number of surgeries}}{\text{number of unique patients}}.
-            \end{equation*}
-        \hyperlink{intensity}{\beamerbutton{Intensity specifics}}
-    \end{block}
-\end{frame}
-
-\begin{frame}{Policy implications}
-    Determining the importance of formal training among supply-side factors informs policy design. 
-    \begin{figure}
-        \centering
-        \includegraphics[width=\linewidth]{image/gap-supply-side.png}
-    \end{figure}
-\end{frame}
-
-\begin{frame}{Previous literature}
+\begin{frame}{This paper}
     \begin{itemize}
-        \item Variation in physician practice style exists despite medical standards
-            \begin{itemize}
-                \item Evidenced by geographic variation \textcolor{gray}{\scriptsize\textcite{finkelstein_sources_2016}}
-                \item Drives differences in healthcare utilization \textcolor{gray}{\scriptsize\textcite{badinski_geographic_2023}, \textcite{cutler_physician_2019}}
-            \end{itemize}
-        
-        \vspace{2.5mm}
-        \item Many factors influence practice style once a physician begins practicing 
-            \begin{itemize}
-                \item Financial incentives \textcolor{gray}{\scriptsize\textcite{clemens_physicians_2014}}
-                \item New research \textcolor{gray}{\scriptsize\textcite{decicca_how_2024}}
-                \item Peers and practice environment \textcolor{gray}{\scriptsize\textcite{epstein_formation_2009}, \textcite{molitor_evolution_2018}}
-            \end{itemize}
-
-        \vspace{2.5mm}
-        \item But there's limited evidence on the impact of formal training
-            \begin{itemize}
-                \item Variance decomposition \textcolor{gray}{\scriptsize\textcite{epstein_formation_2009}}
-                \item Ranking \textcolor{gray}{\scriptsize\textcite{doyle_returns_2010}, \textcite{schnell_addressing_2018}}
-                \item Interaction with racial disparities \textcolor{gray}{\scriptsize\textcite{kissel_role_2025}}
-            \end{itemize}
+        \item 
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Contribution}
-    Current literature is unable to comment how the knowledge gained in medical school shapes a physician's current practice.
-    \begin{itemize} 
-        \item[$\to$] Create a measure of treatment intensity in medical school market that quantifies the ``standard of care" taught in medical school
-        \item[$\to$] Assess how similarly a surgeon practices compared to their alma mater market
-    \end{itemize}
-
+\begin{frame}{Literature review}
     
 \end{frame}
 
-\begin{frame}{Data}
-    \begin{enumerate}
-        \item Physician's current treatment intensity 
-            \onslide<2>{
-            \begin{itemize}
-                \item Medicare Part B Public Use Files (2013-2022)
-            \end{itemize}}
-            \vspace{1mm}
-        \item Treatment intensity at physician's medical school 
-            \onslide<2>{
-            \begin{itemize}
-                \item Medicare Part B Public Use Files (2013-2022)
-            \end{itemize}}
-            \vspace{1mm}
-        \item Physician's current practice location 
-            \onslide<2>{
-            \begin{itemize}
-                \item MDPPAS (2013-2018) and Physician Compare (2019-2022)
-            \end{itemize}}
-            \vspace{1mm}
-        \item Physician's medical school and graduation year
-            \onslide<2>{
-            \begin{itemize}
-                \item Physician Compare (2015-2023)
-            \end{itemize}}
-    \end{enumerate} 
-
-\end{frame}
-
-\begin{frame}{HRR treatment intensity in 2013}
-    \vspace{-20mm}
-    \begin{figure}
-        \centering
-        \includegraphics[width=\textwidth]{presentation/image/intensity/surg2013.png}
-    \end{figure}
-\end{frame}
-
-\begin{frame}{HRR treatment intensity in 2019}
-    \vspace{-20mm}
-    \begin{figure}
-        \centering
-        \includegraphics[width=\textwidth]{presentation/image/intensity/surg2018.png}
-    \end{figure}
-\end{frame}
-
-\fullframegraphic[]{image/case-study-1.png}
-\fullframegraphic[]{image/case-study-3.png}
-
-\begin{frame}{Empirical strategy: Level of intensity}
-    \metroset{block=fill}
-
-    In year $t$, for surgeon $i$ who graduated medical school in year $t_g$,   
-        \begin{align*}
-            \textit{intensity}_{it} = 
-            &\beta(\textit{mover}_i \times \textit{med school HRR intensity}_{it_g}) \\
-            &+ \psi\textit{med school HRR intensity}_{it_g} + \theta X_i + \eta M_{it} \\
-            &+ \{\textit{current HRR FEs}\}_i + \{\textit{year FEs}\}_t + \epsilon_{it},
-        \end{align*}
-    where
+\begin{frame}{Preview of results}
+    Medical school has a lasting impact
         \begin{itemize}
-            \item $X_i$ includes physician characteristics: gender, graduation year, subspecialty
-            \item $M_{it}$ includes physician's Medicare patient population characteristics: age, race, gender, dual-enrollment, risk score
+            \item 10pp increase in cath lab availability during training increases later cath rates by 0.58pp
+            \item Effect is concentrated among interventional cardiologists
         \end{itemize}
-\end{frame}
 
-\begin{frame}{Empirical strategy: Change in intensity}
-    \metroset{block=fill}
-
-    In year $t$, for surgeon $i$ who graduated medical school in year $t_g$,   
-        \begin{align*}
-            \textit{intensity}_{it} = 
-            &\beta(\textit{mover}_i \times \textit{change in intensity}_{it,t_g}) \\
-            &+ \psi\textit{med school HRR intensity}_{it_g} + \theta X_i + \eta M_{it} \\
-            &+ \{\textit{current HRR FEs}\}_i + \{\textit{year FEs}\}_t + \epsilon_{it},
-        \end{align*}
-    where
+    \vspace{5mm}
+    Training imprint does not go away after adjusting for other aspects of training
         \begin{itemize}
-            \item $\textit{change in intensity}_{it, t_g} = \textit{current HRR intensity}_{it}
-            - \textit{med school HRR intensity}_{it_g}$
-            \item $X_i$ includes physician characteristics: gender, graduation year, subspecialty
-            \item $M_{it}$ includes physician's Medicare patient population characteristics: age, race, gender, dual-enrollment, risk score
+            \item Medical school quality
+            \item Residency
         \end{itemize}
+
+    \vspace{5mm}
+    Compounds into a long-run multiplier of 1.7 when combined with peer effects
 \end{frame}
 
-\begin{frame}{Threats to validity}
-    \begin{enumerate}
-        \item Differential selection into moving 
-            \begin{itemize}
-                \item[$\to$] Control for observable physician characteristics
-            \end{itemize}
-
-        \vspace{2.5mm}
-        \item Movers only go to markets with intensity similar to their medical school market
-            \begin{itemize}
-                \item[$\to$] Distribution of mover differences between med school and destination markets is more spread out than stayers 
-                \item[$\to$] Within movers, med school intensity and destination intensity is not correlated
-            \end{itemize}
-    \end{enumerate}
-\end{frame}
-
-\begin{frame}{Distribution of move ``distance"}
+\begin{frame}{Treatment setting}
     \begin{figure}
         \centering
-        \includegraphics[width=0.7\linewidth]{presentation/image/diff_dest_med.png}
+        \includegraphics[width=\linewidth]{stemi.png}
     \end{figure}
 \end{frame}
 
-\begin{frame}{Movers do not stay in similarly intense markets}
+% TODO: Revise to make it more along the lines of cath or no cath
+\begin{frame}{Treatment setting}
     \begin{figure}
         \centering
-        \includegraphics[width=0.7\linewidth]{presentation/image/dest_med.png}
+        \includegraphics[width=\linewidth]{heart-attack.png}
     \end{figure}
 \end{frame}
 
-\begin{frame}{Level of medical school intensity has no effect}
-    \vspace{5mm}
-    \input{presentation/tables/res-main-short.tex}
+% TODO: Redo this image. I don't like it much
+\begin{frame}{Data: Treatment style}
+    Cardiologist cath rate calculated from 100\% FFS Medicare claims (2008-2018)
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{medicare-claims.png}
+    \end{figure}
 \end{frame}
 
-\begin{frame}{Difference in intensity shows some effect}
+\begin{frame}{Data: Treatment style}
+    Treatment style = Mean \textbf{residualized cath rate} within two days of admission
+
+    \vspace{10mm}
+    Calculate patient-level residual $\varepsilon$ from linear probability model
+        \begin{equation*}
+            \mathds{1}\{\text{cath}\} = \{\text{Elixhauser comorbitities}\} + \{\text{year FE}\} + \varepsilon
+        \end{equation*}
+    Aggregate to cardiologist-year level
+\end{frame}
+
+% TODO: Can this become a picture
+\begin{frame}{Data: Training environment}
+    \begin{itemize}
+        \item Identify \textbf{medical school and graduation year} from CMS Physician Compare
+        \item Map medical school ZIP code to \textbf{HRR} using Dartmouth Atlas crosswalk
+        \item Link to \textbf{cath lab data} from AHA Annual Survey
+    \end{itemize}
+
+    \vspace{10mm}
+    Medical school environment = \textbf{Share of hospitals with a cath lab} in medical school HRR in first year of attendance
+\end{frame}
+
+\begin{frame}{Additional data}
+    \textbf{On cardiologists}
+    \begin{itemize}
+        \item MD-PPAS: Specialty, primary practice location
+        \item Doximity: Residency and fellowship program, graduation year
+    \end{itemize}
+
     \vspace{5mm}
-    \input{presentation/tables/res-delta-short.tex}
+    \textbf{On medical schools}
+    \begin{itemize}
+        \item NIH ExPORTER: NIH funding by medical school and year
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{}
+    % Variation over HRR residualized cath rates over time and space
+\end{frame}
+
+% Say: We observe the treatment decisions of cardiologists who graduated between 1983 and 2006 for claims billed during 2008 to 2018.
+
+\begin{frame}{Empirical strategy}
+    \begin{equation*}
+        y_{it} = \beta_\text{train}\tau_i + \theta\bar{y}_{-i,t} + \rho_{m(i)} + \delta_{d(i,t)} + \gamma_t + \epsilon_{it}
+    \end{equation*}
+    \begin{itemize}
+        \item $y_{it}$ = mean residualized cath rate of cardiologist $i$ in year $t$
+        \item $\tau_i$ = training-period cath lab share in cardiologist $i$'s medical school HRR
+        \item $\bar{y}_{-i,t}$ = leave-one-out mean residualized cath rate of other cardiologists in cardiologist $i$'s practice HRR in year $t$
+        \item $\rho_{m(i)}$ = medical school HRR fixed effect
+        \item $\delta_{d(i,t)}$ = current practice HRR fixed effect
+        \item $\gamma_t$ = year fixed effect
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Empirical strategy}
+    Using a mover design
+        \begin{itemize}
+            \item 
+        \end{itemize}
+
+    \vspace{10mm}
+    \textbf{Identifying variation:} Different cath lab exposure among cardiologists who attended medical school in the same HRR but graduated in different years
+    
+    \textbf{Identifying assumption:} Within-HRR cath lab adoption is uncorrelated with changes in other cohort-level determinants of practice intensity
+\end{frame}
+
+\begin{frame}{Movers vs stayers}
+    
+\end{frame}
+
+\begin{frame}{Training environment impacts later treatment decisions}
+    
+\end{frame}
+
+\begin{frame}{Effect is concentrated among interventional cardiologists}
+    
+\end{frame}
+
+\begin{frame}{Training effect persists after controlling for medical school rank}
+    
+\end{frame}
+
+\begin{frame}{Training effect persists after controlling for medical school rank}
+    
+\end{frame}
+
+\begin{frame}{What about residency?}
+    
+\end{frame}
+
+% TODO: Change slide title. I don't think this is what we are actually saying
+\begin{frame}{Can the training effect modify existing variation in treatment style?}
+    \begin{equation*}
+        \Delta y^{\ast} = \frac{\beta_{\text{train}} \cdot \Delta\tau}{1 - \beta_{\text{dest}}}
+    \end{equation*}
 \end{frame}
 
 \begin{frame}{Conclusion}
-    Differential exposure to treatment intensity in a surgeon's medical market does not have an effect on a their current practice. 
-        \begin{itemize}
-            \item Information conveyed about surgery is relatively standard across all medical schools. 
-            \item Medical school establishes a foundational knowledge base, but practical knowledge is developed in postgraduate training. 
-        \end{itemize}
-
-    \vspace{2.5mm}
-    \textbf{Where this is headed}
-        \begin{itemize}
-            \item Less noisy measures of treatment intensity using Medicare claims data 
-            \item Less noisy measure of exposure during medical school using rotation hospital sites 
-            \item Inclusion of residency
-        \end{itemize}
+    
 \end{frame}
 
 \begin{frame}[standout]
@@ -371,19 +316,12 @@
 
 \appendix
 
-\begin{frame}{Treatment intensity measure} \label{intensity}
-    \begin{itemize}
-        \item Based on code description, I categorize all CPT codes billed to a surgeon as surgery, diagnostic procedure, office visit, or ``dependent" service. 
-        \item All pathology and lab codes are assigned as diagnosis. 
-        \item All patient-facing or patient-interaction codes are assigned office visit. 
-        \item Dependent services include procedures that are not stand-alone and often billed together with surgery, e.g. anesthesia. 
-    \end{itemize}
-
-    \hyperlink{rq}{\beamerbutton{Back}}
+\begin{frame}{Summary statistics}
+    
 \end{frame}
 
-\begin{frame}[allowframebreaks]{References}
-    \printbibliography[heading=none]
-\end{frame}
+%\begin{frame}[allowframebreaks]{References}
+%    \printbibliography[heading=none]
+%\end{frame}
 
 \end{document}
