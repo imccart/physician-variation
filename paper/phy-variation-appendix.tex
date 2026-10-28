@@ -61,7 +61,7 @@ We restrict to cardiologist-years with at least 11 NSTEMI patients. The threshol
 
 Our outcome is the volume-weighted mean residualized cath-within-two-days indicator at the cardiologist-year level. At the patient level, we estimate a linear probability model regressing the cath-within-two-days indicator on age, sex, race, dual eligibility, the 31 Elixhauser comorbidity flags, and year fixed effects, retaining the residual as the patient-level outcome. We then aggregate to the cardiologist-year by taking the volume-weighted mean residual. The residualization removes mechanical variation across cardiologists that would arise from differences in patient comorbidity mix.
 
-We construct the Elixhauser comorbidities by matching the diagnosis codes on the NSTEMI admission claim, by leading substring, to a lookup that maps ICD-9 and ICD-10 code prefixes to the 31 Elixhauser categories. A given diagnosis code may map to multiple Elixhauser categories, so the lookup is implemented as a join rather than a categorical recoding.
+We construct the Elixhauser comorbidities by matching the diagnosis codes on the NSTEMI admission claim, by leading substring, to a lookup that maps ICD-9 and ICD-10 code prefixes to the 31 Elixhauser categories \citep{quan2005}. A given diagnosis code may map to multiple Elixhauser categories, so the lookup is implemented as a join rather than a categorical recoding.
 
 \subsection{Medical School-to-HRR Crosswalk}
 

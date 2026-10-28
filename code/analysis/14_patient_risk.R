@@ -178,8 +178,6 @@ quintiles_out <- quintiles %>%
   transmute(risk_q5, n,
             mean_pred_death = round(mean_pred_death, 3),
             cath_d2 = round(cath_d2, 3),
-            cath_d2_dxonly = round(cath_d2_dxonly, 3),
-            cath_d2_revasc = round(cath_d2_revasc, 3),
             death_30 = round(death_30, 3),
             death_365 = round(death_365, 3))
 write_csv(quintiles_out, "results/tables/patient-risk-quintiles.csv")
