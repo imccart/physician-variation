@@ -138,27 +138,73 @@
 %\includegraphics[height=0.55cm]{EU_hz_rev.png}
 \end{textblock*}}
 
+\metroset{block=fill}
+
 \begin{document}
 
 \maketitle
 
-% Framing: Fundamental gap in our understanding of how treatment styles develop
-\begin{frame}{}
-
+% Framing: We don't know how training shapes practice style
+\begin{frame}[plain]{}
+    \begin{quote}
+        ...to what extent are physician beliefs about what constitutes clinically appropriate care primarily forged during training and to what extent are they potentially malleable to subsequent information...?
+    \end{quote}
+    \hfill{\small -- Finkelstein and Skinner, ``Regional Variations and Productivity Puzzles in Health Care"}
 \end{frame}
 
-\begin{frame}{Research question}
+\begin{frame}[plain]{}
+    \textbf{What we know}
+        \begin{itemize}
+            \item A third of geographic variation in health care utilization is explained by physician treatment style \textcolor{gray}{\scriptsize\textcite{badinski2023}}
+            \item Physicians adopt the practice style norms of their market after moving \textcolor{gray}{\scriptsize\textcite{molitor2018}}
+        \end{itemize}
 
+    \vspace{10mm}
+    \textbf{What we don't know} 
+        \begin{itemize}
+            \item How much of practice style is set during training? 
+        \end{itemize}
 \end{frame}
 
 \begin{frame}{This paper}
+    We ask whether training environment has a lasting impact on later-career treatment decisions.
+
+    \vspace{5mm}
     \begin{itemize}
-        \item 
+        \item \textbf{Training environment:} Medical school HRR cath lab exposure
+        \item \textbf{Treatment decision:} Invasive treatment in partial blockage heart attacks
+        \item \textbf{Methodology:} Mover design
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Literature review}
-    
+    Well-documented differences in physician practice style and health care utilization
+        \begin{itemize}
+            \item Evidenced by geographic variation in health care utilization \textcolor{gray}{\scriptsize\textcite{finkelstein2016}, \textcite{cutler2019}. \textcite{badinski2023}}
+            \item Practice style evolution caused by peer effects \textcolor{gray}{\scriptsize\textcite{molitor2018}}, financial incentives \textcolor{gray}{\scriptsize\textcite{clemens_physician_2024}}, and new research \textcolor{gray}{\scriptsize\textcite{decicca_how_2024}}
+        \end{itemize}
+
+    \vspace{5mm}
+    Limited evidence on the role of training in forming practice style
+        \begin{itemize}
+            \item Relies on rank as a proxy for quality \textcolor{gray}{\scriptsize\textcite{doyle_jr_returns_2010}, \textcite{schnell2018}}
+            \item Variation not explained by residency program \textcolor{gray}{\scriptsize\textcite{epstein2009}}
+        \end{itemize}
+\end{frame}
+
+% TODO: Add broader human capital implications
+\begin{frame}{Contribution}
+    Identify a specific channel through which medical school impacts practice
+        \begin{itemize}
+            \item Quantify medical school environment using exposure to procedural technology 
+            \item Show that the training effect from that exposure lasts when controlling for rank
+        \end{itemize}
+
+    \vspace{5mm}
+    Human capital formation: Initial training vs. accrued experience 
+        \begin{itemize}
+            \item Isolate training effect from current market effects
+        \end{itemize}
 \end{frame}
 
 \begin{frame}{Preview of results}
@@ -166,17 +212,15 @@
         \begin{itemize}
             \item 10pp increase in cath lab availability during training increases later cath rates by 0.58pp
             \item Effect is concentrated among interventional cardiologists
+            \item Does not go away after controlling for other aspects (med school quality, residency)
         \end{itemize}
 
     \vspace{5mm}
-    Training imprint does not go away after adjusting for other aspects of training
+    Peer effects compound the impact 
         \begin{itemize}
-            \item Medical school quality
-            \item Residency
+            \item If exposure rises for a whole peer group...
+            \item 10pp increase in cath lab availability during training increases later cath rates by 0.97pp
         \end{itemize}
-
-    \vspace{5mm}
-    Compounds into a long-run multiplier of 1.7 when combined with peer effects
 \end{frame}
 
 \begin{frame}{Treatment setting}
@@ -194,57 +238,59 @@
     \end{figure}
 \end{frame}
 
-% TODO: Redo this image. I don't like it much
 \begin{frame}{Data: Treatment style}
-    Cardiologist cath rate calculated from 100\% FFS Medicare claims (2008-2018)
-    \begin{figure}
-        \centering
-        \includegraphics[width=\linewidth]{medicare-claims.png}
-    \end{figure}
-\end{frame}
-
-\begin{frame}{Data: Treatment style}
-    Treatment style = Mean \textbf{residualized cath rate} within two days of admission
-
-    \vspace{10mm}
-    Calculate patient-level residual $\varepsilon$ from linear probability model
-        \begin{equation*}
-            \mathds{1}\{\text{cath}\} = \{\text{Elixhauser comorbitities}\} + \{\text{year FE}\} + \varepsilon
-        \end{equation*}
-    Aggregate to cardiologist-year level
-\end{frame}
-
-% TODO: Can this become a picture
-\begin{frame}{Data: Training environment}
     \begin{itemize}
-        \item Identify \textbf{medical school and graduation year} from CMS Physician Compare
-        \item Map medical school ZIP code to \textbf{HRR} using Dartmouth Atlas crosswalk
-        \item Link to \textbf{cath lab data} from AHA Annual Survey
+        \item \textbf{100\% FFS Medicare claims} (2008-2018): Cath decisions within two days of admission
+        \item Restricted to first-time NSTEMI patients 
+        \item Residualized for patient risk (Elixhauser comorbidities) \quad\hyperlink{residualize}{\beamerbutton{Details}}
     \end{itemize}
 
     \vspace{10mm}
-    Medical school environment = \textbf{Share of hospitals with a cath lab} in medical school HRR in first year of attendance
+    \begin{block}{Treatment style}
+        $y_{it}$ = mean residualized cath rate of cardiologist $i$ in year $t$
+    \end{block}
 \end{frame}
 
-\begin{frame}{Additional data}
+\begin{frame}{Data: Training environment}
+    \begin{itemize}
+        \item \textbf{CMS Physician Compare}: Medical school and graduation year
+        \item \textbf{AHA Annual Survey}: Cath lab availability
+    \end{itemize}
+
+    \vspace{10mm}
+    \begin{block}{Medical school environment}
+        $\tau_i$ = share of hospitals with a cath lab in cardiologist $i$'s medical school HRR in the year after matriculation
+    \end{block}
+\end{frame}
+
+\begin{frame}{Additional data sources}
     \textbf{On cardiologists}
     \begin{itemize}
-        \item MD-PPAS: Specialty, primary practice location
-        \item Doximity: Residency and fellowship program, graduation year
+        \item \textbf{MD-PPAS}: Specialty, primary practice location
+        \item \textbf{Doximity}: Residency and fellowship program, graduation year
     \end{itemize}
 
     \vspace{5mm}
     \textbf{On medical schools}
     \begin{itemize}
-        \item NIH ExPORTER: NIH funding by medical school and year
+        \item \textbf{NIH ExPORTER}: NIH funding by medical school and year
+        % Blue Ridge Institute for Medical Research (2001-present)
     \end{itemize}
 \end{frame}
 
-\begin{frame}{}
-    % Variation over HRR residualized cath rates over time and space
-\end{frame}
+% TODO: Would a 'tying all the data pieces together' slide be useful
 
 % Say: We observe the treatment decisions of cardiologists who graduated between 1983 and 2006 for claims billed during 2008 to 2018.
+
+\begin{frame}{Summary statistics}
+    \centering
+    \input{presentations/tables/summary_cardiologist}
+\end{frame}
+
+\begin{frame}{Summary statistics}
+    \centering
+    \input{presentations/tables/summary_cardiologist_year}
+\end{frame}
 
 \begin{frame}{Empirical strategy}
     \begin{equation*}
@@ -261,50 +307,110 @@
 \end{frame}
 
 \begin{frame}{Empirical strategy}
-    Using a mover design
-        \begin{itemize}
-            \item 
-        \end{itemize}
-
-    \vspace{10mm}
     \textbf{Identifying variation:} Different cath lab exposure among cardiologists who attended medical school in the same HRR but graduated in different years
-    
+
+    \vspace{5mm}
     \textbf{Identifying assumption:} Within-HRR cath lab adoption is uncorrelated with changes in other cohort-level determinants of practice intensity
 \end{frame}
 
+% TODO: Threats to validity
+
 \begin{frame}{Movers vs stayers}
-    
+    \centering
+    \input{results/tables/balance}
 \end{frame}
 
-\begin{frame}{Training environment impacts later treatment decisions}
-    
+\begin{frame}[label=training]{Training environment impacts later treatment decisions}
+    \centering
+    \input{presentations/tables/training_imprint}
+
+    \vspace{2.5mm}
+    \hyperlink{training-no-med-hrr}{\beamerbutton{No med school HRR FE}}
+    \hyperlink{training-robust}{\beamerbutton{Robustness}}
 \end{frame}
 
+% TODO: Can I just show baseline (running preferred parsimonious specification)?
 \begin{frame}{Effect is concentrated among interventional cardiologists}
-    
+    \centering
+    \input{results/tables/aha-training-by-subspecialty}
+\end{frame}
+
+\begin{frame}[label=rank]{Training effect persists after controlling for medical school rank}
+    \centering
+    \input{presentations/tables/rank}
+
+    \vspace{2.5mm}
+    \hyperlink{rank-tiers}{\beamerbutton{Using rank tier indicators}}
 \end{frame}
 
 \begin{frame}{Training effect persists after controlling for medical school rank}
-    
-\end{frame}
-
-\begin{frame}{Training effect persists after controlling for medical school rank}
-    
+    \centering
+    \input{results/tables/rank-x-cath-stratified}
 \end{frame}
 
 \begin{frame}{What about residency?}
-    
+    Medical training has multiple stages, not just medical school
+        \begin{itemize}
+            \item Medical school $\rightarrow$ residency $\rightarrow$ fellowship
+        \end{itemize}
+
+    \vspace{5mm}
+    Control for exposure to cath labs during residency
+        \begin{enumerate}
+            \item Whether cardiologist's \textbf{own residency hospital} has a cath lab 
+            \item \textbf{Share of hospitals} within same-HRR system that have a cath lab
+        \end{enumerate}
 \end{frame}
 
-% TODO: Change slide title. I don't think this is what we are actually saying
-\begin{frame}{Can the training effect modify existing variation in treatment style?}
+\begin{frame}{What about residency?}
+    \centering
+    \input{results/tables/training-pipeline}
+\end{frame}
+
+% What about fellowship? : Similar story: Fellowship exposure not statistically significant. Little identifying variation, so not included
+
+\begin{frame}{Long-run effect with peer spillovers}
+    Practice styles evolve due to peer effects \textcolor{gray}{\scriptsize\textcite{molitor2018}}
+    
+    \vspace{2.5mm}
+    \hspace{30mm}{$\downarrow$}
+    \vspace{2.5mm}
+
+    What is the impact of training when taking peer effects into account?
+    \begin{enumerate}
+        \item Estimate peer effect using cardiologists who move mid-career
+        \item Calculate the combined effect 
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}[label=peer]{Long-run effect with peer spillovers}
     \begin{equation*}
-        \Delta y^{\ast} = \frac{\beta_{\text{train}} \cdot \Delta\tau}{1 - \beta_{\text{dest}}}
+        \text{treatment style} = \beta_{train}\times(\text{training environment}) + \beta_{dest}(\text{peer's treatment styles}) + \text{error}
     \end{equation*}
+    \vspace{2.5mm}
+        \begin{equation*}
+            \text{Long run effect:}\quad \Delta y^\ast = \frac{\beta_{train}\cdot\Delta\tau}{1-\beta_{dest}}
+        \end{equation*}
+    \begin{itemize}
+        \item \textbf{Direct effect of training:} $\beta_{train} = 0.058$ 
+        \item \textbf{Peer effect:} $\beta_{dest} = 0.40$ \quad\hyperlink{es}{\beamerbutton{Event study}} \hyperlink{es-direction}{\beamerbutton{By direction}}
+        \item[$\rightarrow$] 10pp increase in training cath lab availability $\rightarrow$ 0.97pp increase in cath rate
+    \end{itemize}
+    
 \end{frame}
 
 \begin{frame}{Conclusion}
-    
+    Training effects persist throughout a physician's career, so later-career policies alone may not change practice patterns
+        \begin{itemize}
+            \item 1 SD increase in technology exposure shifts practice style one-third relative to the mean
+            \item Training effect is amplified by peer-to-peer learning
+        \end{itemize}
+
+    \vspace{10mm}
+    \textbf{Policy implication}
+    \begin{itemize}
+        \item Uniform technology access during training reduces practice style variation
+    \end{itemize}
 \end{frame}
 
 \begin{frame}[standout]
@@ -316,12 +422,61 @@
 
 \appendix
 
-\begin{frame}{Summary statistics}
-    
+\begin{frame}[label=residualize]{Data: Treatment style}
+    Treatment style = Mean \textbf{residualized cath rate} within two days of admission
+
+    \vspace{10mm}
+    Calculate patient-level residual $\varepsilon$ from linear probability model
+        \begin{equation*}
+            \mathds{1}\{\text{cath}\} = \{\text{Elixhauser comorbitities}\} + \{\text{year FE}\} + \varepsilon
+        \end{equation*}
+    Aggregate to cardiologist-year level
 \end{frame}
 
-%\begin{frame}[allowframebreaks]{References}
-%    \printbibliography[heading=none]
-%\end{frame}
+\begin{frame}[label=training-no-med-hrr]{Training effect: No medical school HRR fixed effect}
+    \centering
+    \input{presentations/tables/training_imprint_no_med_hrr}
+
+    \vspace{2.5mm}
+    \hyperlink{training}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}[label=training-robust]{Robustness: Selection to moving and other environment changes}
+    \centering
+    \input{results/tables/selection-aha}
+    
+    \vspace{2.5mm}
+    \hyperlink{training}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}[label=rank-tiers]{Medical school rank: Rank tier indicators}
+    \centering
+    \input{presentations/tables/rank_tiers}
+
+    \vspace{2.5mm}
+    \hyperlink{rank}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}[label=es]{Combining with peer effects}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.75\linewidth]{results/figures/event-study.png}
+    \end{figure}
+
+    \hyperlink{peer}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}[label=es-by-direction]{Mid-career moves by move direction}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.75\linewidth]{results/figures/event-study-by-direction.png}
+    \end{figure}
+    
+    \hyperlink{peer}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+    \printbibliography[heading=none]
+\end{frame}
 
 \end{document}
