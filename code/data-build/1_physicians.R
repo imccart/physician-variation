@@ -129,6 +129,12 @@ cat("GME-filter dropped:",
     sum(!physician_panel$keep_gme, na.rm = TRUE),
     "of", nrow(physician_panel), "rows\n")
 
+write_csv(tibble(statistic = c("rows_before_gme", "rows_dropped_gme", "rows_after_gme"),
+                 value = c(nrow(physician_panel),
+                           sum(!physician_panel$keep_gme, na.rm = TRUE),
+                           sum(physician_panel$keep_gme, na.rm = TRUE))),
+          "data/output/physician-panel-counts.csv")
+
 physician_panel <- physician_panel %>%
   filter(keep_gme) %>%
   select(-gme_yrs, -min_practice_year, -keep_gme)

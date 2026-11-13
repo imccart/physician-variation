@@ -468,6 +468,15 @@ cat(sprintf("  gender     agree: %4.1f%% (n have both = %d)\n",
 cat(sprintf("  med_school agree: %4.1f%% (n have both = %d, exact string)\n",
             100 * agree_rate(verif$med_ok,    verif$med_have),    sum(verif$med_have)))
 
+write_csv(tibble(field     = c("grad_year", "state", "gender", "med_school"),
+                 agree_pct = 100 * c(agree_rate(verif$grad_ok,   verif$grad_have),
+                                     agree_rate(verif$state_ok,  verif$state_have),
+                                     agree_rate(verif$gender_ok, verif$gender_have),
+                                     agree_rate(verif$med_ok,    verif$med_have)),
+                 n_have    = c(sum(verif$grad_have), sum(verif$state_have),
+                               sum(verif$gender_have), sum(verif$med_have))),
+          "data/crosswalks/doximity-match-diagnostics.csv")
+
 # By tier overall (excluding Stage 1 which is the validation set above)
 cat("\nMatch-tier breakdown:\n")
 print(cw %>% count(match_tier, name = "n"))

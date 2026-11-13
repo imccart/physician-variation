@@ -223,6 +223,13 @@ Raw inputs referred to below:
 - Level: cardiologist-year string (4 levels).
 - Files: `1_physicians.R`, `2_intensity_measures.R`; `1`, `3`, `5`, `10`.
 
+### `is_cardiologist` -> `share_cardio` (specialty-composition roster, appendix)
+- Paper: the appendix test of whether training-period cath lab availability changes the share of a graduating cohort that becomes cardiologists (specialty-composition-lag.tex); the roster counts quoted there.
+- Raw: Physician Compare medical school name, graduation year, gender and primary specialty (`Primary specialty` before 2017 Q4, `pri_spec` after) for every listed clinician, not only the cardiologist sample.
+- Chain: `crosswalks/1_medschool_list.R` writes `physician_pc.csv`, one row per NPI with the first listed school, graduation year and gender and the primary specialty from the latest file listing the NPI (interventional cardiology became a Medicare specialty only in 2015). `7_specialty_roster.R` keeps NPIs with a graduation year and a specialty, inner-joins `med-school-hrr-crosswalk.csv` for `hrr_med_school` (unmapped schools drop), sets `med_school_start = grad_year - 3` and `aha_match_year = clamp(med_school_start, 1980, 2003)` as for the panel, joins `aha_hrr_year.csv` for `train_cath_lab`, and sets `is_cardiologist = specialty in {Cardiovascular Disease (Cardiology), Interventional Cardiology, Cardiac Electrophysiology, Advanced Heart Failure and Transplant Cardiology}`, writing `physician_roster.csv`. `15_specialty_composition.R` restricts to graduation years 1983-2006, collapses to `(hrr_med_school, grad_year)` cells with `n_grads`, `n_cardio` and `share_cardio = n_cardio / n_grads`, joins the AHA cath lab share at `grad_year - 4 - k` for lags `k = 1..4` (years before the matriculation year `grad_year - 4`; a cell enters when that year is 1980 or later), and fits `share_cardio ~ lagged share | hrr_med_school + grad_year`, weighted by `n_grads`, clustered on `hrr_med_school`.
+- Level: clinician 0/1 in the roster; HRR-by-cohort share in the regressions. Both numerator and denominator are clinicians in Medicare practice 2013-2018.
+- Files: `crosswalks/1_medschool_list.R`, `7_specialty_roster.R`; `15`.
+
 ### `gender` -> `female`
 - Paper: a physician control in the imprint, rank and subspecialty specs; a propensity covariate; balance rows.
 - Raw: Physician Compare gender.
@@ -314,17 +321,22 @@ training binscatter) was restricted to the analytical sample, so Table 1 now rep
 `binscatter-slope.csv`, `recent-grad-sample.csv`, `rank-x-cath-panel-n.csv` and `unmapped-school-composition.csv` (the appendix A.3 exclusion counts), and persisted
 the crosswalk resolution counts to `data/crosswalks/med-school-hrr-match-counts.csv`. Since
 2026-10-15 `7_dynamic.R` reads `beta_train` from `training-imprint-coefs.csv` and `beta_dest`
-from `event-study-pooled.csv` rather than carrying them as literals.
+from `event-study-pooled.csv` rather than carrying them as literals. On 2026-11-12 the last
+console-only numbers got files: `1_physicians.R` writes the GME-filter row counts to
+`data/output/physician-panel-counts.csv`, `crosswalks/3_doximity_residency.R` writes the
+Stage-1 agreement rates to `data/crosswalks/doximity-match-diagnostics.csv`, and the analysis
+side added `summary-stats-table.csv`, `subspecialty-counts.csv`, `mde-general-cardiology.csv`
+and `train-vs-peer-ratio.csv` (listed below).
 
 | Script | Outputs |
 |---|---|
-| `1_descriptive.R` | `summary-stats.{tex,csv}`, `balance.{tex,csv}`, `origin-dispersion.csv`, `binscatter-slope.csv`, `unmapped-school-composition.csv`; figures `binscatter-training-vs-cath`, `panel-size-by-year`, `od-heatmap`, `od-hhi` |
+| `1_descriptive.R` | `summary-stats.{tex,csv}`, `summary-stats-table.csv` (the Table 1 frame as written, read by `7_dynamic.R` for the two SDs), `balance.{tex,csv}`, `origin-dispersion.csv`, `binscatter-slope.csv`, `unmapped-school-composition.csv`; figures `binscatter-training-vs-cath`, `panel-size-by-year`, `od-heatmap`, `od-hhi` |
 | `2_hrr_map.R` | figure `hrr-cath-intensity` |
 | `3_selection.R` | `balance-by-specialty.csv`, `selection.tex`, `selection-aha.tex`, `cohort-robust.tex`, `destination-sorting.csv`, `national-cath-share.csv` |
 | `4_rank.R` | `rank.tex` |
-| `5_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `training-imprint.tex` (headline 0.058 within-origin), `training-imprint-coefs.csv` (the same coefficient as a file), `aha-mechanism-teaching.tex`, `persistence.csv` |
+| `5_aha_training.R` | `aha-training.tex`, `aha-training-by-subspecialty.tex`, `subspecialty-counts.csv` (cardiologist-years by subspecialty in that table's sample), `mde-general-cardiology.csv` (the 80% MDE for the general-cardiology baseline), `training-imprint.tex` (headline 0.058 within-origin), `training-imprint-coefs.csv` (the same coefficient as a file, with its p-value), `aha-mechanism-teaching.tex`, `persistence.csv` |
 | `6_rank_x_cath.R` | `rank-x-cath-stratified.tex`, `rank-x-cath-cells.tex`, `rank-x-cath-panel-n.csv` |
-| `7_dynamic.R` | `dynamic-path.csv`; figure `dynamic-calibration` (betas read from `training-imprint-coefs.csv` and `event-study-pooled.csv`) |
+| `7_dynamic.R` | `dynamic-path.csv`, `train-vs-peer-ratio.csv` (the one-SD training effect over the one-SD peer effect, direct and long-run, from the two betas and the SDs in `summary-stats-table.csv`); figure `dynamic-calibration` (betas read from `training-imprint-coefs.csv` and `event-study-pooled.csv`) |
 | `8_event_study.R` | `event-study-coefs.csv`, `event-study-pooled.csv`, `event-study-coefs-by-direction.csv`; figures `event-study`, `event-study-by-direction`, `two-peer-deviation` |
 | `9_heterogeneity.R` | `heterogeneity-train-x-dest.tex` |
 | `10_mover_balance.R` | `mover-balance.{tex,csv}`; figure `mover-selection` |
@@ -333,6 +345,7 @@ from `event-study-pooled.csv` rather than carrying them as literals.
 | `13_permutation.R` | `permutation-summary.csv` (at `results/`, not `results/tables/`); figures `perm-null`, `perm-null-region` |
 | `vrdc/1_threshold.R` (runs inside the VRDC R container) | `threshold-coefs.csv`, `threshold-quintiles.csv`, `threshold-tests.csv` in the container's `results/`, for export; local copies of exported files at `results/` |
 | `14_patient_risk.R` | `patient-risk.tex`, `patient-mortality.tex`, `patient-risk-quintiles.tex`, `patient-risk-quintiles.csv`; figure `patient-risk-quintiles` (all from the three exported `results/threshold-*.csv` files) |
+| `15_specialty_composition.R` | `specialty-composition-lag.{tex,csv}` (cardiology share of a graduating cohort on the cath lab share 1-4 years before matriculation), `specialty-roster-counts.csv` (the roster counts quoted in the appendix) |
 
 Removed 2026-09-25 as stale and unused: `fgw-decomp-*.{csv,tex}` in
 `results/tables/` (a decomposition step no current script produces) and Shirley's

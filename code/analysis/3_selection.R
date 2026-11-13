@@ -290,12 +290,18 @@ clean_aha <- clean_aha %>%
             by = c("aha_match_year" = "year"), relationship = "many-to-one") %>%
   mutate(grad_c = grad_year - 1995)   # centered for the cohort trend
 
-# Main selection-aha table (cols 1-3):
+# Main selection-aha table (cols 1-4):
 #   (1) Baseline (matches Table 3 Panel B col 1)
-#   (2) + IPW
-#   (3) + linear graduation-year trend (isolates within-HRR variation net
+#   (2) + mover indicator (current practice HRR differs from the medical
+#       school HRR; identified off the stayers once both HRR FEs are in)
+#   (3) + IPW
+#   (4) + linear graduation-year trend (isolates within-HRR variation net
 #       of the national cohort trend)
 m_aha_base <- feols(mean_resid_cath ~ train_cath_lab |
+                      hrr_med_school + hrr_practice + year,
+                    data = clean_aha, weights = ~w_unweighted,
+                    cluster = ~hrr_med_school)
+m_aha_mov  <- feols(mean_resid_cath ~ train_cath_lab + mover |
                       hrr_med_school + hrr_practice + year,
                     data = clean_aha, weights = ~w_unweighted,
                     cluster = ~hrr_med_school)
@@ -309,12 +315,15 @@ m_aha_lin  <- feols(mean_resid_cath ~ train_cath_lab + grad_c |
                     cluster = ~hrr_med_school)
 
 cat("\n=== AHA spec, baseline ===\n");               print(summary(m_aha_base))
+cat("\n=== AHA spec, mover indicator ===\n");        print(summary(m_aha_mov))
 cat("\n=== AHA spec, IPW-weighted ===\n");           print(summary(m_aha_ipw))
 cat("\n=== AHA spec, linear grad-year trend ===\n"); print(summary(m_aha_lin))
 
 aha_b <- sel_row(m_aha_base, "train_cath_lab")
+aha_m <- sel_row(m_aha_mov,  "train_cath_lab")
 aha_i <- sel_row(m_aha_ipw,  "train_cath_lab")
 aha_l <- sel_row(m_aha_lin,  "train_cath_lab")
+mov_m <- sel_row(m_aha_mov,  "mover")
 
 obs_row_3 <- function(models) {
   paste0("Observations & ",
@@ -324,25 +333,31 @@ obs_row_3 <- function(models) {
 }
 
 tbl_aha_sel <- paste0(
-  "\\begin{tabular}{lccc}\n",
+  "\\begin{tabular}{lcccc}\n",
   "\\toprule\n",
-  " & (1) & (2) & (3) \\\\\n",
+  " & (1) & (2) & (3) & (4) \\\\\n",
   "\\midrule\n",
   "Training-HRR cath lab share & ",
     fmt_est(aha_b$est, aha_b$p), " & ",
+    fmt_est(aha_m$est, aha_m$p), " & ",
     fmt_est(aha_i$est, aha_i$p), " & ",
     fmt_est(aha_l$est, aha_l$p), " \\\\\n",
   " & ",
     fmt_se(aha_b$se), " & ",
+    fmt_se(aha_m$se), " & ",
     fmt_se(aha_i$se), " & ",
     fmt_se(aha_l$se), " \\\\\n",
+  "Mover & & ",
+    fmt_est(mov_m$est, mov_m$p), " & & \\\\\n",
+  " & & ",
+    fmt_se(mov_m$se), " & & \\\\\n",
   "\\midrule\n",
-  "IPW & No & Yes & No \\\\\n",
-  "Linear cohort trend & No & No & Yes \\\\\n",
-  "Med school HRR FE & Yes & Yes & Yes \\\\\n",
-  "Practice HRR FE & Yes & Yes & Yes \\\\\n",
-  "Year FE & Yes & Yes & Yes \\\\\n",
-  obs_row_3(list(m_aha_base, m_aha_ipw, m_aha_lin)),
+  "IPW & No & No & Yes & No \\\\\n",
+  "Linear cohort trend & No & No & No & Yes \\\\\n",
+  "Med school HRR FE & Yes & Yes & Yes & Yes \\\\\n",
+  "Practice HRR FE & Yes & Yes & Yes & Yes \\\\\n",
+  "Year FE & Yes & Yes & Yes & Yes \\\\\n",
+  obs_row_3(list(m_aha_base, m_aha_mov, m_aha_ipw, m_aha_lin)),
   "\\bottomrule\n",
   "\\end{tabular}\n"
 )

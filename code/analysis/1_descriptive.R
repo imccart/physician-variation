@@ -168,11 +168,11 @@ share_section <- bind_rows(
   share_row("Female",                    g_pct),
   share_row("General Cardiology",        sp_gen),
   share_row("Interventional Cardiology", sp_ic),
-  share_row("Electrophysiology",         sp_ep),
-  share_row("Adv.\\ Heart Failure",      sp_hf)
+  share_row("Other subspecialties",      sp_ep + sp_hf)
 )
 
 summ_table <- bind_rows(cy_section, c_section, share_section)
+write_csv(summ_table, "results/tables/summary-stats-table.csv")
 n_cy <- nrow(cy_section)
 n_c  <- nrow(c_section)
 n_sh <- nrow(share_section)

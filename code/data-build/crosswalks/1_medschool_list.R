@@ -12,6 +12,11 @@
 ##                Outputs:
 ##                  data/output/cardiologist_pc.csv     (NPI -> med_school, grad_year, gender)
 ##                  data/output/medschool_list.csv      (med_school -> count)
+##                  data/output/physician_pc.csv        (every clinician with a
+##                                                       medical school: med_school,
+##                                                       grad_year, gender, and the
+##                                                       primary specialty in the
+##                                                       latest file listing the NPI)
 
 # 1. Load cardiologist NPI sample ----------------------------------------
 
@@ -27,17 +32,22 @@ cat("Cardiologist NPIs in export:", length(cardio_npis), "\n")
 # 2. Read Physician Compare (schema detected per file) --------------------
 
 # Two schema variants across 2013-2018 (transition happens in 2017 Q4):
-#   Old: "NPI", "Medical school name", "Graduation year", "Gender"
-#   New: "NPI", "Med_sch",             "Grd_yr",          "gndr"
+#   Old: "NPI", "Medical school name", "Graduation year", "Gender", "Primary specialty"
+#   New: "NPI", "Med_sch",             "Grd_yr",          "gndr",   "pri_spec"
 # 2014 files ship without a header row and are skipped here.
 
 old_names <- c(med_school = "Medical school name",
                grad_year  = "Graduation year",
-               gender     = "Gender")
+               gender     = "Gender",
+               specialty  = "Primary specialty")
 new_names <- c(med_school = "Med_sch",
                grad_year  = "Grd_yr",
-               gender     = "gndr")
+               gender     = "gndr",
+               specialty  = "pri_spec")
 
+# One row per distinct (NPI, school, year, gender, specialty) within a file;
+# a clinician's several practice locations collapse here rather than being
+# carried through the stack of files.
 read_pc <- function(f) {
   header <- str_trim(str_split(readLines(f, n = 1), ",")[[1]])
 
@@ -53,7 +63,10 @@ read_pc <- function(f) {
   tibble(npi        = raw[["NPI"]],
          med_school = raw[[cols_map[["med_school"]]]],
          grad_year  = raw[[cols_map[["grad_year"]]]],
-         gender     = raw[[cols_map[["gender"]]]])
+         gender     = raw[[cols_map[["gender"]]]],
+         specialty  = raw[[cols_map[["specialty"]]]],
+         pc_file    = basename(f)) %>%
+    distinct()
 }
 
 files <- list.files("data/input/physician-compare",
@@ -64,11 +77,14 @@ files <- list.files("data/input/physician-compare",
 
 cat("Physician Compare files:", length(files), "\n")
 
-pc_all <- map_dfr(files, read_pc) %>%
-  mutate(across(c(med_school, grad_year, gender), str_trim),
-         across(c(med_school, grad_year, gender),
+pc_raw <- map_dfr(files, read_pc) %>%
+  mutate(across(c(med_school, grad_year, gender, specialty), str_trim),
+         across(c(med_school, grad_year, gender, specialty),
                 ~ if_else(.x == "", NA_character_, .x))) %>%
-  filter(!is.na(med_school)) %>%
+  filter(!is.na(med_school))
+
+pc_all <- pc_raw %>%
+  select(npi, med_school, grad_year, gender) %>%
   distinct()
 
 cat("Physician-row count (all physicians, non-missing med_school):",
@@ -115,3 +131,24 @@ cat("Top 10:\n")
 print(head(medschool_list, 10))
 
 write_csv(medschool_list, "data/output/medschool_list.csv")
+
+
+# 6. Full clinician roster for the specialty-composition test -------------
+
+# One row per NPI across every clinician with a medical school, not only the
+# cardiologist sample. School, graduation year and gender are the first
+# listed tuple, as for the cardiologists above. Specialty is taken from the
+# latest file that lists the NPI, because "Interventional Cardiology" became
+# a Medicare specialty only in 2015 and earlier files list those
+# cardiologists under cardiovascular disease.
+pc_roster <- pc_raw %>%
+  arrange(npi, pc_file) %>%
+  group_by(npi) %>%
+  summarize(med_school = first(med_school),
+            grad_year  = first(grad_year),
+            gender     = first(gender),
+            specialty  = if (all(is.na(specialty))) NA_character_
+                         else last(specialty[!is.na(specialty)]),
+            .groups = "drop")
+
+write_csv(pc_roster, "data/output/physician_pc.csv")

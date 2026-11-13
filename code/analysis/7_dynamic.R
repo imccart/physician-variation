@@ -14,6 +14,15 @@
 ##                    the within-origin imprint, Table 3 Panel B col 1)
 ##                  results/tables/event-study-pooled.csv (8_event_study.R,
 ##                    the pooled post-move adaptation rate)
+##                  results/tables/summary-stats-table.csv (1_descriptive.R,
+##                    the SDs of the training share and the peer rate)
+##
+##                Outputs:
+##                  results/tables/train-vs-peer-ratio.csv (the one-SD training
+##                    effect relative to the one-SD peer effect, direct and
+##                    long-run, quoted in the introduction)
+##                  results/tables/dynamic-path.csv
+##                  results/figures/dynamic-calibration.png
 
 
 # 1. Coefficients from the estimated specs --------------------------------
@@ -28,6 +37,22 @@ beta_dest  <- read_csv("results/tables/event-study-pooled.csv",
   pull(estimate)
 amp        <- 1 / (1 - beta_dest)
 long_run   <- beta_train * amp
+
+# One-SD training effect relative to the one-SD peer effect, as in the
+# introduction's policy paragraph.
+summ_sd  <- read_csv("results/tables/summary-stats-table.csv",
+                     col_types = cols(.default = col_character()),
+                     show_col_types = FALSE)
+sd_train <- as.numeric(summ_sd$sd[summ_sd$label == "Training-HRR cath lab share"])
+sd_peer  <- as.numeric(summ_sd$sd[summ_sd$label == "Current-HRR peer cath rate (LOO)"])
+ratio_direct  <- (beta_train * sd_train) / (beta_dest * sd_peer)
+ratio_longrun <- amp * ratio_direct
+
+write_csv(tibble(statistic = c("beta_train", "sd_train", "beta_dest", "sd_peer",
+                               "amplification", "ratio_direct", "ratio_longrun"),
+                 value = c(beta_train, sd_train, beta_dest, sd_peer,
+                           amp, ratio_direct, ratio_longrun)),
+          "results/tables/train-vs-peer-ratio.csv")
 
 cat("=== Dynamic calibration ===\n")
 cat(sprintf("Training imprint  (within-origin x cohort):   beta_train = %.3f\n", beta_train))

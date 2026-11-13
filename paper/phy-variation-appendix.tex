@@ -25,12 +25,6 @@
 
 \graphicspath{{../results/figures/}}
 
-% Appendix-style section/table/figure numbering (A.1, A.2, ...)
-\renewcommand{\thesection}{\Alph{section}}
-\renewcommand{\thetable}{\thesection.\arabic{table}}
-\renewcommand{\thefigure}{\thesection.\arabic{figure}}
-\renewcommand{\theequation}{\thesection.\arabic{equation}}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \title{Medical School Environments and Physician Treatment Styles \\[0.5em]
@@ -87,46 +81,15 @@ For each cardiologist, we match the medical school NIH rank in the year of medic
 
 \subsection{GME Duration Filter}
 
-We drop physician-years for which the implied training pipeline is incompatible with the cardiologist's observed graduation year and subspecialty. The required GME duration after medical school is six years for general cardiology, seven years for interventional cardiology, eight years for clinical cardiac electrophysiology, and seven years for advanced heart failure. Physician-years implying a training pipeline shorter than the GME duration are dropped. The filter removes approximately 70 of approximately 31,000 physician-year observations.
+We drop physician-years for which the implied training pipeline is incompatible with the cardiologist's observed graduation year and subspecialty. The required GME duration after medical school is six years for general cardiology, seven years for interventional cardiology, eight years for clinical cardiac electrophysiology, and seven years for advanced heart failure. Physician-years implying a training pipeline shorter than the GME duration are dropped. The filter removes 1,085 of 139,015 physician-year observations, under 1\%.
 
 \section{Cross-Sectional Balance, by Subspecialty}\label{sec:app-balance}
 
 Table~\ref{tab:app-balance-spec} reports the training-period cath lab share comparison between cross-sectional movers and stayers separately within each cardiology subspecialty, on the analytical sample of Table~2 in the main paper. The ordering matches Table~2 in every subspecialty, with movers coming from medical school HRRs with higher cath lab share than stayers in the same subspecialty, by 0.05 to 0.06 in general cardiology, interventional cardiology, and electrophysiology. The differences are statistically significant in general and interventional cardiology; electrophysiology and advanced heart failure have too few stayers (19 and 5 cardiologists) for a precise within-subspecialty test.
 
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption{Cross-sectional balance by cardiology subspecialty}
-  \label{tab:app-balance-spec}
-  \centering
-  \begin{tabular}{lcccccc}
-  \toprule
-   & \multicolumn{2}{c}{Stayers} & \multicolumn{2}{c}{Movers} & & \\
-  \cmidrule(lr){2-3} \cmidrule(lr){4-5}
-  Subspecialty & N & Train.\ cath & N & Train.\ cath & Diff. & $p$ \\
-  \midrule
-  General Cardiology     & 443   & 0.279 & 2,495 & 0.324 & 0.045 & $<$0.001 \\
-  Interventional         & 117   & 0.274 & 715     & 0.333 & 0.060 & $<$0.001 \\
-  Electrophysiology      & 33    & 0.291 & 185     & 0.357 & 0.065 & 0.046 \\
-  Adv.\ Heart Failure    & 7     & 0.408 & 38      & 0.391 & $-$0.017 & 0.846 \\
-  \bottomrule
-  \end{tabular}
-\end{minipage}
-\end{table}
-
 \section{Cohort-Trend Robustness}\label{sec:app-cohort}
 
 The main text reports a linear graduation-year trend as the cohort-robustness check. Table~\ref{tab:app-cohort} reports the training imprint under the full set of cohort controls we consider, on the same within-origin sample. Columns (1) through (3) are the within-origin baseline and the baseline augmented with a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the cardiologist's matriculation year, a measured national trend, so that the imprint is identified from how a region's cath lab availability deviates from the national rollout rather than from the rollout itself. The point estimate ranges between 0.053 and 0.066 across the four columns. Precision declines relative to the baseline because cath lab availability varies across both region and cohort, so any control for the cohort dimension absorbs part of the variation that identifies the imprint. We do not saturate the cohort dimension with graduation-year fixed effects, since doing so removes most of the within-HRR variation that identifies the training effect.
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption[]{Training imprint under alternative cohort controls\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level, on the within-origin sample. Column (1) is the within-origin baseline. Columns (2) and (3) add a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the matriculation year. All specifications include medical school HRR, practice HRR, and year fixed effects, weight by NSTEMI volume, and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
-  \label{tab:app-cohort}
-  \centering
-  \input{../results/tables/cohort-robust.tex}
-\end{minipage}
-\end{table}
 
 \subsection{Permutation Inference}
 
@@ -138,33 +101,9 @@ The second test holds each cardiologist's cohort fixed and reassigns the trainin
 
 We read the permutation tests as evidence that the pairing of cardiologists to training environments is informative rather than an artifact of the limited within-region variation. They do not by themselves establish that the operative feature is cath lab availability as opposed to another regional attribute moving on the same cohort schedule, a distinction we take up through the subspecialty and rank results in the main text.
 
-\begin{figure}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \centering
-  \caption[]{Permutation tests for the within-origin training imprint\footnote{Each histogram plots the training-period cath lab coefficient from 1,000 re-estimations of the within-origin specification. Panel (a) reassigns cardiologists the training-period cath lab share of a different graduation cohort from the same medical school HRR. Panel (b) reassigns cardiologists the share of a different medical school HRR in the same matriculation year. The dashed line marks zero and the solid line marks the actual estimate of 0.058. The outcome, fixed effects, and NSTEMI weights are held fixed across permutations.}}
-  \begin{tabular}{cc}
-  \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null.png} &
-  \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null-region.png} \\
-  (a) Cohorts reassigned within region & (b) Regions reassigned within cohort
-  \end{tabular}
-  \label{fig:perm-null}
-\end{minipage}
-\end{figure}
-
 \section{Rank by Training-Period Cath Lab Share}\label{sec:app-rank}
 
 The main paper documents that medical school NIH-funding rank does not predict later catheterization rates once training-period cath lab availability is included. Table~\ref{tab:app-rank-cells} splits cardiologists by Top-25 status and by whether their medical school HRR was above or below the median training-period cath lab share, with below-Top-25 schools in low-cath HRRs as the reference cell, and reports the cath rate in each of the other three cells relative to that reference.
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption[]{Cath rate by medical school rank and training-period cath lab share\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Cells cross Top-25 NIH rank status with whether the medical school HRR's training-period cath lab share is at or above the sample median. The specification includes practice HRR and year fixed effects, weights by NSTEMI volume, and clusters standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
-  \label{tab:app-rank-cells}
-  \centering
-  \input{../results/tables/rank-x-cath-cells.tex}
-\end{minipage}
-\end{table}
 
 \section{Doximity Match Procedure}\label{sec:app-doximity}
 
@@ -180,7 +119,7 @@ The Doximity profiles do not include the National Provider Identifier, so we lin
 
 Stage 1 retains pairs that are uniquely matched on normalized name from both sides. These represent the cleanest evidence of a real match. Stage 2 disambiguates pairs in which one cardiologist matches multiple Doximity profiles by name alone, using exact graduation-year agreement first, then state agreement, then exact medical-school string agreement. Stage 3 expands the candidate set for cardiologists not matched in Stage 1 or 2 using a small nickname canonicalization table (mapping common variants like Bob $\rightarrow$ Robert) and a first-initial fallback that requires exact graduation year and state agreement. Each downstream match must produce a one-to-one bipartite pairing.
 
-Across all stages, the procedure matches 10,047 cardiologists from our Medicare panel, or roughly 80\% of cardiologists with non-missing name and graduation year in Physician Compare. The Stage-1 unique-name matches form the validation set for the linkage. Stage 1 used only first and last name and did not condition on graduation year, state, gender, or medical school. Across this validation set, we observe 99.2\% gender agreement, 86.5\% graduation-year agreement (with most disagreements within one year), 34.5\% practice-state agreement (consistent with Doximity profiles reflecting current practice in 2025--2026 while Physician Compare reflects practice locations in 2013--2018), and 29.1\% exact medical-school string agreement (with most disagreements reflecting formatting differences between sources rather than substantive disagreement). The strong gender and graduation-year agreement on orthogonal fields supports the validity of the name-based block.
+Across all stages, the procedure matches 10,047 cardiologists from our Medicare panel, or roughly 80\% of cardiologists with non-missing name and graduation year in Physician Compare. The Stage-1 unique-name matches form the validation set for the linkage. Stage 1 used only first and last name and did not condition on graduation year, state, gender, or medical school. Across this validation set, we observe 99.2\% gender agreement, 86.9\% graduation-year agreement (with most disagreements within one year), 35.3\% practice-state agreement (consistent with Doximity profiles reflecting current practice in 2025--2026 while Physician Compare reflects practice locations in 2013--2018), and 29.3\% exact medical-school string agreement (with most disagreements reflecting formatting differences between sources rather than substantive disagreement). The strong gender and graduation-year agreement on orthogonal fields supports the validity of the name-based block.
 
 \subsection{Doximity-to-AHA Hospital Mapping}
 
@@ -194,33 +133,13 @@ For each matched cardiologist, we construct two residency-stage exposure measure
 
 The AHA cath lab indicator is a coarse proxy for procedural exposure during residency. A sharper measure is the residency hospital's realized NSTEMI catheterization rate during the trainee's first three years of post-graduate training, constructed directly from the claims data. We implement this measure for cardiologists with medical-school graduation year 2006 or later, whose first three post-graduate years (PGY1--PGY3) overlap the 2008--2018 claims window. The recent-graduate subsample includes 351 cardiologists and 671 cardiologist-years, with a mean of 2.09 PGY years observed per cardiologist. After dropping singletons within fixed-effect cells, the within-origin column consists of 174 cardiologists. Table~\ref{tab:training-recent-grad} reports three specifications, progressing from practice-HRR and year fixed effects only (column~1) to the within-origin specification that adds medical-school HRR fixed effects (column~2) and a restriction to the cleaner manual-plus-exact residency-match subsample (column~3). The residency exposure coefficient is statistically indistinguishable from zero in all three columns. Point estimates are mildly negative but imprecisely estimated, and the confidence intervals do not support a positive residency imprint of the magnitude detected for medical school. The direct-exposure test on recent graduates corroborates the headline pipeline finding that the medical school imprint is not absorbed by residency exposure.
 
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption[]{Residency cath rate and own catheterization, recent-graduate subsample\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. All columns include practice HRR and year fixed effects, with medical school HRR fixed effects added in columns (2) and (3), and weight by NSTEMI volume. Counts of cardiologist-years and cardiologists exclude singletons within fixed-effect cells. Standard errors are clustered at the cardiologist level in column (1) and at the medical school HRR level in columns (2) and (3). *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
-  \label{tab:training-recent-grad}
-  \centering
-  \input{../results/tables/training-recent-grad.tex}
-\end{minipage}
-\end{table}
-
 \section{Selection Diagnostics}\label{sec:app-ipw}
 
-The main analysis addresses two distinct selection concerns. The first is that movers and stayers differ on observable characteristics, raising the possibility that the imprint estimate reflects mover-vs-stayer selection rather than a causal training effect. The second is that cardiologists from cath-rich training environments may systematically end up in cath-rich practice destinations, in which case our cross-sectional identification would conflate training imprint with destination-type sorting. We address the first with the inverse-probability-weighted (IPW) specification reported in the main paper. This section reports a parallel IPW exercise using a complementary measure of training-environment intensity, and a separate diagnostic for the destination-sorting concern. Section~\ref{sec:app-patient} reports balance of patient risk on training exposure, which addresses a third concern at the patient level.
+The main analysis addresses three distinct selection concerns. The first is that movers and stayers differ on observable characteristics, raising the possibility that the imprint estimate reflects mover-vs-stayer selection rather than a causal training effect. The second is that cardiologists from cath-rich training environments may systematically end up in cath-rich practice destinations, in which case our cross-sectional identification would conflate training imprint with destination-type sorting. The third is that the training environment may change who becomes a cardiologist, so that the cardiologists we observe from cath-rich training cohorts are a different selection of their graduating class. We address the first with the mover indicator and the inverse-probability-weighted (IPW) specification reported in the main paper. This section reports a parallel IPW exercise using a complementary measure of training-environment intensity, a separate diagnostic for the destination-sorting concern, and details of our estimates on the effects of cath labs on cardiologist composition. In addition, Section~\ref{sec:app-patient} reports balance of patient risk on training exposure, which addresses a further concern at the patient level.
 
 \subsection{IPW Robustness Using the Peer-Cath Measure}
 
 The main paper reports the IPW-weighted within-origin specification on the AHA training-period cath lab measure. Table~\ref{tab:app-selection-alt} reports a parallel IPW exercise using the leave-one-out peer cath rate in the medical school HRR as a complementary measure of training-environment intensity. The IPW weighting moves the imprint coefficient modestly relative to the unweighted baseline in column (1), in the same direction and of comparable magnitude to the shift we observe with the AHA measure in the main paper. Both exercises indicate that observable selection on graduation cohort, gender, subspecialty, and training-period intensity does not drive the imprint we estimate.
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption[]{Selection robustness via inverse probability weighting (peer-cath measure)\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level, estimated on the mover subsample. Both columns include practice HRR and year fixed effects and cluster standard errors at the medical school HRR level. Column (1) weights by NSTEMI volume; column (2) weights additionally by the inverse propensity of mover status. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
-  \label{tab:app-selection-alt}
-  \centering
-  \input{../results/tables/selection.tex}
-\end{minipage}
-\end{table}
 
 \subsection{Training Intensity and Destination Choice}\label{sec:app-train-dest}
 
@@ -229,6 +148,16 @@ A separate identification concern is that cardiologists from cath-rich training 
 On the full cardiologist-year panel (15,084 observations from 4,033 cardiologists with non-missing training-period and current-peer data), the coefficient on training-period cath lab share is $-$0.024 (SE 0.017), statistically indistinguishable from zero. Restricting to each cardiologist's earliest panel observation as a cross-section produces a similarly small estimate: $-$0.028 (SE 0.018), $n$ = 4,033. The pairwise correlation between training-period cath lab share and current peer cath rate is $-$0.05.
 
 Training-period cath lab availability does not predict the current peer cath rate in our sample. Cardiologists from cath-rich training environments are not systematically located in cath-rich destinations, and the destination-type-sorting concern does not appear to drive our cross-sectional imprint estimate. We caution that our cardiologist-level cross-section uses the earliest panel observation rather than the first practice location after training, so this is a contemporaneous diagnostic rather than a direct test of training-induced sorting at first placement.
+
+\subsection{Specialty Composition and Training-Period Cath Lab Availability}\label{sec:app-composition}
+
+We build a roster of every clinician in the Physician Compare files for 2013 through 2018 with a listed medical school, taking the school, graduation year, and gender from the first listing and the primary specialty from the most recent file in which the clinician appears. Clinicians whose school maps to an HRR through the crosswalk in Section~\ref{sec:app-sample} and who graduated between 1983 and 2006 form the sample. Clinicians whose listed school does not map to an HRR, including the generic entry for other schools and the osteopathic and foreign schools the crosswalk leaves unmapped, drop out at this step. The sample includes 281,205 clinicians from 93 medical school HRRs, of whom 9,686 list one of the four cardiology specialties that define our analytic sample (cardiovascular disease, interventional cardiology, cardiac electrophysiology, and advanced heart failure and transplant cardiology) as their primary specialty, a share of 0.034. Both the numerator and the denominator count graduates who were in Medicare practice between 2013 and 2018, so physicians who had left practice or never billed Medicare are absent from both, and the cohort fixed effects below absorb cohort-level differences in that attrition.
+
+We collapse the roster to medical school HRR by graduation cohort cells and estimate
+$$ s_{mg} = \beta \tau_{m,g-4-k} + \rho_m + \lambda_g + \varepsilon_{mg}, $$
+where $s_{mg}$ is the share of cohort $g$'s graduates from HRR $m$ whose primary specialty is cardiology, $\tau_{m,g-4-k}$ is the cath lab share in HRR $m$ measured $k$ years before $g-4$, the calendar year in which the cohort started medical school, and $\rho_m$ and $\lambda_g$ are medical school HRR and cohort fixed effects. Cells are weighted by the number of graduates and standard errors are clustered at the medical school HRR level. Because the AHA cath lab series begins in 1980, a lag of $k$ years restricts the sample to cohorts graduating in $1984+k$ or later, so the four columns of Table~\ref{tab:app-composition} cover the 1985 to 2006, 1986 to 2006, 1987 to 2006, and 1988 to 2006 cohorts, with 259,626, 248,483, 237,380, and 226,636 graduates respectively.
+
+The coefficient on the lagged cath lab share is 0.005 (SE 0.006) one year before matriculation, 0.005 (SE 0.006) two years before, 0.004 (SE 0.006) three years before, and 0.001 (SE 0.006) four years before. The mean cardiology share in these samples is about 0.033, and none of the coefficients is statistically distinguishable from zero.
 
 \section{Patient-Level Analysis}\label{sec:app-patient}
 
@@ -248,67 +177,11 @@ Table~\ref{tab:app-patient-mortality} reports the effect of training exposure on
 
 The estimates by quintile further show that the negative point estimates on average appear to be driven by effects among the lowest-risk patients. Specifically, in the two lowest quintiles, 30-day mortality falls by 0.011 (SE 0.005) and 0.023 (SE 0.008), while the estimates for the three higher quintiles are essentially centered around zero. That said, the five coefficients are also not distinguishable from one another ($p = 0.20$). The estimates on the lowest quintiles are small in absolute terms but larger relative to the baseline mortality of the patients in those quintiles, 2.0\% and 4.2\% (Table~\ref{tab:app-patient-quintiles}). At such baseline rates, a 10-percentage-point increase in exposure would lower 30-day mortality by about 5\% in each quintile. Still, we caution against interpreting these as causal mortality effects, since there is reason to suspect that the low-risk patients of higher-exposure cardiologists are healthier than their risk scores indicate.\footnote{In a placebo test, training exposure does not predict utilization in the year before admission on average, but among the lowest-risk patients, those treated by higher-exposure cardiologists had fewer inpatient stays and lower spending in the prior year. Adding those prior-year measures as controls leaves the mortality estimates unchanged, but the pattern suggests that these patients may differ in other ways as well.}
 
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption[]{Analytical sample by quintile of predicted one-year mortality risk\footnote{NSTEMI episodes assigned to the cardiologist-years in the analytical sample, by quintile of predicted one-year mortality. Predicted risk is from a logit of death within 365 days on age, sex, race, dual eligibility, and the 31 Elixhauser comorbidities recorded on the index admission, fit on admissions through 2017 and scored for every episode, with quintiles cut over all NSTEMI episodes with an assigned cardiologist. Catheterization is within two days of admission. Thirty-day mortality is over admissions through December 1, 2018, and one-year mortality over admissions through 2017.}}
-  \label{tab:app-patient-quintiles}
-  \centering
-  {\small \input{../results/tables/patient-risk-quintiles.tex}}
-\end{minipage}
-\end{table}
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption[]{Patient-level training imprint, overall and by risk quintile\footnote{The outcome is an indicator for catheterization within two days of NSTEMI admission. Panel A reports the coefficient on the training-period cath lab share with patient controls (age, age squared, sex, race, dual eligibility, months of dual eligibility, and the 31 Elixhauser comorbidities). Panel B interacts the training-period share with risk-quintile indicators and replaces the patient controls with risk-quintile fixed effects. All columns include the leave-one-out practice-HRR cath rate and medical school HRR, practice HRR, and year fixed effects. Column (2) adds admitting-hospital fixed effects, and column (3) drops patients who die within two days of admission. The equality test is a Wald test that the five quintile coefficients are equal. Standard errors clustered at the medical school HRR. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
-  \label{tab:app-patient-risk}
-  \centering
-  \input{../results/tables/patient-risk.tex}
-\end{minipage}
-\end{table}
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{\textwidth}
-  \caption[]{Training exposure and patient mortality\footnote{Column (1) is death within 30 days of admission, for admissions through December 1, 2018, and column (2) is death within one year, for admissions through 2017. Panel A reports the coefficient on the training-period cath lab share with patient controls. Panel B interacts it with risk-quintile indicators and replaces the controls with risk-quintile fixed effects. All columns include the leave-one-out practice-HRR cath rate and medical school HRR, practice HRR, and year fixed effects. Standard errors clustered at the medical school HRR. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
-  \label{tab:app-patient-mortality}
-  \centering
-  \input{../results/tables/patient-mortality.tex}
-\end{minipage}
-\end{table}
-
-\clearpage
-
 \section{Event-Study Details}\label{sec:app-es}
 
 This section reports the full coefficient table for the within-physician event study around mid-career moves.
 
 Table~\ref{tab:app-es-coefs} reports point estimates, standard errors, and 95\% confidence intervals for each event-time coefficient $\hat\beta_\tau$ in the within-physician event study, with $\tau \in [-3, 5]$ and $\tau = -1$ omitted as the reference period. The pre-move coefficients ($\tau \in \{-3, -2\}$) are statistically indistinguishable from zero, consistent with the parallel-trends assumption. Adaptation jumps at $\tau = 0$ to 0.496 (SE 0.078, 95\% CI [0.34, 0.65]). The post-move coefficients decline gradually from 0.325 at $\tau = 1$ to 0.214 at $\tau = 5$, and the $\tau = 5$ coefficient is not statistically distinguishable from zero ($p = 0.10$), but the confidence intervals from $\tau = 1$ onward all contain the pooled post-move coefficient, so the path is consistent with a flat post-move level.
-
-\begin{table}[htbp]
-\centering
-\begin{minipage}[h]{0.85\textwidth}
-  \caption[]{Event-study coefficients, within-physician adaptation around mid-career moves\footnote{Coefficients from the within-physician event study around mid-career moves described in the main text. The specification includes cardiologist and calendar-year fixed effects, weights by NSTEMI volume, and clusters standard errors at the cardiologist level. Event time $\tau$ is measured in years relative to the move year, with $\tau=-1$ the omitted reference period.}}
-  \label{tab:app-es-coefs}
-  \centering
-  \begin{tabular}{lccccc}
-  \toprule
-  Event time $\tau$ & Estimate & SE & 95\% CI lo & 95\% CI hi & $p$-value \\
-  \midrule
-  $-3$ & $-$0.100 & 0.107 & $-$0.31 & 0.11 & 0.352 \\
-  $-2$ & 0.034  & 0.091 & $-$0.14 & 0.21 & 0.704 \\
-  $-1$ & 0       &       &         &      & ref.  \\
-  $0$  & 0.496  & 0.078 & 0.34    & 0.65 & $<$0.001 \\
-  $1$  & 0.325  & 0.086 & 0.16    & 0.49 & $<$0.001 \\
-  $2$  & 0.325  & 0.103 & 0.12    & 0.53 & 0.002 \\
-  $3$  & 0.305  & 0.104 & 0.10    & 0.51 & 0.004 \\
-  $4$  & 0.288  & 0.113 & 0.07    & 0.51 & 0.011 \\
-  $5$  & 0.214  & 0.131 & $-$0.04 & 0.47 & 0.102 \\
-  \bottomrule
-  \end{tabular}
-\end{minipage}
-\end{table}
 
 Pre-trends are formally tested by the joint $F$-statistic on $\hat\beta_{-3}$ and $\hat\beta_{-2}$, which fails to reject the null of zero pre-trends at conventional levels. The post-move pooled coefficient (constraining $\beta_\tau = \beta$ for $\tau \geq 0$) is 0.403, which we use in the cohort-transition calibration in the main paper.
 
@@ -344,5 +217,157 @@ with the direct training effect compounding through the destination feedback loo
 \bibliography{BibTeX_Library}
 \end{singlespace}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+\section*{Tables and Figures}
+
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption{Cross-sectional balance by cardiology subspecialty}
+  \label{tab:app-balance-spec}
+  \centering
+  \begin{tabular}{lcccccc}
+  \toprule
+   & \multicolumn{2}{c}{Stayers} & \multicolumn{2}{c}{Movers} & & \\
+  \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+  Subspecialty & N & Train.\ cath & N & Train.\ cath & Diff. & $p$ \\
+  \midrule
+  General Cardiology     & 443   & 0.279 & 2,495 & 0.324 & 0.045 & $<$0.001 \\
+  Interventional         & 117   & 0.274 & 715     & 0.333 & 0.060 & $<$0.001 \\
+  Electrophysiology      & 33    & 0.291 & 185     & 0.357 & 0.065 & 0.046 \\
+  Adv.\ Heart Failure    & 7     & 0.408 & 38      & 0.391 & $-$0.017 & 0.846 \\
+  \bottomrule
+  \end{tabular}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Training imprint under alternative cohort controls\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level, on the within-origin sample. Column (1) is the within-origin baseline. Columns (2) and (3) add a linear and a quadratic graduation-year trend. Column (4) controls for the national cath lab share in the matriculation year. All specifications include medical school HRR, practice HRR, and year fixed effects, weight by NSTEMI volume, and cluster standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-cohort}
+  \centering
+  \input{../results/tables/cohort-robust.tex}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Cath rate by medical school rank and training-period cath lab share\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. Cells cross Top-25 NIH rank status with whether the medical school HRR's training-period cath lab share is at or above the sample median. The specification includes practice HRR and year fixed effects, weights by NSTEMI volume, and clusters standard errors at the medical school HRR level. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-rank-cells}
+  \centering
+  \input{../results/tables/rank-x-cath-cells.tex}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Residency cath rate and own catheterization, recent-graduate subsample\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level. All columns include practice HRR and year fixed effects, with medical school HRR fixed effects added in columns (2) and (3), and weight by NSTEMI volume. Counts of cardiologist-years and cardiologists exclude singletons within fixed-effect cells. Standard errors are clustered at the cardiologist level in column (1) and at the medical school HRR level in columns (2) and (3). *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:training-recent-grad}
+  \centering
+  \input{../results/tables/training-recent-grad.tex}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Selection robustness via inverse probability weighting (peer-cath measure)\footnote{The outcome is the volume-weighted mean residualized cath rate at the cardiologist-year level, estimated on the mover subsample. Both columns include practice HRR and year fixed effects and cluster standard errors at the medical school HRR level. Column (1) weights by NSTEMI volume; column (2) weights additionally by the inverse propensity of mover status. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-selection-alt}
+  \centering
+  \input{../results/tables/selection.tex}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Cardiology share of graduates and training-period cath lab availability\footnote{The outcome is the share of a medical school HRR's graduating cohort whose Physician Compare primary specialty is cardiology, for cohorts graduating 1983 to 2006. The regressor is the AHA cath lab share in the medical school HRR measured $k$ years before the calendar year in which the cohort started medical school. All columns include medical school HRR and graduation cohort fixed effects, weight by the number of graduates in the cell, and cluster standard errors at the medical school HRR level. A lag of $k$ years restricts the sample to cohorts graduating in $1984+k$ or later. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-composition}
+  \centering
+  \input{../results/tables/specialty-composition-lag.tex}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Analytical sample by quintile of predicted one-year mortality risk\footnote{NSTEMI episodes assigned to the cardiologist-years in the analytical sample, by quintile of predicted one-year mortality. Predicted risk is from a logit of death within 365 days on age, sex, race, dual eligibility, and the 31 Elixhauser comorbidities recorded on the index admission, fit on admissions through 2017 and scored for every episode, with quintiles cut over all NSTEMI episodes with an assigned cardiologist. Catheterization is within two days of admission. Thirty-day mortality is over admissions through December 1, 2018, and one-year mortality over admissions through 2017.}}
+  \label{tab:app-patient-quintiles}
+  \centering
+  {\small \input{../results/tables/patient-risk-quintiles.tex}}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Patient-level training imprint, overall and by risk quintile\footnote{The outcome is an indicator for catheterization within two days of NSTEMI admission. Panel A reports the coefficient on the training-period cath lab share with patient controls (age, age squared, sex, race, dual eligibility, months of dual eligibility, and the 31 Elixhauser comorbidities). Panel B interacts the training-period share with risk-quintile indicators and replaces the patient controls with risk-quintile fixed effects. All columns include the leave-one-out practice-HRR cath rate and medical school HRR, practice HRR, and year fixed effects. Column (2) adds admitting-hospital fixed effects, and column (3) drops patients who die within two days of admission. The equality test is a Wald test that the five quintile coefficients are equal. Standard errors clustered at the medical school HRR. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-patient-risk}
+  \centering
+  \input{../results/tables/patient-risk.tex}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \caption[]{Training exposure and patient mortality\footnote{Column (1) is death within 30 days of admission, for admissions through December 1, 2018, and column (2) is death within one year, for admissions through 2017. Panel A reports the coefficient on the training-period cath lab share with patient controls. Panel B interacts it with risk-quintile indicators and replaces the controls with risk-quintile fixed effects. All columns include the leave-one-out practice-HRR cath rate and medical school HRR, practice HRR, and year fixed effects. Standard errors clustered at the medical school HRR. *** $p<0.01$, ** $p<0.05$, * $p<0.10$.}}
+  \label{tab:app-patient-mortality}
+  \centering
+  \input{../results/tables/patient-mortality.tex}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{table}[htbp]
+\centering
+\begin{minipage}[h]{0.85\textwidth}
+  \caption[]{Event-study coefficients, within-physician adaptation around mid-career moves\footnote{Coefficients from the within-physician event study around mid-career moves described in the main text. The specification includes cardiologist and calendar-year fixed effects, weights by NSTEMI volume, and clusters standard errors at the cardiologist level. Event time $\tau$ is measured in years relative to the move year, with $\tau=-1$ the omitted reference period.}}
+  \label{tab:app-es-coefs}
+  \centering
+  \begin{tabular}{lccccc}
+  \toprule
+  Event time $\tau$ & Estimate & SE & 95\% CI lo & 95\% CI hi & $p$-value \\
+  \midrule
+  $-3$ & $-$0.100 & 0.107 & $-$0.31 & 0.11 & 0.352 \\
+  $-2$ & 0.034  & 0.091 & $-$0.14 & 0.21 & 0.704 \\
+  $-1$ & 0       &       &         &      & ref.  \\
+  $0$  & 0.496  & 0.078 & 0.34    & 0.65 & $<$0.001 \\
+  $1$  & 0.325  & 0.086 & 0.16    & 0.49 & $<$0.001 \\
+  $2$  & 0.325  & 0.103 & 0.12    & 0.53 & 0.002 \\
+  $3$  & 0.305  & 0.104 & 0.10    & 0.51 & 0.004 \\
+  $4$  & 0.288  & 0.113 & 0.07    & 0.51 & 0.011 \\
+  $5$  & 0.214  & 0.131 & $-$0.04 & 0.47 & 0.102 \\
+  \bottomrule
+  \end{tabular}
+\end{minipage}
+\end{table}
+
+\clearpage
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[h]{\textwidth}
+  \centering
+  \caption[]{Permutation tests for the within-origin training imprint\footnote{Each histogram plots the training-period cath lab coefficient from 1,000 re-estimations of the within-origin specification. Panel (a) reassigns cardiologists the training-period cath lab share of a different graduation cohort from the same medical school HRR. Panel (b) reassigns cardiologists the share of a different medical school HRR in the same matriculation year. The dashed line marks zero and the solid line marks the actual estimate of 0.058. The outcome, fixed effects, and NSTEMI weights are held fixed across permutations.}}
+  \begin{tabular}{cc}
+  \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null.png} &
+  \includegraphics[height=4in,width=3.0in,keepaspectratio]{perm-null-region.png} \\
+  (a) Cohorts reassigned within region & (b) Regions reassigned within cohort
+  \end{tabular}
+  \label{fig:perm-null}
+\end{minipage}
+\end{figure}
 
 \end{document}

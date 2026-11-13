@@ -203,15 +203,17 @@ clean_spec <- clean %>%
 clean_spec_prac <- clean_spec %>%
   filter(!is.na(hospital_based_share), !is.na(log_tin_volume))
 
+# Cardiologist-years by subspecialty in this table's sample.
+write_csv(clean_spec %>% count(specialty, name = "cardiologist_years"),
+          "results/tables/subspecialty-counts.csv")
+
 spec_levels <- list(
   Gen = "Cardiology",
   IC  = "Interventional Cardiology"
 )
-# EP and AHF are reported descriptively in text but excluded from this
-# table. With n = 358 (EP) and n = 65 (AHF) and within-origin FE
-# absorption, the coefficients are imprecise at baseline and produce
-# implausibly large estimates once physician and practice controls are
-# added on top of the small sample.
+# EP and AHF (7% of cardiologists) are left out of the table; EP gives a
+# stable but imprecise null (SE about 0.065) and AHF has about 100
+# observations after singletons.
 
 fit_spec <- function(spec, data, rhs) {
   feols(as.formula(paste("mean_resid_cath ~", rhs, "| hrr_practice + year")),
@@ -229,6 +231,13 @@ m_p2 <- lapply(spec_levels, fit_spec, data = clean_spec,
 m_p3 <- lapply(spec_levels, fit_spec, data = clean_spec_prac,
                rhs = paste("train_cath_lab + female + years_exp +",
                            "hospital_based_share + log_tin_volume"))
+
+# Minimum detectable effect at 80% power (two-sided 5%) for the general-
+# cardiology baseline, quoted in the text against the interventional estimate.
+se_gen <- se(m_p1$Gen)[["train_cath_lab"]]
+write_csv(tibble(statistic = c("se_general_baseline", "mde_80pct"),
+                 value = c(se_gen, (qnorm(0.975) + qnorm(0.80)) * se_gen)),
+          "results/tables/mde-general-cardiology.csv")
 
 cat("\n=== Subspecialty heterogeneity ===\n")
 for (s in names(spec_levels)) {
