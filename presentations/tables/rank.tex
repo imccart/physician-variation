@@ -1,17 +1,18 @@
+\begin{threeparttable}
 \begin{tabular}{lccc}
 \toprule
- & (1) & (2) & (3) \\
+ & \shortstack{Med school\\rank only} & \shortstack{With training\\environment} & \shortstack{With physician and\\practice char.} \\
 \midrule
 $-\log(\text{NIH rank})$ & 0.006** & 0.005* & 0.005* \\
  & (0.003) & (0.003) & (0.003) \\
 Training cath lab share &   & 0.058*** & 0.075** \\
  &   & (0.021) & (0.032) \\
 \midrule
-Physician characteristics & No & No & Yes \\
-Practice characteristics & No & No & Yes \\
-Med school HRR FE & Yes & Yes & Yes \\
-Practice HRR FE & Yes & Yes & Yes \\
-Year FE & Yes & Yes & Yes \\
 Observations & 14,879 & 14,879 & 14,879 \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$
+\end{tablenotes}
+\end{threeparttable}

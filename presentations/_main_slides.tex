@@ -25,6 +25,7 @@
 \usepackage{multirow}
 \usepackage{longtable}
 \usepackage{dsfont}
+\usepackage{threeparttable}
 
 \usepackage[export]{adjustbox}
 \tikzset{ffgcaption/.style={%
@@ -126,10 +127,10 @@
 
 \graphicspath{{./presentations/image/}} 
 
-\title{Medical School Environments and Physician Treatment Styles}
+\title{Medical School Environments and \\Physician Treatment Styles}
 \author{Shirley Cai and Ian McCarthy}
 \date{\today}
-\institute{Emory University\\Department of Economics}
+\institute{Department of Economics\\Emory University}
 % \titlegraphic{\hfill\includegraphics[height=1.5cm]{logo.pdf}}
 
 \usepackage{textpos}
@@ -150,20 +151,6 @@
         ...to what extent are physician beliefs about what constitutes clinically appropriate care primarily forged during training and to what extent are they potentially malleable to subsequent information...?
     \end{quote}
     \hfill{\small -- Finkelstein and Skinner, ``Regional Variations and Productivity Puzzles in Health Care"}
-\end{frame}
-
-\begin{frame}[plain]{}
-    \textbf{What we know}
-        \begin{itemize}
-            \item A third of geographic variation in health care utilization is explained by physician treatment style \textcolor{gray}{\scriptsize\textcite{badinski2023}}
-            \item Physicians adopt the practice style norms of their market after moving \textcolor{gray}{\scriptsize\textcite{molitor2018}}
-        \end{itemize}
-
-    \vspace{10mm}
-    \textbf{What we don't know} 
-        \begin{itemize}
-            \item How much of practice style is set during training? 
-        \end{itemize}
 \end{frame}
 
 \begin{frame}{This paper}
@@ -187,12 +174,11 @@
     \vspace{5mm}
     Limited evidence on the role of training in forming practice style
         \begin{itemize}
-            \item Relies on rank as a proxy for quality \textcolor{gray}{\scriptsize\textcite{doyle_jr_returns_2010}, \textcite{schnell2018}}
             \item Variation not explained by residency program \textcolor{gray}{\scriptsize\textcite{epstein2009}}
+            \item Relies on rank as a proxy for quality \textcolor{gray}{\scriptsize\textcite{doyle_jr_returns_2010}, \textcite{schnell2018}}
         \end{itemize}
 \end{frame}
 
-% TODO: Add broader human capital implications
 \begin{frame}{Contribution}
     Identify a specific channel through which medical school impacts practice
         \begin{itemize}
@@ -204,22 +190,6 @@
     Human capital formation: Initial training vs. accrued experience 
         \begin{itemize}
             \item Isolate training effect from current market effects
-        \end{itemize}
-\end{frame}
-
-\begin{frame}{Preview of results}
-    Medical school has a lasting impact
-        \begin{itemize}
-            \item 10pp increase in cath lab availability during training increases later cath rates by 0.58pp
-            \item Effect is concentrated among interventional cardiologists
-            \item Does not go away after controlling for other aspects (med school quality, residency)
-        \end{itemize}
-
-    \vspace{5mm}
-    Peer effects compound the impact 
-        \begin{itemize}
-            \item If exposure rises for a whole peer group...
-            \item 10pp increase in cath lab availability during training increases later cath rates by 0.97pp
         \end{itemize}
 \end{frame}
 
@@ -238,35 +208,59 @@
     \end{figure}
 \end{frame}
 
-\begin{frame}{Data: Treatment style}
+\begin{frame}[label=claims]{Data: Treatment style}
+    \textbf{100\% FFS Medicare claims} (2008-2018)
     \begin{itemize}
-        \item \textbf{100\% FFS Medicare claims} (2008-2018): Cath decisions within two days of admission
-        \item Restricted to first-time NSTEMI patients 
-        \item Residualized for patient risk (Elixhauser comorbidities) \quad\hyperlink{residualize}{\beamerbutton{Details}}
+        \item Treatment style is a risk-adjusted propensity to recommend a cardiac cath
+        \item Treatment decision: Cardiac cath within two days of admission
+        \item Patient population: First-time NSTEMI patients
     \end{itemize}
+\end{frame}
 
-    \vspace{10mm}
+\begin{frame}{Data: Treatment style}
+    Residualize for patient risk at the patient-level
+        \begin{equation*}
+            \mathds{1}\{\text{cardiac cath}\}_{jt} = \mathbf{X}_{jt}'\boldsymbol{\theta} + \gamma_t + \varepsilon_{jt}
+        \end{equation*}
+    \begin{itemize}
+        \item $\mathbf{X}_{jt}$ includes patient age, sex, race, dual eligibility, Elixhauser comorbidities
+        \item $\gamma_t$ = year FE
+    \end{itemize}
+    Aggregate to the cardiologist-year level
+
+    \vspace{5mm}
     \begin{block}{Treatment style}
         $y_{it}$ = mean residualized cath rate of cardiologist $i$ in year $t$
     \end{block}
 \end{frame}
 
+\begin{frame}{Treatment styles across markets}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\linewidth]{results/figures/hrr-cath-intensity.png}
+    \end{figure}
+\end{frame}
+
 \begin{frame}{Data: Training environment}
+    \textbf{CMS Physician Compare}: Medical school and graduation year
+    
+    \vspace{1.5mm}
+    
+    \textbf{American Hospital Association Annual Survey} (1980-present): Cath lab availability
     \begin{itemize}
-        \item \textbf{CMS Physician Compare}: Medical school and graduation year
-        \item \textbf{AHA Annual Survey}: Cath lab availability
+        \item Aggregate to the HRR-year level
     \end{itemize}
 
-    \vspace{10mm}
+    \vspace{5mm}
     \begin{block}{Medical school environment}
-        $\tau_i$ = share of hospitals with a cath lab in cardiologist $i$'s medical school HRR in the year after matriculation
+        $\tau_i$ = share of hospitals with a cath lab in cardiologist $i$'s medical school HRR in the year after their matriculation
     \end{block}
 \end{frame}
 
 \begin{frame}{Additional data sources}
     \textbf{On cardiologists}
     \begin{itemize}
-        \item \textbf{MD-PPAS}: Specialty, primary practice location
+        \item \textbf{Medicare Data on Provider Practice and Specialty}: Specialty, primary practice location
         \item \textbf{Doximity}: Residency and fellowship program, graduation year
     \end{itemize}
 
@@ -293,12 +287,26 @@
 \end{frame}
 
 \begin{frame}{Empirical strategy}
+    Cross-sectional mover design 
+        \begin{itemize}
+            \item Mover = different med school HRR and current practice HRR
+            \item Control for both med school and current practice markets 
+            \item Control for current practice environment
+        \end{itemize}
+
+    \vspace{10mm}
+    \textbf{Stayers:} Med school and current practice markets are the same
+    
+    \textbf{Movers:} Isolate the training effect
+\end{frame}
+
+\begin{frame}{Empirical strategy}
     \begin{equation*}
         y_{it} = \beta_\text{train}\tau_i + \theta\bar{y}_{-i,t} + \rho_{m(i)} + \delta_{d(i,t)} + \gamma_t + \epsilon_{it}
     \end{equation*}
     \begin{itemize}
         \item $y_{it}$ = mean residualized cath rate of cardiologist $i$ in year $t$
-        \item $\tau_i$ = training-period cath lab share in cardiologist $i$'s medical school HRR
+        \item $\tau_i$ = training-period cath lab availability in cardiologist $i$'s medical school HRR
         \item $\bar{y}_{-i,t}$ = leave-one-out mean residualized cath rate of other cardiologists in cardiologist $i$'s practice HRR in year $t$
         \item $\rho_{m(i)}$ = medical school HRR fixed effect
         \item $\delta_{d(i,t)}$ = current practice HRR fixed effect
@@ -313,8 +321,6 @@
     \textbf{Identifying assumption:} Within-HRR cath lab adoption is uncorrelated with changes in other cohort-level determinants of practice intensity
 \end{frame}
 
-% TODO: Threats to validity
-
 \begin{frame}{Movers vs stayers}
     \centering
     \input{results/tables/balance}
@@ -324,28 +330,82 @@
     \centering
     \input{presentations/tables/training_imprint}
 
-    \vspace{2.5mm}
+    \vspace{7.5mm}
+    A 10pp higher cath lab share during training raises a cardiologist's cath rate by 0.58pp.
+    
     \hyperlink{training-no-med-hrr}{\beamerbutton{No med school HRR FE}}
-    \hyperlink{training-robust}{\beamerbutton{Robustness}}
 \end{frame}
 
-% TODO: Can I just show baseline (running preferred parsimonious specification)?
-\begin{frame}{Effect is concentrated among interventional cardiologists}
+\begin{frame}{Robustness}
+    \centering{
+    \input{presentations/tables/robustness}}
+
+    \vspace{5mm}
+    \begin{enumerate}
+        \item Selection into being a mover
+            \begin{itemize}
+                \item Reweigh using IPW so that movers and stayers look alike on observables
+                \item[$\rightarrow$] Training coefficient stays the same
+            \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Robustness}
+    \centering{
+    \input{presentations/tables/robustness}}
+
+    \vspace{5mm}
+    \begin{enumerate}
+        \item[2.] Estimate reflects national trends in cath availability, not local changes 
+            \begin{itemize}
+                \item Add a linear graduation year trend
+                \item[$\rightarrow$] Training coefficient stays stable
+            \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+% TODO: More effective as a coefficient plot
+\begin{frame}{Training effect is concentrated among interventional cardiologists}
     \centering
+    \begin{threeparttable}
     \input{results/tables/aha-training-by-subspecialty}
+    \begin{tablenotes}[flushleft]
+        \footnotesize
+        \item *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$
+    \end{tablenotes}
+    \end{threeparttable}
+\end{frame}
+
+\begin{frame}{Is the training effect concentrated in riskier patients?}
+    \begin{itemize}
+        \item Does training improve a cardiologist's ability to match procedure to patients? 
+        \item If yes, then training effect should be concentrated in higher risk patients
+    \end{itemize}
+
+    \vspace{10mm}
+    For cardiologist $i$ and patient $j$, 
+        \begin{equation*}
+            \mathds{1}\{\text{cath in two days}\}_{j} = \beta_\text{train}\tau_i\times\mathds{1}\{\text{patient risk quintile}\}_j + \theta\bar{y}_{-i,t} + \rho_{m(i)} + \delta_{d(i,t)} + \gamma_t + \epsilon_{it}
+        \end{equation*}
+    where patient risk = predicted one-year mortality 
+\end{frame}
+
+\begin{frame}[label=patient-risk]{Training effect does not differ for riskier patients}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{results/figures/patient-risk-quintiles.png}
+    \end{figure}
+    \centering
+    \hyperlink{risk-mortality}{\beamerbutton{Mortality by risk quintile}}
 \end{frame}
 
 \begin{frame}[label=rank]{Training effect persists after controlling for medical school rank}
     \centering
     \input{presentations/tables/rank}
 
-    \vspace{2.5mm}
+    \vspace{1mm}
     \hyperlink{rank-tiers}{\beamerbutton{Using rank tier indicators}}
-\end{frame}
-
-\begin{frame}{Training effect persists after controlling for medical school rank}
-    \centering
-    \input{results/tables/rank-x-cath-stratified}
+    \hyperlink{rank-distr}{\beamerbutton{Top of rank distribution}}
 \end{frame}
 
 \begin{frame}{What about residency?}
@@ -362,12 +422,16 @@
         \end{enumerate}
 \end{frame}
 
-\begin{frame}{What about residency?}
+% TODO: More effective as a coefficient plot
+\begin{frame}[label=residency]{Training effect persists after controlling for residency exposure}
     \centering
-    \input{results/tables/training-pipeline}
+    \input{presentations/tables/training_pipeline}
+    \vspace{1mm}
+    \centering
+    \hyperlink{residency-exact-name}{\beamerbutton{Using manual and exact name match}}
 \end{frame}
 
-% What about fellowship? : Similar story: Fellowship exposure not statistically significant. Little identifying variation, so not included
+% What about fellowship? Similar story: Fellowship exposure not statistically significant. Little identifying variation, so not included
 
 \begin{frame}{Long-run effect with peer spillovers}
     Practice styles evolve due to peer effects \textcolor{gray}{\scriptsize\textcite{molitor2018}}
@@ -383,27 +447,74 @@
     \end{enumerate}
 \end{frame}
 
+\begin{frame}{Estimating the peer effect among mid-career movers}
+    \begin{equation*}
+        y_{it} = \alpha_i + \gamma_t + \sum_{\tau\neq-1}\beta_{\tau}\cdot\mathds{1}[\tau_{it} = \tau] \cdot \Delta_{i} + \varepsilon_{it}
+    \end{equation*}
+    \begin{itemize}
+        \item $y_{it}$ = mean residualized cath rate of cardiologist $i$ in year $t$
+        \item $\alpha_i$ = cardiologist fixed effect
+        \item $\gamma_t$ = year fixed effect
+        \item $\Delta_i$ = LOO destination peer cath rate - LOO origin peer cath rate
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Estimating the peer effect among mid-career movers}
+    \begin{columns}
+        \begin{column}{0.7\textwidth}
+            \begin{figure}
+                \raggedright
+                \includegraphics[width=\linewidth]{results/figures/event-study.png}
+            \end{figure}
+        \hyperlink{es-by-direction}{\beamerbutton{By direction of move}}
+        \end{column}
+        \begin{column}{0.3\textwidth}
+            \textbf{Outcome:} Mean residualized cath rate
+            
+
+            \vspace{5mm}
+            \textbf{Pooled post-move coefficient} $\beta_{dest} = 0.40$
+        \end{column}
+    \end{columns}
+\end{frame}
+
 \begin{frame}[label=peer]{Long-run effect with peer spillovers}
     \begin{equation*}
-        \text{treatment style} = \beta_{train}\times(\text{training environment}) + \beta_{dest}(\text{peer's treatment styles}) + \text{error}
+        \text{cath rate} = \beta_{train}\times(\text{training environment}) + \beta_{dest}(\text{peer's treatment styles}) + \text{error}
     \end{equation*}
     \vspace{2.5mm}
         \begin{equation*}
-            \text{Long run effect:}\quad \Delta y^\ast = \frac{\beta_{train}\cdot\Delta\tau}{1-\beta_{dest}}
+            \text{Long run effect:}\quad \Delta \text{cath rate}^\ast = \frac{\beta_{train}\cdot\Delta\text{training environment}}{1-\beta_{dest}}
         \end{equation*}
     \begin{itemize}
-        \item \textbf{Direct effect of training:} $\beta_{train} = 0.058$ 
-        \item \textbf{Peer effect:} $\beta_{dest} = 0.40$ \quad\hyperlink{es}{\beamerbutton{Event study}} \hyperlink{es-direction}{\beamerbutton{By direction}}
-        \item[$\rightarrow$] 10pp increase in training cath lab availability $\rightarrow$ 0.97pp increase in cath rate
+        \item \textbf{Direct training effect:} $\beta_{train} = 0.058$ 
+        \item \textbf{Peer effect:} $\beta_{dest} = 0.40$ 
     \end{itemize}
-    
+    \vspace{2.5mm}
+    Combining direct training effect and peer effect, a 10pp higher cath lab share during training raises a cardiologist's cath rate by 0.97pp.
 \end{frame}
 
-\begin{frame}{Conclusion}
+\begin{frame}{Summary of results}
+    Medical school has a lasting impact
+        \begin{itemize}
+            \item 10pp increase in cath lab availability during training increases later cath rates by 0.58pp
+            \item Effect is concentrated among interventional cardiologists
+            \item Does not go away after controlling for other aspects of training
+        \end{itemize}
+
+    \vspace{5mm}
+    Peer effects compound the impact 
+        \begin{itemize}
+            \item If exposure rises for a whole peer group...
+            \item 10pp increase in cath lab availability during training increases later cath rates by 0.97pp
+        \end{itemize}
+\end{frame}
+
+\begin{frame}[label=conclusion]{Conclusion}
     Training effects persist throughout a physician's career, so later-career policies alone may not change practice patterns
         \begin{itemize}
-            \item 1 SD increase in technology exposure shifts practice style one-third relative to the mean
-            \item Training effect is amplified by peer-to-peer learning
+            \item Training environment matters by about 1/3 as much as current practice environment \hyperlink{back-of-the-envelope}{\beamerbutton{Calculations}}
+            \item Training effect is amplified by peer-to-peer learning 
         \end{itemize}
 
     \vspace{10mm}
@@ -422,57 +533,79 @@
 
 \appendix
 
-\begin{frame}[label=residualize]{Data: Treatment style}
-    Treatment style = Mean \textbf{residualized cath rate} within two days of admission
-
-    \vspace{10mm}
-    Calculate patient-level residual $\varepsilon$ from linear probability model
-        \begin{equation*}
-            \mathds{1}\{\text{cath}\} = \{\text{Elixhauser comorbitities}\} + \{\text{year FE}\} + \varepsilon
-        \end{equation*}
-    Aggregate to cardiologist-year level
-\end{frame}
-
 \begin{frame}[label=training-no-med-hrr]{Training effect: No medical school HRR fixed effect}
     \centering
     \input{presentations/tables/training_imprint_no_med_hrr}
 
-    \vspace{2.5mm}
+    \vspace{1mm}
     \hyperlink{training}{\beamerbutton{back}}
 \end{frame}
 
-\begin{frame}[label=training-robust]{Robustness: Selection to moving and other environment changes}
+\begin{frame}[label=risk-mortality]{Patient mortality by risk quintile}
     \centering
-    \input{results/tables/selection-aha}
-    
-    \vspace{2.5mm}
-    \hyperlink{training}{\beamerbutton{back}}
+    \input{results/tables/patient-risk-quintiles}
+
+    \vspace{1mm}
+    \hyperlink{patient-risk}{\beamerbutton{back}}
 \end{frame}
 
 \begin{frame}[label=rank-tiers]{Medical school rank: Rank tier indicators}
     \centering
     \input{presentations/tables/rank_tiers}
 
-    \vspace{2.5mm}
+    \vspace{1mm}
     \hyperlink{rank}{\beamerbutton{back}}
 \end{frame}
 
-\begin{frame}[label=es]{Combining with peer effects}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.75\linewidth]{results/figures/event-study.png}
-    \end{figure}
+\begin{frame}[label=rank-distr]{Medical school rank: Top ranked schools}
+    \centering
+    \input{results/tables/rank-x-cath-stratified}
 
-    \hyperlink{peer}{\beamerbutton{back}}
+    \vspace{1mm}
+    \hyperlink{rank}{\beamerbutton{back}}
 \end{frame}
 
-\begin{frame}[label=es-by-direction]{Mid-career moves by move direction}
+\begin{frame}[label=residency-exact-name]{Residency: Exact name match}
+    \centering
+    \input{presentations/tables/training_pipeline_manual_match}
+
+    \vspace{1mm}
+    \hyperlink{residency}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}[label=es-by-direction]{Peer effects: Mid-career movers by move direction}
     \begin{figure}
         \centering
         \includegraphics[width=0.75\linewidth]{results/figures/event-study-by-direction.png}
     \end{figure}
-    
-    \hyperlink{peer}{\beamerbutton{back}}
+
+    \centering
+    \hyperlink{es}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}[label=back-of-the-envelope]{Back-of-the-envelope: Comparing training and peer effects}
+    Comparing a 1 SD change in training environment vs peer environment
+
+    \begin{center}
+    \small
+    \begin{tabular}{lccc}
+    \toprule
+     & Coefficient & SD of variable & Effect of 1 SD change \\
+    \midrule
+    Training exposure ($\tau_i$) & 0.058 & 0.168 & $0.058 \times 0.168 = 0.0097$ \\
+    Peer environment ($\bar{y}_{-i,t}$) & 0.40 & 0.078 & $0.40 \times 0.078 = 0.0312$ \\
+    \bottomrule
+    \end{tabular}
+    \end{center}
+
+    \medskip
+    \begin{itemize}
+        \item \textbf{Direct training effect:} 0.97pp per SD, which is about 1/3 of the peer effect
+        \item \textbf{Training with peers:} 1.62pp per SD, which is 1/2 of the peer effect
+    \end{itemize}
+
+    \centering
+    \hyperlink{conclusion}{\beamerbutton{back}}
 \end{frame}
 
 \begin{frame}[allowframebreaks]{References}
